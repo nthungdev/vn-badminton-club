@@ -1,0 +1,51 @@
+# run npx decap-server
+local_backend: true
+
+backend:
+  name: git-gateway
+  branch: netlify
+
+media_folder: public/img
+public_folder: img
+
+collections:
+  - name: "events"
+    label: "Events"
+    create: true
+    preview_path: event/{{year}}/{{month}}/{{day}}
+    folder: 'content/events'
+    slug: '{{year}}-{{month}}-{{day}}'
+    summary: 'Event on {{year}}-{{month}}-{{day}}'
+    editor:
+      preview: false
+    fields:
+      - name: "title"
+        label: "Title"
+        widget: "string"
+      - name: "date"
+        label: "Date"
+        widget: "datetime"
+        date_format: true
+        picker_utc: true
+      - name: "startTime"
+        label: "Start time"
+        widget: "datetime"
+        time_format: true
+      - name: "endTime"
+        label: "End time"
+        widget: "datetime"
+        time_format: true
+      - name: "location"
+        label: "Location"
+        widget: "string"
+      - name: "description"
+        label: "Description"
+        widget: "text"
+      - name: "slots"
+        label: "Slots"
+        widget: "number"
+        min: 2
+        max: 100
+        value_type: int
+
+
