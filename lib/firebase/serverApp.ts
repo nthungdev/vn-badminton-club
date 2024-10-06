@@ -5,9 +5,6 @@ import { getAuth } from 'firebase-admin/auth'
 import { credential } from 'firebase-admin'
 import FirebaseServiceAccount from '@/firebase-service-account.json'
 import { headers } from 'next/headers'
-import { initializeServerApp } from 'firebase/app'
-
-// const auth = getAuth(firebaseServerApp)
 
 const firebaseAdminConfig = {
   credential: credential.cert({

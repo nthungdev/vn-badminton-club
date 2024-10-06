@@ -1,29 +1,38 @@
+enum AuthGuard {
+  AuthenticatedRequired,
+  UnauthenticatedRequired,
+  Public,
+}
+
+interface MenuItem {
+  label: string
+  href: string
+  guard: AuthGuard
+}
+
 const menuHref = {
   home: '/',
   signIn: '/signIn',
   signUp: '/signUp',
-  signOut: '/signOut',
 }
 
-const menu = [
+const menu: MenuItem[] = [
   {
     label: 'Home',
     href: menuHref.home,
+    guard: AuthGuard.Public,
   },
   {
     label: 'Sign In',
     href: menuHref.signIn,
+    guard: AuthGuard.UnauthenticatedRequired,
   },
   {
     label: 'Sign Up',
     href: menuHref.signUp,
-  },
-  {
-    label: 'Sign Out',
-    href: menuHref.signOut,
+    guard: AuthGuard.UnauthenticatedRequired,
   },
 ]
 
-
-
-export { menu, menuHref }
+export { menu, menuHref, AuthGuard }
+export type { MenuItem }

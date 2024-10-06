@@ -1,13 +1,13 @@
 'use client'
 
-import { signUp } from '@/actions/auth'
+import { signIn } from '@/actions/auth'
 import { useFormState, useFormStatus } from 'react-dom'
 
 const INPUT_EMAIL_ID = 'sign-up-input-email'
 const INPUT_PASSWORD_ID = 'sign-up-input-password'
 
-export default function SignUpForm() {
-  const [state, action] = useFormState(signUp, undefined)
+export default function SignInForm() {
+  const [state, action] = useFormState(signIn, undefined)
   const { pending } = useFormStatus();
 
   return (
@@ -92,7 +92,7 @@ export default function SignUpForm() {
       >
         Sign In
       </button>
-      {state?.signUpError && <p className='text-red-600'>{state.signUpError}</p>}
+      {state?.signInError && <p className='text-red-600'>{state.signInError}</p>}
     </form>
   )
 }
