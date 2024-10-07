@@ -1,7 +1,5 @@
 import { getMe } from '@/actions/auth'
 import BasePage from '@/components/BasePage'
-import { getUserRole } from '@/lib/authUtils'
-import { Role } from '@/lib/firebase/definitions'
 import Link from 'next/link'
 
 export default async function PageHome() {
