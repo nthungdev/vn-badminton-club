@@ -39,18 +39,20 @@ interface VerifySessionResult {
   session?: string
 }
 
-const verifySession: () => Promise<VerifySessionResult> = cache(async () => {
-  const session = cookies().get('session')?.value || ''
-  try {
-    const decodedIdToken = await auth.verifySessionCookie(session, true)
-    if (!decodedIdToken.uid) {
+const verifySession: (session?: string) => Promise<VerifySessionResult> = cache(
+  async (session?: string) => {
+    const _session = session || cookies().get('session')?.value || ''
+    try {
+      const decodedIdToken = await auth.verifySessionCookie(_session, true)
+      if (!decodedIdToken.uid) {
+        return {}
+      }
+      return { isAuth: true, decodedIdToken, session: _session }
+    } catch {
       return {}
     }
-    return { isAuth: true, decodedIdToken, session }
-  } catch {
-    return {}
   }
-})
+)
 
 export { saveSession, deleteSession, verifySession }
 export type { VerifySessionResult }

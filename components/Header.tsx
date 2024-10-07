@@ -1,10 +1,10 @@
-import { getUser } from '@/actions/auth'
+import { getMe } from '@/actions/auth'
 import { AuthGuard, menu } from '@/lib/menu'
 import Nav from './Nav'
 
 export default async function Header() {
 
-  const user = await getUser()
+  const user = await getMe()
   const isAuthenticated = !!user
 
   const filteredMenu = menu.filter((m) => {
