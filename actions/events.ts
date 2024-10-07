@@ -71,6 +71,7 @@ async function createEvent(
     return { submitError: INTERNAL_ERROR_MESSAGE }
   }
 
+  // Redirect to event page, somehow NextJS errors out when redirecting in the try block
   if (eventId) {
     redirect(`${menuHref.event}/${eventId}`)
   } else {
