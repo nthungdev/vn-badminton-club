@@ -16,7 +16,7 @@ export default async function Header() {
       default:
         return true
     }
-  })
+  }).filter((m) => !m.hideFromMenu)
 
   return (
     <header className="flex flex-wrap sm:justify-start sm:flex-nowrap w-full bg-outer-space-600 text-sm py-3">
