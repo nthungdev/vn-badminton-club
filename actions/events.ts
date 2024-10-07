@@ -1,5 +1,6 @@
 'use server'
 
+import { redirect } from 'next/navigation'
 import { getMe } from './auth'
 import { INTERNAL_ERROR_MESSAGE } from './constants'
 import {
@@ -7,6 +8,7 @@ import {
   CreateEventFormState,
 } from './event.definitions'
 import { createEvent as _createEvent, AppEvent } from '@/lib/firebase/firestore'
+import { menuHref } from '@/lib/menu'
 
 async function createEvent(
   prevState: CreateEventFormState,
@@ -40,6 +42,8 @@ async function createEvent(
     }
   }
 
+  let eventId
+
   try {
     // TODO get user from session or client Firebase instead of fetching
     const me = await getMe()
@@ -56,13 +60,18 @@ async function createEvent(
       createdBy: me.uid,
     }
 
-    await _createEvent(event)
-
-    // TODO navigate to Event details page
+    eventId = await _createEvent(event)
   } catch (error) {
     // TODO handle error
-    console.log({ error })
+    console.log('create event error', { error })
     return { submitError: INTERNAL_ERROR_MESSAGE }
+  }
+
+  if (eventId) {
+    redirect(`${menuHref.event}/${eventId}`)
+  } else {
+    console.error('eventId not found')
+    redirect(menuHref.home)
   }
 }
 

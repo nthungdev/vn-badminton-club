@@ -14,6 +14,7 @@ const menuHref = {
   home: '/',
   signIn: '/signIn',
   signUp: '/signUp',
+  event: '/event',
 }
 
 const menu: MenuItem[] = [
