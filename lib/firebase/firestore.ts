@@ -1,7 +1,7 @@
 import { COLLECTION_EVENTS } from './firestore.constant'
 import { firestore } from './serverApp'
 
-interface Event {
+interface AppEvent {
   title: string
   date: string
   startTime: string
@@ -10,6 +10,8 @@ interface Event {
   // uid of the user who created the event
   createdBy: string
 }
+
+type CreateEvent = Omit<AppEvent, 'createdBy'>
 
 async function getEvent(eventId: string) {
   try {
@@ -24,7 +26,7 @@ async function getEvent(eventId: string) {
   }
 }
 
-async function createEvent(event: Event) {
+async function createEvent(event: AppEvent) {
   try {
     const doc = await firestore.collection(COLLECTION_EVENTS).add(event)
     return doc.id
@@ -34,7 +36,7 @@ async function createEvent(event: Event) {
   }
 }
 
-async function updateEvent(eventId: string, event: Event) {
+async function updateEvent(eventId: string, event: AppEvent) {
   try {
     await firestore
       .collection(COLLECTION_EVENTS)
@@ -56,3 +58,4 @@ async function deleteEvent(eventId: string) {
 }
 
 export { getEvent, createEvent, updateEvent, deleteEvent }
+export type { AppEvent, CreateEvent }
