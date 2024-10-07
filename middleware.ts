@@ -16,6 +16,8 @@ export async function middleware(request: NextRequest) {
 
   const { isAuth }: VerifySessionResult = await responseAPI.json()
 
+  console.log({isAuth})
+
   const menuItem = menu.find((item) => item.href === request.nextUrl.pathname)
   if (!menuItem) {
     // Invalid route, let NextJS route to 404
@@ -27,10 +29,12 @@ export async function middleware(request: NextRequest) {
       if (!isAuth) {
         return NextResponse.redirect(new URL('/signIn', request.url))
       }
+      break
     case AuthGuard.UnauthenticatedRequired:
       if (isAuth) {
         return NextResponse.redirect(new URL('/', request.url))
       }
+      break
     case AuthGuard.Public:
       return NextResponse.next()
     default:
