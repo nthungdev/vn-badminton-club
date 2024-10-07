@@ -13,9 +13,9 @@ import { saveSession, verifySession } from '@/lib/session'
 import { FirebaseAuthError } from 'firebase-admin/auth'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-
-const INTERNAL_ERROR_MESSAGE =
-  'An internal error occurred. Please try again later.'
+import { INTERNAL_ERROR_MESSAGE } from './auth.constants'
+import { setUserRole } from '@/lib/firebase/utils'
+import { Role } from '@/lib/firebase/definitions'
 
 async function signUp(prevState: SignUpFormState, formData: FormData) {
   // Validate form fields
@@ -34,11 +34,12 @@ async function signUp(prevState: SignUpFormState, formData: FormData) {
 
   // Create Firebase user
   try {
-    await auth.createUser({
+    const user = await auth.createUser({
       displayName: validatedFields.data.name,
       email: validatedFields.data.email,
       password: validatedFields.data.password,
     })
+    await setUserRole(user.uid, Role.Member)
   } catch (error) {
     if (error instanceof FirebaseAuthError) {
       if (error.code === 'auth/email-already-exists') {
@@ -85,7 +86,7 @@ function signOut() {
   redirect(menuHref.signIn)
 }
 
-async function getUser() {
+async function getMe() {
   const { decodedIdToken } = await verifySession()
   if (!decodedIdToken) return null
 
@@ -93,4 +94,4 @@ async function getUser() {
   return user
 }
 
-export { signUp, signIn, signOut, getUser }
+export { signUp, signIn, signOut, getMe }
