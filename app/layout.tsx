@@ -29,7 +29,7 @@ export default async function RootLayout({
   <html lang="en">
       <Script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></Script>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased space-y-4`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Header />
         {children}
