@@ -13,9 +13,9 @@ import { saveSession, verifySession } from '@/lib/session'
 import { FirebaseAuthError } from 'firebase-admin/auth'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { INTERNAL_ERROR_MESSAGE } from './auth.constants'
 import { setUserRole } from '@/lib/firebase/utils'
 import { Role } from '@/lib/firebase/definitions'
+import { INTERNAL_ERROR_MESSAGE } from './constants'
 
 async function signUp(prevState: SignUpFormState, formData: FormData) {
   // Validate form fields
