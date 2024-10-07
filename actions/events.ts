@@ -23,7 +23,7 @@ async function createEvent(
 
   // Validate form fields
   const validatedFields = CreateEventFormSchema.safeParse({
-    name: formData.get('title'),
+    title: formData.get('title'),
     startTime: formData.get('startTime') || null,
     endTime: formData.get('endTime') || null,
     date: formData.get('date') || null,

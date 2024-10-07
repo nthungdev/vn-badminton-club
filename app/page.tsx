@@ -1,7 +1,8 @@
+import BasePage from "@/components/BasePage";
 import Link from "next/link";
 
 export default function PageHome() {
-  return <div className="py-4">
+  return <BasePage>
     <h1 className="sr-only">Home</h1>
 
     <div className="flex flex-col items-center">
@@ -12,5 +13,5 @@ export default function PageHome() {
       Create Event
     </Link>
     </div>
-  </div>
+  </BasePage>
 }
