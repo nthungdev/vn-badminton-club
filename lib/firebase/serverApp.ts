@@ -1,10 +1,11 @@
 'server-only'
 
+import { headers } from 'next/headers'
 import { getApps, initializeApp } from 'firebase-admin/app'
 import { getAuth } from 'firebase-admin/auth'
 import { credential } from 'firebase-admin'
+import { getFirestore } from 'firebase-admin/firestore'
 import FirebaseServiceAccount from '@/firebase-service-account.json'
-import { headers } from 'next/headers'
 
 const firebaseAdminConfig = {
   credential: credential.cert({
@@ -17,6 +18,8 @@ const firebaseAdminConfig = {
 const firebaseServerApp = getApps()?.[0] || initializeApp(firebaseAdminConfig)
 
 const auth = getAuth(firebaseServerApp)
+// const firestore  = getFirestore()
+const firestore = getFirestore()
 
 const initAuth = () => {
   const idToken = headers().get('Authorization')?.split('Bearer ')[1]
@@ -29,4 +32,4 @@ const initApp = () => {
   }
 }
 
-export { auth, firebaseServerApp, initAuth, initApp }
+export { auth, firestore, firebaseServerApp, initAuth, initApp }
