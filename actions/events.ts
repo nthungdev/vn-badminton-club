@@ -9,6 +9,7 @@ import {
 } from './event.definitions'
 import { createEvent as _createEvent, AppEvent } from '@/lib/firebase/firestore'
 import { menuHref } from '@/lib/menu'
+import { Role } from '@/lib/firebase/definitions'
 
 async function createEvent(
   prevState: CreateEventFormState,
@@ -51,6 +52,8 @@ async function createEvent(
       throw new Error('User not found')
     }
 
+    const byMod = me.customClaims?.role === Role.Mod
+
     const event: AppEvent = {
       title: validatedFields.data.title,
       date: validatedFields.data.date,
@@ -58,6 +61,7 @@ async function createEvent(
       endTime: validatedFields.data.endTime,
       slots: validatedFields.data.slots,
       createdBy: me.uid,
+      byMod
     }
 
     eventId = await _createEvent(event)

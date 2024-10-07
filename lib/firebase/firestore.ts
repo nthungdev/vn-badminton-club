@@ -9,6 +9,7 @@ interface AppEvent {
   slots: number
   // uid of the user who created the event
   createdBy: string
+  byMod: boolean
 }
 
 type CreateEvent = Omit<AppEvent, 'createdBy'>
