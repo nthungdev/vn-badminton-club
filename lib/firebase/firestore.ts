@@ -1,35 +1,112 @@
+'server-only'
+
+import { Timestamp } from 'firebase-admin/firestore'
+import {
+  AppEvent,
+  CreatedEvent,
+  CreateEvent,
+  EventParticipant,
+  FirestoreEvent,
+} from './definitions/event'
 import { COLLECTION_EVENTS } from './firestore.constant'
 import { firestore } from './serverApp'
+import { getUserById } from '../authUtils'
 
-interface AppEvent {
-  title: string
-  date: string
-  startTime: string
-  endTime: string
-  slots: number
-  // uid of the user who created the event
-  createdBy: string
-  byMod: boolean
+async function getNewEvents() {
+  try {
+    const snapshot = await firestore
+      .collection(COLLECTION_EVENTS)
+      .where('startTimestamp', '>=', new Date())
+      .orderBy('startTimestamp')
+      .limit(10)
+      .get()
+
+    const events = snapshot.docs.map((doc) => {
+      const data = {
+        id: doc.id,
+        ...doc.data(),
+        startTimestamp: (doc.data()?.startTimestamp as Timestamp).toDate(),
+        endTimestamp: (doc.data()?.endTimestamp as Timestamp).toDate(),
+      } as CreatedEvent
+      return data
+    })
+    return events
+  } catch (error) {
+    console.error('Error getting events:', error)
+    throw new Error('Error getting events')
+  }
 }
 
-type CreateEvent = Omit<AppEvent, 'createdBy'>
+async function getPastEvents() {
+  try {
+    const snapshot = await firestore
+      .collection(COLLECTION_EVENTS)
+      .where('startTimestamp', '<', new Date())
+      .orderBy('startTimestamp')
+      .limit(10)
+      .get()
 
-async function getEvent(eventId: string) {
+    const events = snapshot.docs.map((doc) => {
+      const data = {
+        id: doc.id,
+        ...doc.data(),
+        startTimestamp: (doc.data()?.startTimestamp as Timestamp).toDate(),
+        endTimestamp: (doc.data()?.endTimestamp as Timestamp).toDate(),
+      } as CreatedEvent
+      return data
+    })
+    return events
+  } catch (error) {
+    console.error('Error getting events:', error)
+    throw new Error('Error getting events')
+  }
+}
+
+async function getEventById(eventId: string) {
   try {
     const doc = await firestore.collection(COLLECTION_EVENTS).doc(eventId).get()
     if (!doc.exists) {
       return null
     }
-    return { id: doc.id, ...doc.data() }
+    const data = doc.data() as FirestoreEvent
+
+    // const participantsIds = data.participants as string[]
+    const participants: EventParticipant[] = []
+    for (const uid of data.participantIds) {
+      const participant = await getUserById(uid)
+      if (participant) {
+        participants.push(participant as EventParticipant)
+      }
+    }
+
+    const organizer = (await getUserById(
+      data.createdBy
+    )) as EventParticipant | null
+    if (!organizer) {
+      throw new Error('Organizer not found')
+    }
+
+    const event: CreatedEvent = {
+      ...data,
+      id: doc.id,
+      participants,
+      organizer,
+      startTimestamp: data.startTimestamp.toDate(),
+      endTimestamp: data.endTimestamp.toDate(),
+    }
+
+    return event
   } catch (error) {
     console.error('Error getting event:', error)
     throw new Error('Error getting event')
   }
 }
 
-async function createEvent(event: AppEvent) {
+async function createEvent(event: CreateEvent) {
   try {
-    const doc = await firestore.collection(COLLECTION_EVENTS).add(event)
+    const doc = await firestore
+      .collection(COLLECTION_EVENTS)
+      .add({ ...event, participantIds: [] })
     return doc.id
   } catch (error) {
     console.error('Error creating event:', error)
@@ -58,5 +135,11 @@ async function deleteEvent(eventId: string) {
   }
 }
 
-export { getEvent, createEvent, updateEvent, deleteEvent }
-export type { AppEvent, CreateEvent }
+export {
+  getNewEvents,
+  getPastEvents,
+  getEventById,
+  createEvent,
+  updateEvent,
+  deleteEvent,
+}

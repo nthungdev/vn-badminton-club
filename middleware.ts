@@ -16,8 +16,6 @@ export async function middleware(request: NextRequest) {
 
   const { isAuth }: VerifySessionResult = await responseAPI.json()
 
-  console.log({isAuth})
-
   const menuItem = menu.find((item) => item.href === request.nextUrl.pathname)
   if (!menuItem) {
     // Invalid route, let NextJS route to 404

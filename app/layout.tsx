@@ -26,13 +26,17 @@ export default async function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-  <html lang="en">
+    <html lang="en">
       <Script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></Script>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50`}
       >
-        <Header />
-        {children}
+        <div className='flex flex-col h-screen'>
+          <Header />
+          <div className='flex-1 overflow-hidden'>
+          {children}
+          </div>
+        </div>
       </body>
     </html>
   )
