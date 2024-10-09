@@ -1,36 +1,17 @@
 import { createErrorResponse } from '@/lib/apiResponse'
-import { Role, RolePostRequest } from '@/lib/firebase/definitions'
+import { RolePostRequest } from '@/lib/firebase/definitions'
 import { AuthError } from '@/lib/firebase/error'
 import { auth } from '@/lib/firebase/serverApp'
 import { setUserRole } from '@/lib/firebase/utils'
-import { verifySession } from '@/lib/session'
+import { validateAuthority } from '@/lib/utils/api'
 import { NextRequest } from 'next/server'
 
 // These routes require user with mod privileges to access them.
 // To authorize, pass the user's session token as the Bearer token in the Authorization header.
 
-async function validateAuthority(request: NextRequest) {
-  const session = request.headers.get('Authorization')?.split('Bearer ')[1]
-  if (!session) {
-    return false
-  }
-
-  const { decodedIdToken } = await verifySession(session)
-  if (!decodedIdToken) {
-    return false
-  }
-
-  const user = await auth.getUser(decodedIdToken.uid)
-  const role: string | undefined = user.customClaims?.role
-  if (role !== Role.Mod) {
-    return false
-  }
-
-  return true
-}
 
 export async function GET(request: NextRequest) {
-  const valid = validateAuthority(request)
+  const valid = await validateAuthority(request)
   if (!valid) {
     return createErrorResponse('Unauthorized', 401)
   }
