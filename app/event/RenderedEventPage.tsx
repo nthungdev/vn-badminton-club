@@ -99,7 +99,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
                 )}
                 {participants.length > 0 && (
                   <ul className="space-y-1">
-                    {props.participants.map((participant, index) => (
+                    {participants.map((participant, index) => (
                       <li key={index} className="text-center">
                         {participant.displayName}
                       </li>
