@@ -10,27 +10,11 @@ import dayjs from 'dayjs'
 import { getMe } from '@/actions/auth'
 import { EventParticipant } from '@/lib/firebase/definitions/event'
 import RenderedEventPage from './RenderedEventPage'
+import { eventTime } from '@/lib/format'
 
 dayjs.extend(relativeTime)
 dayjs.extend(utc)
 dayjs.extend(timezone)
-
-const formatEventTime = (startDate: Date, endDate: Date) => {
-  const start = dayjs(startDate)
-  const end = dayjs(endDate)
-  const startEndSameDay = start.format('YYYYMMDD') === end.format('YYYYMMDD')
-
-  if (startEndSameDay) {
-    const startDay = start.format('dddd, MMMM D')
-    const startTime = start.format('h:mm A')
-    const endTime = end.format('h:mm A')
-    return `${startDay} ⋅ ${startTime} - ${endTime}`
-  } else {
-    const startFull = start.format('dddd, MMMM D, h:mm A')
-    const endFull = end.format('dddd, MMMM D, h:mm A')
-    return `${startFull} - ${endFull}`
-  }
-}
 
 export default async function Page({
   searchParams: { e },
@@ -48,7 +32,7 @@ export default async function Page({
     return
   }
 
-  const formattedTime = formatEventTime(
+  const formattedTime = eventTime(
     event.startTimestamp,
     event.endTimestamp
   )
