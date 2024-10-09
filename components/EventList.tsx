@@ -104,7 +104,7 @@ export default function EventList() {
                   {formatStartTimestamp(event.startTimestamp)}
                 </p>
                 <Link
-                  href={`/event/${event.id}`}
+                  href={`/event?e=${event.id}`}
                   className="mt-3 inline-flex items-center gap-x-1 text-sm font-semibold rounded-lg border border-transparent text-secondary decoration-2 hover:text-primary hover:underline focus:underline focus:outline-none focus:text-primary disabled:opacity-50 disabled:pointer-events-none"
                 >
                   View
