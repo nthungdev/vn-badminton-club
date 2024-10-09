@@ -1,5 +1,9 @@
 'use server'
 
+import utc from 'dayjs/plugin/utc'
+import timezone from 'dayjs/plugin/timezone'
+import dayjs from 'dayjs'
+
 import { redirect } from 'next/navigation'
 import { getMe } from './auth'
 import { INTERNAL_ERROR_MESSAGE } from './constants'
@@ -7,9 +11,18 @@ import {
   CreateEventFormSchema,
   CreateEventFormState,
 } from './event.definitions'
-import { createEvent as _createEvent, AppEvent } from '@/lib/firebase/firestore'
+import {
+  createEvent as _createEvent,
+  getNewEvents as _getNewEvents,
+  getPastEvents as _getPastEvents,
+  getEventById as _getEventById,
+} from '@/lib/firebase/firestore'
 import { menuHref } from '@/lib/menu'
 import { Role } from '@/lib/firebase/definitions'
+import { CreateEvent } from '@/lib/firebase/definitions/event'
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 async function createEvent(
   prevState: CreateEventFormState,
@@ -54,14 +67,29 @@ async function createEvent(
 
     const byMod = me.customClaims?.role === Role.Mod
 
-    const event: AppEvent = {
+    const [startHour, startMinute] = validatedFields.data.startTime.split(':')
+    const eventStart = dayjs(validatedFields.data.date, 'YYYY-MM-DD')
+      .startOf('date')
+      .set('hour', parseInt(startHour))
+      .set('minute', parseInt(startMinute))
+      .utc()
+    const startTimestamp = eventStart.toDate()
+
+    const [endHour, endMinute] = validatedFields.data.endTime.split(':')
+    const eventEnd = dayjs(validatedFields.data.date, 'YYYY-MM-DD')
+      .startOf('date')
+      .set('hour', parseInt(endHour))
+      .set('minute', parseInt(endMinute))
+      .utc()
+    const endTimestamp = eventEnd.toDate()
+
+    const event: CreateEvent = {
       title: validatedFields.data.title,
-      date: validatedFields.data.date,
-      startTime: validatedFields.data.startTime,
-      endTime: validatedFields.data.endTime,
+      startTimestamp,
+      endTimestamp,
       slots: validatedFields.data.slots,
       createdBy: me.uid,
-      byMod
+      byMod,
     }
 
     eventId = await _createEvent(event)
@@ -75,9 +103,43 @@ async function createEvent(
   if (eventId) {
     redirect(`${menuHref.event}/${eventId}`)
   } else {
+    // TODO format error
     console.error('eventId not found')
     redirect(menuHref.home)
   }
 }
 
-export { createEvent }
+async function getNewEvents() {
+  try {
+    const events = await _getNewEvents()
+    return events
+  } catch (error) {
+    // TODO format error
+    console.error('Error getting new events:', error)
+    throw new Error('Error getting new events')
+  }
+}
+
+async function getPastEvents() {
+  try {
+    const events = await _getPastEvents()
+    return events
+  } catch (error) {
+    // TODO format error
+    console.error('Error getting new events:', error)
+    throw new Error('Error getting new events')
+  }
+}
+
+async function getEventById(eventId: string) {
+  try {
+    const event = await _getEventById(eventId)
+    return event
+  } catch (error) {
+    // TODO format error
+    console.error('Error getting new events:', error)
+    throw new Error('Error getting event')
+  }
+}
+
+export { createEvent, getNewEvents, getPastEvents, getEventById }

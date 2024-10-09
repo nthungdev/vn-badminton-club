@@ -39,6 +39,12 @@ const menu: MenuItem[] = [
     hideFromMenu: false,
   },
   {
+    label: 'Event',
+    href: menuHref.event,
+    guard: AuthGuard.AuthenticatedRequired,
+    hideFromMenu: true,
+  },
+  {
     label: 'Create Event',
     href: menuHref.createEvent,
     guard: AuthGuard.AuthenticatedRequired,
