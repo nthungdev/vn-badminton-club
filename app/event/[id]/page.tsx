@@ -62,52 +62,52 @@ export default async function Page({
     },
   ]
 
-
-
   return (
     <div className="h-full flex flex-col">
       <div className="p-4 space-y-4 flex-1 overflow-hidden">
-        <div>
-          <div className="text-gray-600 text-center text-sm">Event</div>
-          <h1 className="text-xl font-bold text-center text-primary">
-            {event.title}
-          </h1>
-        </div>
-
-        <div className="space-y-4">
-          <div className="space-y-1">
-            <span className="font-semibold">Organizer</span>
-            <div className="p-4 bg-white border shadow-sm rounded-xl">
-              <div className="text-center">{event.organizer.displayName}</div>
-            </div>
+        <div className="max-w-md mx-auto">
+          <div>
+            <div className="text-gray-600 text-center text-sm">Event</div>
+            <h1 className="text-xl font-bold text-center text-primary">
+              {event.title}
+            </h1>
           </div>
 
-          <div className="space-y-1">
-            <span className="font-semibold">Time</span>
-            <div className="p-4 bg-white border shadow-sm rounded-xl">
-              <div className="text-center">{formattedTime}</div>
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <span className="font-semibold">Participants</span>
-            <div className="p-4 bg-white border shadow-sm rounded-xl space-y-1">
-              <div className="text-right w-full font-semibold text-primary">
-                {event.participants.length} / {event.slots}
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <span className="font-semibold">Organizer</span>
+              <div className="p-4 bg-white border shadow-sm rounded-xl">
+                <div className="text-center">{event.organizer.displayName}</div>
               </div>
-              <ul className="space-y-1">
-                {event.participants.map((participant) => (
-                  <li key={participant.uid} className="text-center">
-                    {participant.displayName}
-                  </li>
-                ))}
-              </ul>
+            </div>
+
+            <div className="space-y-1">
+              <span className="font-semibold">Time</span>
+              <div className="p-4 bg-white border shadow-sm rounded-xl">
+                <div className="text-center">{formattedTime}</div>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <span className="font-semibold">Participants</span>
+              <div className="p-4 bg-white border shadow-sm rounded-xl space-y-1">
+                <div className="text-right w-full font-semibold text-primary">
+                  {event.participants.length} / {event.slots}
+                </div>
+                <ul className="space-y-1">
+                  {event.participants.map((participant) => (
+                    <li key={participant.uid} className="text-center">
+                      {participant.displayName}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className='p-4 shadow-inner'>
+      <div className="p-4 shadow-inner">
         <button
           type="button"
           className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-primary text-white hover:bg-primary-700 focus:outline-none focus:bg-primary-700 disabled:opacity-50 disabled:pointer-events-none"
