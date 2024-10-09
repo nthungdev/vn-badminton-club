@@ -142,20 +142,4 @@ async function getEventById(eventId: string) {
   }
 }
 
-async function joinEvent(eventId: string) {
-  const origin = process.env.API_ORIGIN
-
-  const result = await fetch(`${origin}/api/event/join`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ eventId }),
-  })
-    .then((response) => response.json())
-    .catch((error) => error)
-
-  return result
-}
-
-export { createEvent, getNewEvents, getPastEvents, getEventById, joinEvent }
+export { createEvent, getNewEvents, getPastEvents, getEventById }
