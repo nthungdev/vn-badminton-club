@@ -10,18 +10,13 @@ import { useEffect, useState } from 'react'
 import { CreatedEvent } from '@/lib/firebase/definitions/event'
 import LoadingSpinner from './LoadingSpinner'
 import classNames from 'classnames'
+import { eventTime, nowToTimestamp } from '@/lib/format'
 
 dayjs.extend(relativeTime)
 dayjs.extend(utc)
 dayjs.extend(timezone)
 
 const tabs = ['upcoming', 'past']
-
-const formatStartTimestamp = (timestamp: Date) => {
-  const now = dayjs().local()
-  const eventStart = dayjs(timestamp)
-  return now.to(eventStart)
-}
 
 export default function EventList() {
   const [upcomingEvents, setUpcomingEvents] = useState<CreatedEvent[]>([])
@@ -54,7 +49,7 @@ export default function EventList() {
     selectedTab === 'upcoming' ? 'No upcoming events.' : 'No past events.'
 
   return (
-    <div className="max-w-sm space-y-4">
+    <div className="max-w-md space-y-4">
       <div className="text-2xl font-semibold text-primary">Events</div>
 
       <ul className="flex flex-wrap text-sm font-medium text-center text-gray-500 dark:text-gray-400">
@@ -100,11 +95,14 @@ export default function EventList() {
                 </span>
               </div>
               <div className="p-4 md:p-5">
-                <p className="text-gray-500">
-                  {formatStartTimestamp(event.startTimestamp)}
-                </p>
+                <div className="text-gray-700">
+                  {eventTime(event.startTimestamp, event.endTimestamp)}
+                </div>
+                <div className="text-gray-500">
+                  {nowToTimestamp(event.startTimestamp)}
+                </div>
                 <Link
-                  href={`/event/${event.id}`}
+                  href={`/event?e=${event.id}`}
                   className="mt-3 inline-flex items-center gap-x-1 text-sm font-semibold rounded-lg border border-transparent text-secondary decoration-2 hover:text-primary hover:underline focus:underline focus:outline-none focus:text-primary disabled:opacity-50 disabled:pointer-events-none"
                 >
                   View

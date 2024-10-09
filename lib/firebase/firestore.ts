@@ -1,6 +1,6 @@
 'server-only'
 
-import { Timestamp } from 'firebase-admin/firestore'
+import { FieldValue, Timestamp } from 'firebase-admin/firestore'
 import {
   AppEvent,
   CreatedEvent,
@@ -135,6 +135,29 @@ async function deleteEvent(eventId: string) {
   }
 }
 
+async function joinEvent(uid: string, eventId: string) {
+  try {
+    await firestore.collection(COLLECTION_EVENTS).doc(eventId).update({
+      participantIds: FieldValue.arrayUnion(uid),
+    })
+  } catch (error) {
+    console.error('Error joining event:', error)
+    throw new Error('Error joining event')
+  }
+}
+
+async function leaveEvent(uid: string, eventId: string) {
+  try {
+    const result = await firestore.collection(COLLECTION_EVENTS).doc(eventId).update({
+      participantIds: FieldValue.arrayRemove(uid),
+    })
+    return result.isEqual
+  } catch (error) {
+    console.error('Error leaving event:', error)
+    throw new Error('Error leaving event')
+  }
+}
+
 export {
   getNewEvents,
   getPastEvents,
@@ -142,4 +165,6 @@ export {
   createEvent,
   updateEvent,
   deleteEvent,
+  joinEvent,
+  leaveEvent
 }
