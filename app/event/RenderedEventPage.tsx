@@ -246,7 +246,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
                 <button
                   type="button"
                   className={classNames(
-                    'w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent text-white focus:outline-none  disabled:opacity-50 disabled:pointer-events-none bg-red-600 hover:bg-red-700 focus:bg-red-700'
+                    'w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border text-red-700 focus:outline-none disabled:opacity-50 disabled:pointer-events-none bg-white hover:text-white focus:text-white hover:bg-red-700 focus:bg-red-700'
                   )}
                   disabled={pending}
                   onClick={() => handleCancelEvent()}
