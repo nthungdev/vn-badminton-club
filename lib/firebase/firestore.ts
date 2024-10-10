@@ -166,5 +166,5 @@ export {
   updateEvent,
   deleteEvent,
   joinEvent,
-  leaveEvent
+  leaveEvent,
 }

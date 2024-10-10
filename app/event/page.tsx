@@ -11,6 +11,7 @@ import { getMe } from '@/actions/auth'
 import { EventParticipant } from '@/lib/firebase/definitions/event'
 import RenderedEventPage from './RenderedEventPage'
 import { eventTime } from '@/lib/format'
+import { Role } from '@/lib/firebase/definitions'
 
 dayjs.extend(relativeTime)
 dayjs.extend(utc)
@@ -41,6 +42,8 @@ export default async function Page({
   }
 
   const isPastEvent = dayjs().isAfter(dayjs(event.startTimestamp))
+  const isOrganizer = me.uid === event.organizer.uid
+  const isMod = me.customClaims?.role === Role.Mod
 
   const selfParticipant = {
     uid: me.uid,
@@ -54,6 +57,7 @@ export default async function Page({
       participants={event.participants}
       organizerDisplayName={event.organizer.displayName}
       showJoinButton={!isPastEvent}
+      showCancelButton={isOrganizer || isMod}
       slots={event.slots}
       time={formattedTime}
       title={event.title}

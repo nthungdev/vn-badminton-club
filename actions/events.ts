@@ -20,6 +20,7 @@ import {
 import { menuHref } from '@/lib/menu'
 import { Role } from '@/lib/firebase/definitions'
 import { CreateEvent } from '@/lib/firebase/definitions/event'
+import { isRedirectError } from 'next/dist/client/components/redirect'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -56,8 +57,6 @@ async function createEvent(
     }
   }
 
-  let eventId
-
   try {
     // TODO get user from session or client Firebase instead of fetching
     const me = await getMe()
@@ -92,20 +91,16 @@ async function createEvent(
       byMod,
     }
 
-    eventId = await _createEvent(event)
+    const eventId = await _createEvent(event)
+    redirect(`${menuHref.event}?e=${eventId}`)
   } catch (error) {
+    if (isRedirectError(error)) {
+      throw error
+    }
+
     // TODO handle error
     console.log('create event error', { error })
     return { submitError: INTERNAL_ERROR_MESSAGE }
-  }
-
-  // Redirect to event page, somehow NextJS errors out when redirecting in the try block
-  if (eventId) {
-    redirect(`${menuHref.event}?e=${eventId}`)
-  } else {
-    // TODO format error
-    console.error('eventId not found')
-    redirect(menuHref.home)
   }
 }
 
