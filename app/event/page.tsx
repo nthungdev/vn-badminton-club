@@ -19,7 +19,7 @@ dayjs.extend(timezone)
 export default async function Page({
   searchParams: { e },
 }: {
-  searchParams: {e?: string}
+  searchParams: { e?: string }
 }) {
   const eventId = e
   if (!eventId) {
@@ -32,10 +32,7 @@ export default async function Page({
     return
   }
 
-  const formattedTime = eventTime(
-    event.startTimestamp,
-    event.endTimestamp
-  )
+  const formattedTime = eventTime(event.startTimestamp, event.endTimestamp)
 
   const me = await getMe()
   if (!me) {
@@ -43,12 +40,9 @@ export default async function Page({
     throw new Error('Error getting user')
   }
 
-  const isEventJoined = !!event.participants.find(
-    (p) => p.uid === me.uid
-  )
-  const isMyEvent = event.organizer.uid === me.uid
+  const isEventJoined = !!event.participants.find((p) => p.uid === me.uid)
   const isPastEvent = dayjs().isAfter(dayjs(event.startTimestamp))
-  const isAllowedToJoin = !isMyEvent && !isPastEvent
+  const isAllowedToJoin = !isPastEvent
 
   const selfParticipant = {
     uid: me.uid,
