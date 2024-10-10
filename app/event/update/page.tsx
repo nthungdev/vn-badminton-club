@@ -1,0 +1,37 @@
+import { getEventById } from '@/actions/events'
+import BasePage from '@/components/BasePage'
+import EventForm from '@/components/EventForm'
+import { menuHref } from '@/lib/menu'
+import Link from 'next/link'
+import { redirect } from 'next/navigation'
+
+export default async function EventUpdatePage({
+  searchParams: { e },
+}: {
+  searchParams: { e?: string }
+}) {
+  const eventId = e
+  if (!eventId) {
+    throw new Error('Invalid event ID')
+  }
+
+  const event = await getEventById(eventId)
+  if (!event) {
+    redirect('/404')
+    return
+  }
+
+  return (
+    <BasePage>
+      <div className="mx-auto max-w-sm">
+        <Link
+          className="font-medium text-primary-600 hover:underline"
+          href={`${menuHref.event}?e=${event.id}`}
+        >
+          Back to Event Details
+        </Link>
+      </div>
+      <EventForm event={event} />
+    </BasePage>
+  )
+}

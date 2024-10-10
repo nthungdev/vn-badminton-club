@@ -7,6 +7,8 @@ import { usePathname } from 'next/navigation'
 interface NavProps {
   menu: MenuItem[]
   isAuthenticated: boolean
+  displayName?: string
+  email?: string
 }
 
 export default function Nav(props: NavProps) {
@@ -44,6 +46,20 @@ export default function Nav(props: NavProps) {
           >
             Sign Out
           </a>
+        )}
+
+        {props.displayName && (
+          <span className="relative text-white font-semibold ml-auto group cursor-default">
+            {props.displayName}
+
+            {props.email && (
+              <div className="hidden group-hover:block absolute top-full right-0">
+                <div className="mt-1 bg-white px-3 py-2 text-gray-800 rounded-md shadow-md">
+                  {props.email}
+                </div>
+              </div>
+            )}
+          </span>
         )}
       </div>
     </nav>

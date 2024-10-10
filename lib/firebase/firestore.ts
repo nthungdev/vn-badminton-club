@@ -2,7 +2,6 @@
 
 import { FieldValue, Timestamp } from 'firebase-admin/firestore'
 import {
-  AppEvent,
   CreatedEvent,
   CreateEvent,
   EventParticipant,
@@ -114,7 +113,7 @@ async function createEvent(event: CreateEvent) {
   }
 }
 
-async function updateEvent(eventId: string, event: AppEvent) {
+async function updateEvent(eventId: string, event: CreateEvent) {
   try {
     await firestore
       .collection(COLLECTION_EVENTS)

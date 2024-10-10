@@ -17,7 +17,7 @@ dayjs.extend(relativeTime)
 dayjs.extend(utc)
 dayjs.extend(timezone)
 
-export default async function Page({
+export default async function EventPage({
   searchParams: { e },
 }: {
   searchParams: { e?: string }
@@ -56,11 +56,12 @@ export default async function Page({
       selfParticipant={selfParticipant}
       participants={event.participants}
       organizerDisplayName={event.organizer.displayName}
-      showJoinButton={!isPastEvent}
-      showCancelButton={isOrganizer || isMod}
       slots={event.slots}
       time={formattedTime}
       title={event.title}
+      showJoinButton={!isPastEvent}
+      showCancelButton={isOrganizer || isMod}
+      showUpdateButton={isOrganizer || isMod}
     />
   )
 }
