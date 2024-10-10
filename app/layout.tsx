@@ -16,7 +16,7 @@ const geistMono = localFont({
 })
 
 export const metadata: Metadata = {
-  title: process.env.SITE_NAME,
+  title: process.env.SITE_TITLE,
   description: process.env.SITE_DESCRIPTION,
 }
 
