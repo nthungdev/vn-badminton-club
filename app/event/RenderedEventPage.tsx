@@ -39,7 +39,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
       const url = joined ? '/api/event/leave' : '/api/event/join'
       setPending(true)
       await fetch(url, {
-        method: 'POST',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -67,7 +67,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
       const url = '/api/event/kick'
       setPending(true)
       const { error } = await fetch(url, {
-        method: 'POST',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },

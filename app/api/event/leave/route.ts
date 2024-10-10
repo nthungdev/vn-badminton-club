@@ -3,17 +3,17 @@ import { leaveEvent } from '@/lib/firebase/firestore'
 import { verifySession } from '@/lib/session'
 import { NextRequest } from 'next/server'
 
-interface EventJoinPostRequest {
+interface EventLeaveRequest {
   eventId?: string
 }
 
-export async function POST(request: NextRequest) {
+export async function PATCH(request: NextRequest) {
   const { decodedIdToken } = await verifySession()
   if (!decodedIdToken) {
     return createErrorResponse('Unauthorized', 401)
   }
 
-  const data: EventJoinPostRequest = await request.json()
+  const data: EventLeaveRequest = await request.json()
 
   if (!data.eventId) {
     return createErrorResponse('Missing eventId', 400)

@@ -4,18 +4,18 @@ import { verifySession } from '@/lib/session'
 import { isRoleMod } from '@/lib/utils/auth'
 import { NextRequest } from 'next/server'
 
-interface EventParticipantKickPostRequest {
+interface EventParticipantKickRequest {
   uid?: string
   eventId?: string
 }
 
-export async function POST(request: NextRequest) {
+export async function PATCH(request: NextRequest) {
   const { decodedIdToken } = await verifySession()
   if (!decodedIdToken) {
     return createErrorResponse('Unauthorized', 401)
   }
 
-  const data: EventParticipantKickPostRequest = await request.json()
+  const data: EventParticipantKickRequest = await request.json()
 
   if (!data.eventId || !data.uid) {
     return createErrorResponse('Missing eventId or uid', 400)
