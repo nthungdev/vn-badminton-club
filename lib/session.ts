@@ -6,11 +6,9 @@ import { cache } from 'react'
 import { DecodedIdToken } from 'firebase-admin/auth'
 
 async function saveSession(idToken: string) {
-  console.log('saveSession called')
   const decodedToken = await auth.verifyIdToken(idToken)
 
   if (decodedToken) {
-    console.log('create session...')
     // Generate session cookie
     const expiresIn = 60 * 60 * 24 * 14 * 1000 // 14 days
     const sessionCookie = await auth.createSessionCookie(idToken, {

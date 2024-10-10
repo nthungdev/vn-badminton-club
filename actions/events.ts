@@ -32,15 +32,6 @@ async function createEvent(
   prevState: CreateEventFormState,
   formData: FormData
 ) {
-  const fields = {
-    name: formData.get('title'),
-    startTime: formData.get('startTime'),
-    endTime: formData.get('endTime'),
-    date: formData.get('date'),
-    slots: formData.get('slots'),
-  }
-  console.log({ fields })
-
   // Validate form fields
   const validatedFields = CreateEventFormSchema.safeParse({
     title: formData.get('title'),

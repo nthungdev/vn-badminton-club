@@ -45,8 +45,6 @@ export default async function EventPage({
   const isOrganizer = me.uid === event.organizer.uid
   const isMod = me.customClaims?.role === Role.Mod
 
-  console.log({isOrganizer, isMod})
-
   const selfParticipant = {
     uid: me.uid,
     displayName: me.displayName,
