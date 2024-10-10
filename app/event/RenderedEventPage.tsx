@@ -2,6 +2,7 @@
 
 import { ParticipateEventButton } from '@/components/ParticipateEventButton'
 import { EventParticipant } from '@/lib/firebase/definitions/event'
+import { eventTime } from '@/lib/format'
 import { menuHref } from '@/lib/menu'
 import classNames from 'classnames'
 import Link from 'next/link'
@@ -12,7 +13,8 @@ interface RenderedEventPageProps {
   eventId: string
   title: string
   organizerDisplayName: string
-  time: string
+  startTimestamp: Date,
+  endTimestamp: Date,
   slots: number
   participants: EventParticipant[]
   selfParticipant: EventParticipant
@@ -27,6 +29,8 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
   const [pending, setPending] = useState(false)
   const [kickMode, setKickMode] = useState(false)
   const [updateMode, setUpdateMode] = useState(false)
+
+  const time = eventTime(props.startTimestamp, props.endTimestamp)
 
   const handleParticipateButton = async () => {
     if (joined) {
@@ -162,7 +166,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
             <div className="space-y-1">
               <span className="font-semibold">Time</span>
               <div className="p-4 bg-white border shadow-sm rounded-xl">
-                <div className="text-center">{props.time}</div>
+                <div className="text-center">{time}</div>
               </div>
             </div>
 
