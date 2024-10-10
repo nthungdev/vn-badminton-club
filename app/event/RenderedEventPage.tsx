@@ -181,7 +181,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
                       <li
                         key={index}
                         id="badge-dismiss-default"
-                        className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-secondary-800 rounded"
+                        className="inline-flex items-center px-3 py-1 font-medium text-white bg-secondary-800 rounded"
                       >
                         {participant.displayName}
                         <button
@@ -222,9 +222,9 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
                     </div>
                   )}
                   {participants.length > 0 && (
-                    <ul className="space-y-1">
+                    <ul className="space-y-1 flex flex-col justify-center items-center">
                       {participants.map((participant, index) => (
-                        <li key={index} className="text-center">
+                        <li key={index} className="text-center inline-flex px-3 py-1">
                           {participant.displayName}
                         </li>
                       ))}
@@ -236,10 +236,10 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
                 <div className="flex flex-row justify-end">
                   <button
                     className={classNames(
-                      'py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent text-white focus:outline-none disabled:opacity-50 disabled:pointer-events-none',
+                      'py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent focus:outline-none disabled:opacity-50 disabled:pointer-events-none',
                       kickMode
-                        ? 'bg-red-600 hover:bg-red-700 focus:bg-red-700'
-                        : 'bg-secondary hover:bg-secondary-700 focus:bg-secondary-700'
+                        ? 'text-white bg-red-600 hover:bg-red-700 focus:bg-red-700'
+                        : 'text-secondary-700 hover:text-white focus:text-white hover:bg-secondary-700 focus:bg-secondary-700'
                     )}
                     onClick={handleKickParticipantToggle}
                   >
