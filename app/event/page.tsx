@@ -10,7 +10,6 @@ import dayjs from 'dayjs'
 import { getMe } from '@/actions/auth'
 import { EventParticipant } from '@/lib/firebase/definitions/event'
 import RenderedEventPage from './RenderedEventPage'
-import { eventTime } from '@/lib/format'
 import { Role } from '@/lib/firebase/definitions'
 
 dayjs.extend(relativeTime)
@@ -32,8 +31,6 @@ export default async function EventPage({
     redirect('/404')
     return
   }
-
-  const formattedTime = eventTime(event.startTimestamp, event.endTimestamp)
 
   const me = await getMe()
   if (!me) {
@@ -57,7 +54,8 @@ export default async function EventPage({
       participants={event.participants}
       organizerDisplayName={event.organizer.displayName}
       slots={event.slots}
-      time={formattedTime}
+      startTimestamp={event.startTimestamp}
+      endTimestamp={event.endTimestamp}
       title={event.title}
       showJoinButton={!isPastEvent}
       showCancelButton={isOrganizer || isMod}
