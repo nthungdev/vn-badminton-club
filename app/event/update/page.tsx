@@ -1,7 +1,11 @@
-import { getEventById } from "@/actions/events"
-import { redirect } from "next/navigation"
+import { getEventById } from '@/actions/events'
+import BasePage from '@/components/BasePage'
+import EventForm from '@/components/EventForm'
+import { menuHref } from '@/lib/menu'
+import Link from 'next/link'
+import { redirect } from 'next/navigation'
 
-export default async  function EventUpdatePage({
+export default async function EventUpdatePage({
   searchParams: { e },
 }: {
   searchParams: { e?: string }
@@ -17,5 +21,17 @@ export default async  function EventUpdatePage({
     return
   }
 
-  return <div>EventUpdatePage</div>
+  return (
+    <BasePage>
+      <div className="mx-auto max-w-sm">
+        <Link
+          className="font-medium text-primary-600 hover:underline"
+          href={`${menuHref.event}?e=${event.id}`}
+        >
+          Back to Event Details
+        </Link>
+      </div>
+      <EventForm event={event} />
+    </BasePage>
+  )
 }

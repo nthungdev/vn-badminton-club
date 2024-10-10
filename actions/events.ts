@@ -10,9 +10,12 @@ import { INTERNAL_ERROR_MESSAGE } from './constants'
 import {
   CreateEventFormSchema,
   CreateEventFormState,
+  UpdateEventFormSchema,
+  UpdateEventFormState,
 } from './event.definitions'
 import {
   createEvent as _createEvent,
+  updateEvent as _updateEvent,
   getNewEvents as _getNewEvents,
   getPastEvents as _getPastEvents,
   getEventById as _getEventById,
@@ -104,6 +107,77 @@ async function createEvent(
   }
 }
 
+async function updateEvent(
+  prevState: UpdateEventFormState,
+  formData: FormData
+) {
+  // Validate form fields
+  const validatedFields = UpdateEventFormSchema.safeParse({
+    id: formData.get('id'),
+    title: formData.get('title'),
+    startTime: formData.get('startTime') || null,
+    endTime: formData.get('endTime') || null,
+    date: formData.get('date') || null,
+    slots: formData.get('slots')
+      ? parseInt(formData.get('slots') as string)
+      : null,
+  })
+
+  // If any form fields are invalid, return early
+  if (!validatedFields.success) {
+    console.log({ error: validatedFields.error.flatten().fieldErrors })
+    return {
+      inputErrors: validatedFields.error.flatten().fieldErrors,
+    }
+  }
+
+  try {
+    // TODO get user from session or client Firebase instead of fetching
+    const me = await getMe()
+    if (!me) {
+      throw new Error('User not found')
+    }
+
+    const byMod = me.customClaims?.role === Role.Mod
+
+    const [startHour, startMinute] = validatedFields.data.startTime.split(':')
+    const eventStart = dayjs(validatedFields.data.date, 'YYYY-MM-DD')
+      .startOf('date')
+      .set('hour', parseInt(startHour))
+      .set('minute', parseInt(startMinute))
+      .utc()
+    const startTimestamp = eventStart.toDate()
+
+    const [endHour, endMinute] = validatedFields.data.endTime.split(':')
+    const eventEnd = dayjs(validatedFields.data.date, 'YYYY-MM-DD')
+      .startOf('date')
+      .set('hour', parseInt(endHour))
+      .set('minute', parseInt(endMinute))
+      .utc()
+    const endTimestamp = eventEnd.toDate()
+
+    const event: CreateEvent = {
+      title: validatedFields.data.title,
+      startTimestamp,
+      endTimestamp,
+      slots: validatedFields.data.slots,
+      createdBy: me.uid,
+      byMod,
+    }
+
+    await _updateEvent(validatedFields.data.id, event)
+    redirect(`${menuHref.event}?e=${validatedFields.data.id}`)
+  } catch (error) {
+    if (isRedirectError(error)) {
+      throw error
+    }
+
+    // TODO handle error
+    console.log('create event error', { error })
+    return { submitError: INTERNAL_ERROR_MESSAGE }
+  }
+}
+
 async function getNewEvents() {
   try {
     const events = await _getNewEvents()
@@ -137,4 +211,4 @@ async function getEventById(eventId: string) {
   }
 }
 
-export { createEvent, getNewEvents, getPastEvents, getEventById }
+export { createEvent, updateEvent, getNewEvents, getPastEvents, getEventById }

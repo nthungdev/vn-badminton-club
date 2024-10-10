@@ -32,6 +32,10 @@ export const CreateEventFormSchema = z.object({
     .min(2, { message: 'Minimum 2 slots required.' }),
 })
 
+export const UpdateEventFormSchema = CreateEventFormSchema.and(
+  z.object({ id: z.string() })
+)
+
 export type CreateEventFormState =
   | {
       inputErrors?: {
@@ -44,3 +48,5 @@ export type CreateEventFormState =
       submitError?: string
     }
   | undefined
+
+export type UpdateEventFormState = CreateEventFormState
