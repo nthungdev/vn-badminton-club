@@ -1,7 +1,7 @@
 import { createErrorResponse } from '@/lib/apiResponse'
 import { deleteEvent, getEventById } from '@/lib/firebase/firestore'
 import { verifySession } from '@/lib/session'
-import { isMod } from '@/lib/utils/auth'
+import { isRoleMod } from '@/lib/utils/auth'
 import { NextRequest } from 'next/server'
 
 interface EventDeleteRequest {
@@ -28,7 +28,7 @@ export async function DELETE(request: NextRequest) {
 
     if (
       event.organizer.uid !== decodedIdToken.uid ||
-      !(await isMod(decodedIdToken.uid))
+      !(await isRoleMod(decodedIdToken.uid))
     ) {
       return createErrorResponse('Unauthorized', 401)
     }

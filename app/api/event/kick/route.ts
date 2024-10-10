@@ -1,7 +1,7 @@
 import { createErrorResponse } from '@/lib/apiResponse'
 import { getEventById, leaveEvent } from '@/lib/firebase/firestore'
 import { verifySession } from '@/lib/session'
-import { isMod } from '@/lib/utils/auth'
+import { isRoleMod } from '@/lib/utils/auth'
 import { NextRequest } from 'next/server'
 
 interface EventParticipantKickPostRequest {
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     // Check if the user a mod
     if (
       event.organizer.uid !== decodedIdToken.uid ||
-      !(await isMod(decodedIdToken.uid))
+      !(await isRoleMod(decodedIdToken.uid))
     ) {
       return createErrorResponse('Unauthorized', 401)
     }
