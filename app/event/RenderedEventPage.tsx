@@ -139,12 +139,11 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
       participants.length === 1 &&
       participants.some((p) => p.uid === props.selfParticipant.uid)
     )
-  // const showCancelButton = props.selfParticipant.uid === props.
 
   return (
     <div className="h-full flex flex-col">
-      <div className="p-4 space-y-4 flex-1 overflow-hidden">
-        <div className="max-w-md mx-auto">
+      <div className="p-4 space-y-4 flex-1 overflow-scroll">
+        <div className="max-w-md mx-auto space-y-10">
           <div>
             <div className="text-gray-600 text-center text-sm">Event</div>
             <h1 className="text-xl font-bold text-center text-primary">
