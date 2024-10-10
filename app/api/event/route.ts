@@ -27,7 +27,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     if (
-      event.organizer.uid !== decodedIdToken.uid ||
+      event.organizer.uid !== decodedIdToken.uid &&
       !(await isRoleMod(decodedIdToken.uid))
     ) {
       return createErrorResponse('Unauthorized', 401)
