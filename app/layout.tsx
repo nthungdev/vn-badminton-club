@@ -16,8 +16,8 @@ const geistMono = localFont({
 })
 
 export const metadata: Metadata = {
-  title: 'Apple Badminton',
-  description: 'Apple Badminton is a badminton club in Renton, Washington.',
+  title: process.env.SITE_NAME,
+  description: process.env.SITE_DESCRIPTION,
 }
 
 export default async function RootLayout({
