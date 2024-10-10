@@ -5,15 +5,23 @@ import Link from 'next/link'
 
 const headerScreenReader = `Error`
 const headerToDisplay = `Error!`
-const bodyText = `Something went wrong!`
+const defaultErrorMessage = `Something went wrong!`
 
-export default function GlobalError() {
+export default function Error({
+  error,
+}: {
+  error: Error & { digest?: string }
+}) {
+  console.log('error page', {error})
+
+  const errorMessage = error.message || defaultErrorMessage
+
   return (
     <BasePage className="h-full flex-1 flex flex-col justify-center items-center">
       <div className="text-center">
         <h1 className="sr-only">{headerScreenReader}</h1>
         <p className="text-4xl font-bold">{headerToDisplay}</p>
-        <p className="mt-4">{bodyText}</p>
+        <p className="mt-4">{errorMessage}</p>
 
         <div className="mt-10 flex flex-row justify-center">
           <Link
