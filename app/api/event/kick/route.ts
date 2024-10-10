@@ -30,7 +30,7 @@ export async function PATCH(request: NextRequest) {
     // Check if the user is the event creator
     // Check if the user a mod
     if (
-      event.organizer.uid !== decodedIdToken.uid ||
+      event.organizer.uid !== decodedIdToken.uid &&
       !(await isRoleMod(decodedIdToken.uid))
     ) {
       return createErrorResponse('Unauthorized', 401)
