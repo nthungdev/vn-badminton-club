@@ -101,7 +101,7 @@ async function createEvent(
 
   // Redirect to event page, somehow NextJS errors out when redirecting in the try block
   if (eventId) {
-    redirect(`${menuHref.event}/${eventId}`)
+    redirect(`${menuHref.event}?e=${eventId}`)
   } else {
     // TODO format error
     console.error('eventId not found')
