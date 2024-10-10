@@ -1,10 +1,11 @@
 const firebaseConfig: Record<string, string> = {
-  apiKey: 'AIzaSyAwzpIH5oHuJBBoGLgqm-_VR_TrM2sApOM',
-  authDomain: 'apple-badminton.firebaseapp.com',
-  projectId: 'apple-badminton',
-  storageBucket: 'apple-badminton.appspot.com',
-  messagingSenderId: '326161071088',
-  appId: '1:326161071088:web:d30ff8d93d28034d097b35',
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
+  clientEmail: process.env.NEXT_PUBLIC_FIREBASE_CLIENT_EMAIL!,
 }
 
 // When deployed, there are quotes that need to be stripped

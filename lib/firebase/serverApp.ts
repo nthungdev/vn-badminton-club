@@ -5,13 +5,12 @@ import { getApps, initializeApp } from 'firebase-admin/app'
 import { getAuth } from 'firebase-admin/auth'
 import { credential } from 'firebase-admin'
 import { getFirestore } from 'firebase-admin/firestore'
-import FirebaseServiceAccount from '@/firebase-service-account.json'
 
 const firebaseAdminConfig = {
   credential: credential.cert({
-    projectId: FirebaseServiceAccount.project_id,
-    clientEmail: FirebaseServiceAccount.client_email,
-    privateKey: FirebaseServiceAccount.private_key,
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY,
   }),
 }
 
