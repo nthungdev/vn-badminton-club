@@ -6,6 +6,7 @@ import {
   CreateEvent,
   EventParticipant,
   FirestoreEvent,
+  UpdateEvent,
 } from './definitions/event'
 import { COLLECTION_EVENTS } from './firestore.constant'
 import { firestore } from './serverApp'
@@ -113,7 +114,7 @@ async function createEvent(event: CreateEvent) {
   }
 }
 
-async function updateEvent(eventId: string, event: CreateEvent) {
+async function updateEvent(eventId: string, event: UpdateEvent) {
   try {
     await firestore
       .collection(COLLECTION_EVENTS)
