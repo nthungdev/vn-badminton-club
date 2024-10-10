@@ -40,9 +40,7 @@ export default async function Page({
     throw new Error('Error getting user')
   }
 
-  const isEventJoined = !!event.participants.find((p) => p.uid === me.uid)
   const isPastEvent = dayjs().isAfter(dayjs(event.startTimestamp))
-  const isAllowedToJoin = !isPastEvent
 
   const selfParticipant = {
     uid: me.uid,
@@ -52,11 +50,10 @@ export default async function Page({
   return (
     <RenderedEventPage
       eventId={event.id}
-      eventJoined={isEventJoined}
       selfParticipant={selfParticipant}
       participants={event.participants}
       organizerDisplayName={event.organizer.displayName}
-      showJoinButton={isAllowedToJoin}
+      showJoinButton={!isPastEvent}
       slots={event.slots}
       time={formattedTime}
       title={event.title}

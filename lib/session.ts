@@ -21,7 +21,7 @@ async function saveSession(idToken: string) {
       value: sessionCookie,
       maxAge: expiresIn,
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV !== 'development',
     }
 
     // Add the cookie to the browser
