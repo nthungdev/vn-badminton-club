@@ -7,7 +7,7 @@ import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone'
 import dayjs from 'dayjs'
 import { useEffect, useState } from 'react'
-import { CreatedEvent } from '@/lib/firebase/definitions/event'
+import { HomeViewEvent } from '@/lib/firebase/definitions/event'
 import LoadingSpinner from './LoadingSpinner'
 import classNames from 'classnames'
 import { eventTime, nowToTimestamp } from '@/lib/format'
@@ -19,8 +19,8 @@ dayjs.extend(timezone)
 const tabs = ['upcoming', 'past']
 
 export default function EventList() {
-  const [upcomingEvents, setUpcomingEvents] = useState<CreatedEvent[]>([])
-  const [pastEvents, setPastEvents] = useState<CreatedEvent[]>([])
+  const [upcomingEvents, setUpcomingEvents] = useState<HomeViewEvent[]>([])
+  const [pastEvents, setPastEvents] = useState<HomeViewEvent[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedTab, setSelectedTab] = useState('upcoming')
 

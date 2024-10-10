@@ -1,11 +1,12 @@
 'server-only'
 
-import { FieldValue, Timestamp } from 'firebase-admin/firestore'
+import { FieldValue } from 'firebase-admin/firestore'
 import {
   CreatedEvent,
   CreateEvent,
   EventParticipant,
   FirestoreEvent,
+  HomeViewEvent,
   UpdateEvent,
 } from './definitions/event'
 import { COLLECTION_EVENTS } from './firestore.constant'
@@ -22,13 +23,16 @@ async function getNewEvents() {
       .get()
 
     const events = snapshot.docs.map((doc) => {
-      const data = {
+      const data = doc.data() as FirestoreEvent
+
+      const event: HomeViewEvent = {
+        ...data,
         id: doc.id,
-        ...doc.data(),
-        startTimestamp: (doc.data()?.startTimestamp as Timestamp).toDate(),
-        endTimestamp: (doc.data()?.endTimestamp as Timestamp).toDate(),
-      } as CreatedEvent
-      return data
+        startTimestamp: data.startTimestamp.toDate(),
+        endTimestamp: data.endTimestamp.toDate(),
+      }
+
+      return event
     })
     return events
   } catch (error) {
@@ -46,16 +50,19 @@ async function getPastEvents() {
       .limit(10)
       .get()
 
-    const events = snapshot.docs.map((doc) => {
-      const data = {
-        id: doc.id,
-        ...doc.data(),
-        startTimestamp: (doc.data()?.startTimestamp as Timestamp).toDate(),
-        endTimestamp: (doc.data()?.endTimestamp as Timestamp).toDate(),
-      } as CreatedEvent
-      return data
-    })
-    return events
+      const events = snapshot.docs.map((doc) => {
+        const data = doc.data() as FirestoreEvent
+
+        const event: HomeViewEvent = {
+          ...data,
+          id: doc.id,
+          startTimestamp: data.startTimestamp.toDate(),
+          endTimestamp: data.endTimestamp.toDate(),
+        }
+
+        return event
+      })
+      return events
   } catch (error) {
     console.error('Error getting events:', error)
     throw new Error('Error getting events')

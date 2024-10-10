@@ -49,3 +49,7 @@ export type CreatedEvent = CreateEvent & {
   organizer: EventParticipant
   participants: EventParticipant[]
 }
+
+export type HomeViewEvent = CreateEvent & {
+  id: string
+}
