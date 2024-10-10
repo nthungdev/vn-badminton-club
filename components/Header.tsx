@@ -25,6 +25,7 @@ export default async function Header() {
   return (
     <header className="flex flex-wrap sm:justify-start sm:flex-nowrap w-full bg-outer-space-600 text-sm py-3">
       <Nav
+        siteName={process.env.SITE_NAME || ''}
         isAuthenticated={isAuthenticated}
         menu={filteredMenu}
         displayName={me?.displayName}
