@@ -17,6 +17,7 @@ const menuHref = {
   signUp: '/signUp',
   event: '/event',
   createEvent: '/event/create',
+  updateEvent: '/event/update',
 }
 
 const menu: MenuItem[] = [
@@ -47,6 +48,12 @@ const menu: MenuItem[] = [
   {
     label: 'Create Event',
     href: menuHref.createEvent,
+    guard: AuthGuard.AuthenticatedRequired,
+    hideFromMenu: true,
+  },
+  {
+    label: 'Update Event',
+    href: menuHref.updateEvent,
     guard: AuthGuard.AuthenticatedRequired,
     hideFromMenu: true,
   }

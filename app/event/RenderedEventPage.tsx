@@ -4,6 +4,7 @@ import { ParticipateEventButton } from '@/components/ParticipateEventButton'
 import { EventParticipant } from '@/lib/firebase/definitions/event'
 import { menuHref } from '@/lib/menu'
 import classNames from 'classnames'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
@@ -14,9 +15,10 @@ interface RenderedEventPageProps {
   time: string
   slots: number
   participants: EventParticipant[]
-  showJoinButton: boolean
   selfParticipant: EventParticipant
+  showJoinButton: boolean
   showCancelButton: boolean
+  showUpdateButton: boolean
 }
 
 export default function RenderedEventPage(props: RenderedEventPageProps) {
@@ -24,6 +26,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
   const [participants, setParticipants] = useState(props.participants)
   const [pending, setPending] = useState(false)
   const [kickMode, setKickMode] = useState(false)
+  const [updateMode, setUpdateMode] = useState(false)
 
   const handleParticipateButton = async () => {
     if (joined) {
@@ -121,6 +124,10 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
     } finally {
       setPending(false)
     }
+  }
+
+  const handleUpdateEventToggle = () => {
+    setUpdateMode(!updateMode)
   }
 
   const kickToggleText = kickMode ? 'Cancel' : 'Kick Participant'
@@ -240,6 +247,22 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
                 </div>
               )}
             </div>
+
+            {/* {props.showUpdateButton && ( */}
+            {true && (
+              <div>
+                <Link
+                  href={`${menuHref.updateEvent}?e=${props.eventId}`}
+                  type="button"
+                  className={classNames(
+                    'w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border text-secondary-700 focus:outline-none disabled:opacity-50 disabled:pointer-events-none bg-white hover:text-white focus:text-white hover:bg-secondary-700 focus:bg-secondary-700'
+                  )}
+                  onClick={handleUpdateEventToggle}
+                >
+                  Update Event
+                </Link>
+              </div>
+            )}
 
             {props.showCancelButton && (
               <div>
