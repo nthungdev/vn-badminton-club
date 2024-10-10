@@ -9,6 +9,7 @@ interface NavProps {
   isAuthenticated: boolean
   displayName?: string
   email?: string
+  role?: string
 }
 
 export default function Nav(props: NavProps) {
@@ -54,8 +55,9 @@ export default function Nav(props: NavProps) {
 
             {props.email && (
               <div className="hidden group-hover:block absolute top-full right-0">
-                <div className="mt-1 bg-white px-3 py-2 text-gray-800 rounded-md shadow-md">
-                  {props.email}
+                <div className="mt-1 bg-primary-100 px-3 py-2 text-gray-800 rounded-md shadow-md">
+                  <div className='capitalize text-right font-bold text-secondary'>{props.role}</div>
+                  <div>{props.email}</div>
                 </div>
               </div>
             )}
