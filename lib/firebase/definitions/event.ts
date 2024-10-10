@@ -32,6 +32,13 @@ export interface CreateEvent {
   byMod: boolean
 }
 
+export interface UpdateEvent {
+  title: string
+  startTimestamp: Date
+  endTimestamp: Date
+  slots: number
+}
+
 export type EventParticipant = {
   uid: string
   displayName: string

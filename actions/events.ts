@@ -22,7 +22,7 @@ import {
 } from '@/lib/firebase/firestore'
 import { menuHref } from '@/lib/menu'
 import { Role } from '@/lib/firebase/definitions'
-import { CreateEvent } from '@/lib/firebase/definitions/event'
+import { CreateEvent, UpdateEvent } from '@/lib/firebase/definitions/event'
 import { isRedirectError } from 'next/dist/client/components/redirect'
 
 dayjs.extend(utc)
@@ -138,8 +138,6 @@ async function updateEvent(
       throw new Error('User not found')
     }
 
-    const byMod = me.customClaims?.role === Role.Mod
-
     const [startHour, startMinute] = validatedFields.data.startTime.split(':')
     const eventStart = dayjs(validatedFields.data.date, 'YYYY-MM-DD')
       .startOf('date')
@@ -156,13 +154,11 @@ async function updateEvent(
       .utc()
     const endTimestamp = eventEnd.toDate()
 
-    const event: CreateEvent = {
+    const event: UpdateEvent = {
       title: validatedFields.data.title,
       startTimestamp,
       endTimestamp,
       slots: validatedFields.data.slots,
-      createdBy: me.uid,
-      byMod,
     }
 
     await _updateEvent(validatedFields.data.id, event)
