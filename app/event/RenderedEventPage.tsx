@@ -133,6 +133,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
   const kickToggleText = kickMode ? 'Cancel' : 'Kick Participant'
   const joined = participants.some((p) => p.uid === props.selfParticipant.uid)
   const showKickButton =
+    props.showUpdateButton &&
     participants.length > 0 &&
     !(
       participants.length === 1 &&
@@ -248,8 +249,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
               )}
             </div>
 
-            {/* {props.showUpdateButton && ( */}
-            {true && (
+            {props.showUpdateButton && (
               <div>
                 <Link
                   href={`${menuHref.updateEvent}?e=${props.eventId}`}
