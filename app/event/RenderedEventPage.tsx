@@ -2,7 +2,9 @@
 
 import { ParticipateEventButton } from '@/components/ParticipateEventButton'
 import { EventParticipant } from '@/lib/firebase/definitions/event'
+import { menuHref } from '@/lib/menu'
 import classNames from 'classnames'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 interface RenderedEventPageProps {
@@ -14,14 +16,16 @@ interface RenderedEventPageProps {
   participants: EventParticipant[]
   showJoinButton: boolean
   selfParticipant: EventParticipant
+  showCancelButton: boolean
 }
 
 export default function RenderedEventPage(props: RenderedEventPageProps) {
+  const router = useRouter()
   const [participants, setParticipants] = useState(props.participants)
   const [pending, setPending] = useState(false)
   const [kickMode, setKickMode] = useState(false)
 
-  const handleClick = async () => {
+  const handleParticipateButton = async () => {
     if (joined) {
       const confirmed = window.confirm(
         'Are you sure you want to leave this event?'
@@ -93,6 +97,32 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
     }
   }
 
+  const handleCancelEvent = async () => {
+    const confirmed = window.confirm(
+      'Are you sure you want to cancel this event?'
+    )
+    if (!confirmed) {
+      return
+    }
+
+    try {
+      setPending(true)
+      await fetch('/api/event', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ eventId: props.eventId }),
+      })
+      router.replace(menuHref.home)
+    } catch (error) {
+      console.error('Error canceling event:', error)
+      window.alert('Error canceling event')
+    } finally {
+      setPending(false)
+    }
+  }
+
   const kickToggleText = kickMode ? 'Cancel' : 'Kick Participant'
   const joined = participants.some((p) => p.uid === props.selfParticipant.uid)
   const showKickButton =
@@ -101,6 +131,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
       participants.length === 1 &&
       participants.some((p) => p.uid === props.selfParticipant.uid)
     )
+  // const showCancelButton = props.selfParticipant.uid === props.
 
   return (
     <div className="h-full flex flex-col">
@@ -209,6 +240,21 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
                 </div>
               )}
             </div>
+
+            {props.showCancelButton && (
+              <div>
+                <button
+                  type="button"
+                  className={classNames(
+                    'w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent text-white focus:outline-none  disabled:opacity-50 disabled:pointer-events-none bg-red-600 hover:bg-red-700 focus:bg-red-700'
+                  )}
+                  disabled={pending}
+                  onClick={() => handleCancelEvent()}
+                >
+                  Cancel Event
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -218,7 +264,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
           <ParticipateEventButton
             joined={joined}
             disabled={pending}
-            onClick={handleClick}
+            onClick={handleParticipateButton}
           />
         </div>
       )}

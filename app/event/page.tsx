@@ -41,6 +41,7 @@ export default async function Page({
   }
 
   const isPastEvent = dayjs().isAfter(dayjs(event.startTimestamp))
+  const isOrganizer = me.uid === event.organizer.uid
 
   const selfParticipant = {
     uid: me.uid,
@@ -54,6 +55,7 @@ export default async function Page({
       participants={event.participants}
       organizerDisplayName={event.organizer.displayName}
       showJoinButton={!isPastEvent}
+      showCancelButton={isOrganizer}
       slots={event.slots}
       time={formattedTime}
       title={event.title}
