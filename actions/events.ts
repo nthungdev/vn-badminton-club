@@ -136,28 +136,32 @@ async function updateEvent(
       throw new Error('User not found')
     }
 
-    const [startYear, startMonth, startDay] =
+    const [startYear, startMonth, startDate] =
       validatedFields.data.date.split('-')
     const [startHour, startMinute] = validatedFields.data.startTime.split(':')
     const eventStart = dayjs()
       .utc()
       .utcOffset(-validatedFields.data.timezoneOffset)
       .set('year', parseInt(startYear))
-      .set('month', parseInt(startMonth))
-      .set('day', parseInt(startDay))
+      .set('month', parseInt(startMonth) - 1)
+      .set('date', parseInt(startDate))
       .set('hour', parseInt(startHour))
       .set('minute', parseInt(startMinute))
       .set('second', 0)
     const startTimestamp = eventStart.toDate()
 
-    const [endYear, endMonth, endDay] = validatedFields.data.date.split('-')
+    console.log({
+      startYear, startMonth, startDate, startHour, startMinute
+    })
+
+    const [endYear, endMonth, endDate] = validatedFields.data.date.split('-')
     const [endHour, endMinute] = validatedFields.data.endTime.split(':')
     const eventEnd = dayjs()
       .utc()
       .utcOffset(-validatedFields.data.timezoneOffset)
       .set('year', parseInt(endYear))
-      .set('month', parseInt(endMonth))
-      .set('day', parseInt(endDay))
+      .set('month', parseInt(endMonth) - 1)
+      .set('date', parseInt(endDate))
       .set('hour', parseInt(endHour))
       .set('minute', parseInt(endMinute))
       .set('second', 0)
