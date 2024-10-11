@@ -12,7 +12,7 @@ export default function SignUpForm() {
   const { pending } = useFormStatus();
 
   return (
-    <form className="w-full max-w-sm space-y-3" action={action}>
+    <form className="w-full space-y-3" action={action}>
       <div className="relative">
         <input
           type="text"
