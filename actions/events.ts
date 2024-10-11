@@ -145,10 +145,9 @@ async function updateEvent(
       .set('year', parseInt(startYear))
       .set('month', parseInt(startMonth))
       .set('day', parseInt(startDay))
-      .startOf('date')
       .set('hour', parseInt(startHour))
       .set('minute', parseInt(startMinute))
-      // .subtract(validatedFields.data.timezoneOffset, 'minute')
+      .set('second', 0)
     const startTimestamp = eventStart.toDate()
 
     const [endYear, endMonth, endDay] = validatedFields.data.date.split('-')
@@ -159,10 +158,9 @@ async function updateEvent(
       .set('year', parseInt(endYear))
       .set('month', parseInt(endMonth))
       .set('day', parseInt(endDay))
-      .startOf('date')
       .set('hour', parseInt(endHour))
       .set('minute', parseInt(endMinute))
-      // .subtract(validatedFields.data.timezoneOffset, 'minute')
+      .set('second', 0)
     const endTimestamp = eventEnd.toDate()
 
     console.log({
