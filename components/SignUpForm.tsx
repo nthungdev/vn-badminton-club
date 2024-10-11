@@ -9,7 +9,6 @@ const INPUT_NAME_ID = 'sign-up-input-name'
 
 export default function SignUpForm() {
   const [state, action] = useFormState(signUp, undefined)
-  const { pending } = useFormStatus();
 
   return (
     <form className="w-full space-y-3" action={action}>
@@ -108,7 +107,7 @@ export default function SignUpForm() {
         </label>
       </div>
       {state?.inputErrors?.password && (
-        <div className='text-red-600 px-2'>
+        <div className="text-red-600 px-2">
           <p>Password must:</p>
           <ul>
             {state.inputErrors.password.map((error) => (
@@ -118,14 +117,24 @@ export default function SignUpForm() {
         </div>
       )}
 
-      <button
-        type="submit"
-        className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-primary text-white hover:bg-primary-700 focus:outline-none focus:bg-primary-700 disabled:opacity-50 disabled:pointer-events-none"
-        disabled={pending}
-      >
-        Sign Up
-      </button>
-      {state?.signUpError && <p className='text-red-600'>{state.signUpError}</p>}
+      <SubmitButton />
+      {state?.signUpError && (
+        <p className="text-red-600">{state.signUpError}</p>
+      )}
     </form>
+  )
+}
+
+function SubmitButton() {
+  const { pending } = useFormStatus()
+
+  return (
+    <button
+      type="submit"
+      className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-primary text-white hover:bg-primary-700 focus:outline-none focus:bg-primary-700 disabled:opacity-50 disabled:pointer-events-none"
+      disabled={pending}
+    >
+      Sign Up
+    </button>
   )
 }

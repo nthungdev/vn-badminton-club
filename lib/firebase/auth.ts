@@ -1,5 +1,7 @@
+import { FirebaseError } from 'firebase/app'
 import { auth } from './clientApp'
-import { signInWithEmailAndPassword } from 'firebase/auth'
+import { AuthErrorCodes, signInWithEmailAndPassword } from 'firebase/auth'
+import { createAuthError } from './error'
 
 async function signInWithEmailPassword(email: string, password: string) {
   try {
@@ -11,7 +13,12 @@ async function signInWithEmailPassword(email: string, password: string) {
     const idToken = await userCredential.user.getIdToken()
     return idToken
   } catch (error) {
-    throw error
+    if (error instanceof FirebaseError) {
+      if (error.code === AuthErrorCodes.INVALID_LOGIN_CREDENTIALS) {
+        throw createAuthError('AUTH_INVALID_CREDENTIALS')
+      }
+    }
+    throw new Error('Unknown Error')
   }
 }
 

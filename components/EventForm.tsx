@@ -6,26 +6,31 @@ import TimeInput from './TimeInput'
 import { createEvent, updateEvent } from '@/actions/events'
 import { CreatedEvent } from '@/lib/firebase/definitions/event'
 import dayjs from 'dayjs'
+import LoadingSpinner from './LoadingSpinner'
 
 interface EventFormProps {
-  event: CreatedEvent
+  /** if undefined, this form is used for creating event */
+  event?: CreatedEvent
 }
 
 export default function EventForm(props: EventFormProps) {
-  const event = props.event || {}
   const isUpdate = !!props.event
   const [state, action] = useFormState(
     isUpdate ? updateEvent : createEvent,
-    // isUpdate ? createEvent : createEvent,
     undefined
   )
-  const { pending } = useFormStatus()
 
   const formHeading = isUpdate ? 'Update Event' : 'Create Event'
 
-  const defaultDate = dayjs(event.startTimestamp).format('YYYY-MM-DD')
-  const defaultStartTime = dayjs(event.startTimestamp).format('HH:mm')
-  const defaultEndTime = dayjs(event.endTimestamp).format('HH:mm')
+  const defaultDate = props.event
+    ? dayjs(props.event.startTimestamp).format('YYYY-MM-DD')
+    : ''
+  const defaultStartTime = props.event
+    ? dayjs(props.event.startTimestamp).format('HH:mm')
+    : ''
+  const defaultEndTime = props.event
+    ? dayjs(props.event.endTimestamp).format('HH:mm')
+    : ''
 
   const submitButtonText = isUpdate ? 'Update' : 'Create'
 
@@ -34,8 +39,9 @@ export default function EventForm(props: EventFormProps) {
       <h1 className="text-center text-4xl">{formHeading}</h1>
       <form className="space-y-6" action={action}>
         <div className="space-y-4">
-          <div className='hidden'>
-            <input type="text" name='id' defaultValue={event.id} />
+          <div className="hidden">
+            <input type="text" name="id" defaultValue={props.event?.id} />
+            <input type="text" name="timezoneOffset" defaultValue={(new Date()).getTimezoneOffset()} />
           </div>
 
           <div>
@@ -51,9 +57,8 @@ export default function EventForm(props: EventFormProps) {
               name="title"
               className="bg-gray-100 border-none text-gray-900 placeholder-text-transparent text-sm rounded-lg  focus:ring-2 focus:ring-primary focus:border-primary disabled:opacity-50 disabled:pointer-events-none block w-full p-4"
               placeholder="Badminton Event"
-              defaultValue={event.title}
+              defaultValue={props.event?.title}
             />
-            {/* <p className="mt-2 text-sm text-green-600 dark:text-green-500"><span className="font-medium">Well done!</span> Some success message.</p> */}
             {state?.inputErrors?.title && (
               <p className="text-red-600">{state.inputErrors.title}</p>
             )}
@@ -95,7 +100,7 @@ export default function EventForm(props: EventFormProps) {
               className="bg-gray-100 border-none text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-primary block w-full p-4"
               placeholder="Number of slots"
               min="2"
-              defaultValue={event.slots}
+              defaultValue={props.event?.slots}
             />
             {state?.inputErrors?.slots && (
               <p className="text-red-600">{state.inputErrors.slots}</p>
@@ -103,17 +108,29 @@ export default function EventForm(props: EventFormProps) {
           </div>
         </div>
 
-        <button
-          type="submit"
-          className="mt-3 w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-primary text-white hover:bg-primary-700 focus:outline-none focus:bg-primary-700 disabled:opacity-50 disabled:pointer-events-none"
-          disabled={pending}
-        >
-          {submitButtonText}
-        </button>
+        <SubmitButton label={submitButtonText} />
         {state?.submitError && (
           <p className="text-red-600">{state.submitError}</p>
         )}
       </form>
     </div>
+  )
+}
+
+interface SubmitButtonProps {
+  label: string
+}
+
+function SubmitButton(props: SubmitButtonProps) {
+  const { pending } = useFormStatus()
+
+  return (
+    <button
+      type="submit"
+      className="mt-3 w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-primary text-white hover:bg-primary-700 focus:outline-none focus:bg-primary-700 disabled:opacity-50 disabled:pointer-events-none"
+      disabled={pending}
+    >
+      {pending ? <LoadingSpinner svgClassName="w-4 h-4" /> : props.label}
+    </button>
   )
 }
