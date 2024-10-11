@@ -7,8 +7,8 @@ export default function PageSignUp() {
 
   return (
     <BasePage>
-      <div className="flex flex-col items-center space-y-4">
-        <h1 className="text-4xl">Sign up</h1>
+      <div className="max-w-md mx-auto px-4 space-y-10 text-center">
+        <h1 className="text-4xl">Sign In</h1>
         <SignUpForm />
       </div>
     </BasePage>
