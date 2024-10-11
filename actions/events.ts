@@ -139,28 +139,30 @@ async function updateEvent(
     const [startYear, startMonth, startDay] =
       validatedFields.data.date.split('-')
     const [startHour, startMinute] = validatedFields.data.startTime.split(':')
-    const eventStart = dayjs
-      .utc()
+    const eventStart = dayjs()
+      // .utc()
+      .utcOffset(validatedFields.data.timezoneOffset)
       .set('year', parseInt(startYear))
       .set('month', parseInt(startMonth))
       .set('day', parseInt(startDay))
       .startOf('date')
       .set('hour', parseInt(startHour))
       .set('minute', parseInt(startMinute))
-      .subtract(validatedFields.data.timezoneOffset, 'minute')
+      // .subtract(validatedFields.data.timezoneOffset, 'minute')
     const startTimestamp = eventStart.toDate()
 
     const [endYear, endMonth, endDay] = validatedFields.data.date.split('-')
     const [endHour, endMinute] = validatedFields.data.endTime.split(':')
-    const eventEnd = dayjs
-      .utc()
+    const eventEnd = dayjs()
+      // .utc()
+      .utcOffset(validatedFields.data.timezoneOffset)
       .set('year', parseInt(endYear))
       .set('month', parseInt(endMonth))
       .set('day', parseInt(endDay))
       .startOf('date')
       .set('hour', parseInt(endHour))
       .set('minute', parseInt(endMinute))
-      .subtract(validatedFields.data.timezoneOffset, 'minute')
+      // .subtract(validatedFields.data.timezoneOffset, 'minute')
     const endTimestamp = eventEnd.toDate()
 
     const event: UpdateEvent = {
