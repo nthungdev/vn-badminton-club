@@ -1,19 +1,19 @@
 import classNames from 'classnames'
 
 export default function LoadingSpinner({
+  sizeClasses,
   className,
-  svgClassName,
 }: {
+  sizeClasses: string
   className?: string
-  svgClassName?: string
 }) {
   return (
     <div role="status" className={classNames(className)}>
       <svg
         aria-hidden="true"
         className={classNames(
-          'w-8 h-8 text-gray-200 animate-spin fill-primary',
-          svgClassName
+          'text-gray-200 animate-spin fill-primary',
+          sizeClasses
         )}
         viewBox="0 0 100 101"
         fill="none"
