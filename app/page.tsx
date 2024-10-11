@@ -43,7 +43,7 @@ export default async function PageHome() {
           )}
         </div>
 
-        <div className="max-w-md mx-auto px-4">
+        <div className="max-w-md mx-auto px-4 overflow-hidden">
           <EventList />
         </div>
       </div>
