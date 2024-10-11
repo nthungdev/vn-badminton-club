@@ -1,29 +1,24 @@
 import { createErrorResponse } from '@/lib/apiResponse'
-import { leaveEvent } from '@/lib/firebase/firestore'
+import { joinEvent } from '@/lib/firebase/firestore'
 import { verifySession } from '@/lib/session'
 import { NextRequest } from 'next/server'
 
-interface EventLeaveRequest {
-  eventId?: string
-}
-
-export async function PATCH(request: NextRequest) {
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   const { decodedIdToken } = await verifySession()
   if (!decodedIdToken) {
     return createErrorResponse('Unauthorized', 401)
   }
 
-  const data: EventLeaveRequest = await request.json()
-
-  if (!data.eventId) {
-    return createErrorResponse('Missing eventId', 400)
-  }
+  const { id } = params
 
   try {
-    await leaveEvent(decodedIdToken.uid, data.eventId)
+    await joinEvent(decodedIdToken.uid, id)
     return Response.json({ success: true })
   } catch (error) {
-    console.error('Error leaving event:', error)
+    console.error('Error joining event:', error)
     return createErrorResponse(error, 500)
   }
 }

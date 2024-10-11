@@ -6,10 +6,12 @@ import { NextRequest } from 'next/server'
 
 interface EventParticipantKickRequest {
   uid?: string
-  eventId?: string
 }
 
-export async function PATCH(request: NextRequest) {
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   const { decodedIdToken } = await verifySession()
   if (!decodedIdToken) {
     return createErrorResponse('Unauthorized', 401)
@@ -17,12 +19,14 @@ export async function PATCH(request: NextRequest) {
 
   const data: EventParticipantKickRequest = await request.json()
 
-  if (!data.eventId || !data.uid) {
-    return createErrorResponse('Missing eventId or uid', 400)
+  const { id: eventId } = params
+
+  if (!data.uid) {
+    return createErrorResponse('Missing user uid', 400)
   }
 
   try {
-    const event = await getEventById(data.eventId)
+    const event = await getEventById(eventId)
     if (!event) {
       return createErrorResponse('Event not found', 404)
     }
@@ -36,7 +40,7 @@ export async function PATCH(request: NextRequest) {
       return createErrorResponse('Unauthorized', 401)
     }
 
-    await leaveEvent(data.uid, data.eventId)
+    await leaveEvent(data.uid, eventId)
 
     return Response.json({ success: true })
   } catch (error) {

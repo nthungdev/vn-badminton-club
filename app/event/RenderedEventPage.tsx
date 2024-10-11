@@ -13,8 +13,8 @@ interface RenderedEventPageProps {
   eventId: string
   title: string
   organizerDisplayName: string
-  startTimestamp: Date,
-  endTimestamp: Date,
+  startTimestamp: Date
+  endTimestamp: Date
   slots: number
   participants: EventParticipant[]
   selfParticipant: EventParticipant
@@ -43,15 +43,16 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
     }
 
     try {
-      const url = joined ? '/api/event/leave' : '/api/event/join'
+      const url = joined
+        ? `/api/events/${props.eventId}/leave`
+        : `/api/events/${props.eventId}/join`
       setPending(true)
       await fetch(url, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ eventId: props.eventId }),
-      })
+      }).then((r) => r.json())
 
       setParticipants(
         joined
@@ -71,14 +72,14 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
 
   const handleKick = async (uid: string) => {
     try {
-      const url = '/api/event/kick'
+      const url = `/api/events/${props.eventId}/kick`
       setPending(true)
       const { error } = await fetch(url, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ eventId: props.eventId, uid }),
+        body: JSON.stringify({ uid }),
       }).then((res) => res.json())
 
       if (error) {
@@ -114,13 +115,15 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
 
     try {
       setPending(true)
-      await fetch('/api/event', {
+      const { success } = await fetch(`/api/events/${props.eventId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ eventId: props.eventId }),
-      })
+      }).then((r) => r.json())
+      if (!success) {
+        throw new Error('Failed to cancel event')
+      }
       router.replace(menuHref.home)
     } catch (error) {
       console.error('Error canceling event:', error)
@@ -227,7 +230,10 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
                   {participants.length > 0 && (
                     <ul className="space-y-1 flex flex-col justify-center items-center">
                       {participants.map((participant, index) => (
-                        <li key={index} className="text-center inline-flex px-3 py-1">
+                        <li
+                          key={index}
+                          className="text-center inline-flex px-3 py-1"
+                        >
                           {participant.displayName}
                         </li>
                       ))}
