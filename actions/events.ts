@@ -34,6 +34,9 @@ async function createEvent(
 ) {
   // Validate form fields
   const validatedFields = CreateEventFormSchema.safeParse({
+    timezoneOffset: formData.get('timezoneOffset')
+      ? parseInt(formData.get('timezoneOffset') as string)
+      : null,
     title: formData.get('title'),
     startTime: formData.get('startTime') || null,
     endTime: formData.get('endTime') || null,
@@ -65,7 +68,8 @@ async function createEvent(
       .startOf('date')
       .set('hour', parseInt(startHour))
       .set('minute', parseInt(startMinute))
-      .utc()
+      // .utc()
+      .utcOffset(validatedFields.data.timezoneOffset)
     const startTimestamp = eventStart.toDate()
 
     const [endHour, endMinute] = validatedFields.data.endTime.split(':')
@@ -105,6 +109,9 @@ async function updateEvent(
   // Validate form fields
   const validatedFields = UpdateEventFormSchema.safeParse({
     id: formData.get('id'),
+    timezoneOffset: formData.get('timezoneOffset')
+      ? parseInt(formData.get('timezoneOffset') as string)
+      : null,
     title: formData.get('title'),
     startTime: formData.get('startTime') || null,
     endTime: formData.get('endTime') || null,
@@ -134,7 +141,7 @@ async function updateEvent(
       .startOf('date')
       .set('hour', parseInt(startHour))
       .set('minute', parseInt(startMinute))
-      .utc()
+      .utcOffset(validatedFields.data.timezoneOffset)
     const startTimestamp = eventStart.toDate()
 
     const [endHour, endMinute] = validatedFields.data.endTime.split(':')
@@ -142,7 +149,7 @@ async function updateEvent(
       .startOf('date')
       .set('hour', parseInt(endHour))
       .set('minute', parseInt(endMinute))
-      .utc()
+      .utcOffset(validatedFields.data.timezoneOffset)
     const endTimestamp = eventEnd.toDate()
 
     const event: UpdateEvent = {
