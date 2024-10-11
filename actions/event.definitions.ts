@@ -30,10 +30,12 @@ export const CreateEventFormSchema = z.object({
     })
     .int()
     .min(2, { message: 'Minimum 2 slots required.' }),
-})
+}).and(
+  z.object({ timezoneOffset: z.number().int() })
+)
 
 export const UpdateEventFormSchema = CreateEventFormSchema.and(
-  z.object({ id: z.string() })
+  z.object({ id: z.string(), timezoneOffset: z.number().int() })
 )
 
 export type CreateEventFormState =

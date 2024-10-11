@@ -74,6 +74,9 @@ async function signIn(prevState: SignInFormState, formData: FormData) {
     )
     await saveSession(idToken)
   } catch (error) {
+    if (error instanceof Error) {
+      return { signInError: error.message }
+    }
     console.log({ error })
     return { signInError: INTERNAL_ERROR_MESSAGE }
   }
