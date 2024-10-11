@@ -73,8 +73,8 @@ export default function EventList() {
       </ul>
 
       {loading && (
-        <div className="flex items-center justify-center">
-          <LoadingSpinner sizeClasses="size-4" />
+        <div className="flex items-center justify-center h-40">
+          <LoadingSpinner sizeClasses="size-8" />
         </div>
       )}
 
