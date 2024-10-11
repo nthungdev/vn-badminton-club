@@ -146,7 +146,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="p-4 space-y-4 flex-1 overflow-scroll">
+      <div className="p-4 space-y-4 flex-1 overflow-y-auto">
         <div className="max-w-md mx-auto space-y-10">
           <div>
             <div className="text-gray-600 text-center text-sm">Event</div>
