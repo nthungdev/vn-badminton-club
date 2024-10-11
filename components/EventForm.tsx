@@ -130,7 +130,7 @@ function SubmitButton(props: SubmitButtonProps) {
       className="mt-3 w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-primary text-white hover:bg-primary-700 focus:outline-none focus:bg-primary-700 disabled:opacity-50 disabled:pointer-events-none"
       disabled={pending}
     >
-      {pending ? <LoadingSpinner svgClassName="w-4 h-4" /> : props.label}
+      {pending ? <LoadingSpinner sizeClasses="size-4" /> : props.label}
     </button>
   )
 }
