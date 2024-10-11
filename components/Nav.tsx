@@ -1,7 +1,8 @@
 'use client'
 
 import { signOut } from '@/actions/auth'
-import { MenuItem } from '@/lib/menu'
+import { menuHref, MenuItem } from '@/lib/menu'
+import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 interface NavProps {
@@ -22,13 +23,13 @@ export default function Nav(props: NavProps) {
     <nav className="max-w-[85rem] w-full mx-auto px-4 sm:flex sm:items-center sm:justify-between">
       <div>
         {props.siteName && (
-          <a
+          <Link
             className="flex-none font-semibold text-xl text-white focus:outline-none focus:opacity-80"
-            href="#"
+            href={menuHref.home}
             aria-label="Brand"
           >
             {props.siteName}
-          </a>
+          </Link>
         )}
       </div>
 
