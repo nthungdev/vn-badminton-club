@@ -8,12 +8,13 @@ export type NodeCacheName = 'eventsCache'
 
 export enum EventsCacheKey {
   NewEvents,
-  PastEvents
+  PastEvents,
 }
 
 const createNodeCache = (name: NodeCacheName) => {
-  console.log('Creating new cache')
-  return new NodeCache()
+  return new NodeCache({
+    stdTTL: 60 * 60 * 24, // 24 hours
+  })
 }
 
 export function getNodeCache(name: NodeCacheName) {
