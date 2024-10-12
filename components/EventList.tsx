@@ -1,16 +1,17 @@
 'use client'
 
-import Link from 'next/link'
-import { getNewEvents, getPastEvents } from '@/actions/events'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone'
 import dayjs from 'dayjs'
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { HomeViewEvent } from '@/lib/firebase/definitions/event'
-import LoadingSpinner from './LoadingSpinner'
 import classNames from 'classnames'
+import { HomeViewEvent } from '@/lib/firebase/definitions/event'
+import LoadingSpinner from '@/components/LoadingSpinner'
 import { eventTime, nowToTimestamp } from '@/lib/format'
+import AppError from '@/lib/AppError'
+import { getNewEvents, getPastEvents } from '@/fetch/events'
 
 dayjs.extend(relativeTime)
 dayjs.extend(utc)
@@ -27,7 +28,13 @@ export default function EventList() {
   useEffect(() => {
     const fetchUpcomingEvents = async () => {
       setLoading(true)
-      await getNewEvents().then(setUpcomingEvents)
+      try {
+        await getNewEvents().then(setUpcomingEvents)
+      } catch (error) {
+        if (error instanceof AppError) {
+          // TODO show error
+        }
+      }
       setLoading(false)
     }
 
@@ -39,7 +46,13 @@ export default function EventList() {
 
     if (tab === 'past' && pastEvents.length === 0) {
       setLoading(true)
-      await getPastEvents().then(setPastEvents)
+      try {
+        await getPastEvents().then(setPastEvents)
+      } catch (error) {
+        if (error instanceof AppError) {
+          // TODO show error
+        }
+      }
       setLoading(false)
     }
   }

@@ -12,14 +12,21 @@ import {
 import { COLLECTION_EVENTS } from './firestore.constant'
 import { firestore } from './serverApp'
 import { getUserById } from '../authUtils'
+import { EventsCacheKey, getNodeCache } from '../cache'
 
-async function getNewEvents() {
+const cache = getNodeCache('eventsCache')
+
+async function getNewEvents({ limit }: { limit: number }) {
   try {
+    if (cache.has(EventsCacheKey.NewEvents)) {
+      return cache.get(EventsCacheKey.NewEvents) as HomeViewEvent[]
+    }
+
     const snapshot = await firestore
       .collection(COLLECTION_EVENTS)
       .where('startTimestamp', '>=', new Date())
       .orderBy('startTimestamp')
-      .limit(10)
+      .limit(limit)
       .get()
 
     const events = snapshot.docs.map((doc) => {
@@ -34,6 +41,7 @@ async function getNewEvents() {
 
       return event
     })
+    cache.set(EventsCacheKey.NewEvents, events)
     return events
   } catch (error) {
     console.error('Error getting events:', error)
@@ -41,28 +49,33 @@ async function getNewEvents() {
   }
 }
 
-async function getPastEvents() {
+async function getPastEvents({ limit }: { limit: number }) {
   try {
+    if (cache.has(EventsCacheKey.PastEvents)) {
+      return cache.get(EventsCacheKey.PastEvents) as HomeViewEvent[]
+    }
+
     const snapshot = await firestore
       .collection(COLLECTION_EVENTS)
       .where('startTimestamp', '<', new Date())
-      .orderBy('startTimestamp')
-      .limit(10)
+      .orderBy('startTimestamp', 'desc')
+      .limit(limit)
       .get()
 
-      const events = snapshot.docs.map((doc) => {
-        const data = doc.data() as FirestoreEvent
+    const events = snapshot.docs.map((doc) => {
+      const data = doc.data() as FirestoreEvent
 
-        const event: HomeViewEvent = {
-          ...data,
-          id: doc.id,
-          startTimestamp: data.startTimestamp.toDate(),
-          endTimestamp: data.endTimestamp.toDate(),
-        }
+      const event: HomeViewEvent = {
+        ...data,
+        id: doc.id,
+        startTimestamp: data.startTimestamp.toDate(),
+        endTimestamp: data.endTimestamp.toDate(),
+      }
 
-        return event
-      })
-      return events
+      return event
+    })
+    cache.set(EventsCacheKey.PastEvents, events)
+    return events
   } catch (error) {
     console.error('Error getting events:', error)
     throw new Error('Error getting events')
@@ -77,7 +90,6 @@ async function getEventById(eventId: string) {
     }
     const data = doc.data() as FirestoreEvent
 
-    // const participantsIds = data.participants as string[]
     const participants: EventParticipant[] = []
     for (const uid of data.participantIds) {
       const participant = await getUserById(uid)
@@ -114,6 +126,7 @@ async function createEvent(event: CreateEvent) {
     const doc = await firestore
       .collection(COLLECTION_EVENTS)
       .add({ ...event, participantIds: [] })
+    cache.del(EventsCacheKey.NewEvents)
     return doc.id
   } catch (error) {
     console.error('Error creating event:', error)
@@ -127,6 +140,7 @@ async function updateEvent(eventId: string, event: UpdateEvent) {
       .collection(COLLECTION_EVENTS)
       .doc(eventId)
       .update({ ...event })
+    cache.del(EventsCacheKey.NewEvents)
   } catch (error) {
     console.error('Error updating event:', error)
     throw new Error('Error updating event')
@@ -136,6 +150,8 @@ async function updateEvent(eventId: string, event: UpdateEvent) {
 async function deleteEvent(eventId: string) {
   try {
     await firestore.collection(COLLECTION_EVENTS).doc(eventId).delete()
+    cache.del(EventsCacheKey.NewEvents)
+    cache.del(EventsCacheKey.PastEvents)
   } catch (error) {
     console.error('Error deleting event:', error)
     throw new Error('Error deleting event')
@@ -144,9 +160,13 @@ async function deleteEvent(eventId: string) {
 
 async function joinEvent(uid: string, eventId: string) {
   try {
-    await firestore.collection(COLLECTION_EVENTS).doc(eventId).update({
-      participantIds: FieldValue.arrayUnion(uid),
-    })
+    await firestore
+      .collection(COLLECTION_EVENTS)
+      .doc(eventId)
+      .update({
+        participantIds: FieldValue.arrayUnion(uid),
+      })
+    cache.del(EventsCacheKey.NewEvents)
   } catch (error) {
     console.error('Error joining event:', error)
     throw new Error('Error joining event')
@@ -155,9 +175,13 @@ async function joinEvent(uid: string, eventId: string) {
 
 async function leaveEvent(uid: string, eventId: string) {
   try {
-    const result = await firestore.collection(COLLECTION_EVENTS).doc(eventId).update({
-      participantIds: FieldValue.arrayRemove(uid),
-    })
+    const result = await firestore
+      .collection(COLLECTION_EVENTS)
+      .doc(eventId)
+      .update({
+        participantIds: FieldValue.arrayRemove(uid),
+      })
+    cache.del(EventsCacheKey.NewEvents)
     return result.isEqual
   } catch (error) {
     console.error('Error leaving event:', error)

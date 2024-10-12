@@ -1,6 +1,11 @@
-import dayjs from "dayjs"
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import timezone from 'dayjs/plugin/timezone'
 
-const eventTime = (startDate: Date, endDate: Date) => {
+dayjs.extend(utc)
+dayjs.extend(timezone)
+
+export const eventTime = (startDate: Date, endDate: Date) => {
   const start = dayjs(startDate)
   const end = dayjs(endDate)
   const startEndSameDay = start.format('YYYYMMDD') === end.format('YYYYMMDD')
@@ -17,10 +22,34 @@ const eventTime = (startDate: Date, endDate: Date) => {
   }
 }
 
-const nowToTimestamp = (timestamp: Date) => {
+export const nowToTimestamp = (timestamp: Date) => {
   const now = dayjs().local()
   const eventStart = dayjs(timestamp)
   return now.to(eventStart)
 }
 
-export { eventTime, nowToTimestamp }
+export function fieldsToDayjs(
+  dateString: string,
+  timeString: string,
+  timezoneOffset: number
+) {
+  const offsetHours = timezoneOffset / 60
+  const [year, month, dateOfMonth] = dateString.split('-')
+  const [hour, minute] = timeString.split(':')
+  return dayjs()
+    .utcOffset(-offsetHours)
+    .set('year', parseInt(year))
+    .set('month', parseInt(month) - 1)
+    .set('date', parseInt(dateOfMonth))
+    .set('hour', parseInt(hour))
+    .set('minute', parseInt(minute))
+    .set('second', 0)
+}
+
+export function fieldsToDate(
+  dateString: string,
+  timeString: string,
+  timezoneOffset: number
+) {
+  return fieldsToDayjs(dateString, timeString, timezoneOffset).toDate()
+}
