@@ -1,3 +1,4 @@
+import { fieldsToDate } from '@/lib/format'
 import { z } from 'zod'
 
 export const CreateEventFormSchema = z
@@ -35,9 +36,50 @@ export const CreateEventFormSchema = z
   })
   .refine(
     (data) => {
+      // make sure date is from today onwards
+      const now = new Date().setHours(0, 0, 0, 0)
+      const date = fieldsToDate(
+        data.date,
+        '00:00',
+        data.timezoneOffset
+      ).setSeconds(1)
+      return date > now
+    },
+    {
+      message: 'Date must be in the future.',
+      path: ['date'],
+    }
+  )
+  .refine(
+    (data) => {
+      const now = new Date()
+      const startTimestamp = fieldsToDate(
+        data.date,
+        data.startTime,
+        data.timezoneOffset
+      )
+
+      // skip this refine if startTimestamp is different from today
+      if (
+        now.getFullYear() !== now.getFullYear() ||
+        now.getMonth() !== now.getMonth() ||
+        now.getDate() !== now.getDate()
+      ) {
+        return true
+      }
+
+      // make sure start time is in the future
+      return startTimestamp > now
+    },
+    {
+      message: 'Start time must be in the future.',
+      path: ['startTime'],
+    }
+  )
+  .refine(
+    (data) => {
       const [startHour, startMinute] = data.startTime.split(':').map(Number)
       const [endHour, endMinute] = data.endTime.split(':').map(Number)
-
       // assume same day
       // make sure end time is after start time
       return (

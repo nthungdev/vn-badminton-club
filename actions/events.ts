@@ -22,6 +22,7 @@ import { menuHref } from '@/lib/menu'
 import { Role } from '@/lib/firebase/definitions'
 import { CreateEvent, UpdateEvent } from '@/lib/firebase/definitions/event'
 import { isRedirectError } from 'next/dist/client/components/redirect'
+import { fieldsToDate } from '@/lib/format'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -64,32 +65,16 @@ async function createEvent(
 
     const byMod = me.customClaims?.role === Role.Mod
 
-    const offsetHours = validatedFields.data.timezoneOffset / 60
-
-    const [startYear, startMonth, startDate] =
-      validatedFields.data.date.split('-')
-    const [startHour, startMinute] = validatedFields.data.startTime.split(':')
-    const eventStart = dayjs()
-      .utcOffset(-offsetHours)
-      .set('year', parseInt(startYear))
-      .set('month', parseInt(startMonth) - 1)
-      .set('date', parseInt(startDate))
-      .set('hour', parseInt(startHour))
-      .set('minute', parseInt(startMinute))
-      .set('second', 0)
-    const startTimestamp = eventStart.toDate()
-
-    const [endYear, endMonth, endDate] = validatedFields.data.date.split('-')
-    const [endHour, endMinute] = validatedFields.data.endTime.split(':')
-    const eventEnd = dayjs()
-      .utcOffset(-offsetHours)
-      .set('year', parseInt(endYear))
-      .set('month', parseInt(endMonth) - 1)
-      .set('date', parseInt(endDate))
-      .set('hour', parseInt(endHour))
-      .set('minute', parseInt(endMinute))
-      .set('second', 0)
-    const endTimestamp = eventEnd.toDate()
+    const startTimestamp = fieldsToDate(
+      validatedFields.data.date,
+      validatedFields.data.startTime,
+      validatedFields.data.timezoneOffset
+    )
+    const endTimestamp = fieldsToDate(
+      validatedFields.data.date,
+      validatedFields.data.endTime,
+      validatedFields.data.timezoneOffset
+    )
 
     const event: CreateEvent = {
       title: validatedFields.data.title,
