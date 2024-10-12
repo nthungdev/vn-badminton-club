@@ -39,8 +39,8 @@ export default async function EventPage({
   }
 
   const isPastEvent = dayjs().isAfter(dayjs(event.startTimestamp))
-  const isOrganizer = me.uid === event.organizer.uid
-  const isMod = me.customClaims?.role === Role.Mod
+  const isMeOrganizer = me.uid === event.organizer.uid
+  const isMeMod = me.customClaims?.role === Role.Mod
 
   const selfParticipant = {
     uid: me.uid,
@@ -49,6 +49,7 @@ export default async function EventPage({
 
   return (
     <RenderedEventPage
+      byMod={event.byMod}
       eventId={event.id}
       selfParticipant={selfParticipant}
       participants={event.participants}
@@ -58,8 +59,8 @@ export default async function EventPage({
       endTimestamp={event.endTimestamp}
       title={event.title}
       showJoinButton={!isPastEvent}
-      showCancelButton={isOrganizer || isMod}
-      showUpdateButton={isOrganizer || isMod}
+      showCancelButton={isMeOrganizer || isMeMod}
+      showUpdateButton={isMeOrganizer || isMeMod}
     />
   )
 }
