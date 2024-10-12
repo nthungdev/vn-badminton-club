@@ -5,7 +5,7 @@ import timezone from 'dayjs/plugin/timezone'
 dayjs.extend(utc)
 dayjs.extend(timezone)
 
-const eventTime = (startDate: Date, endDate: Date) => {
+export const eventTime = (startDate: Date, endDate: Date) => {
   const start = dayjs(startDate)
   const end = dayjs(endDate)
   const startEndSameDay = start.format('YYYYMMDD') === end.format('YYYYMMDD')
@@ -22,13 +22,13 @@ const eventTime = (startDate: Date, endDate: Date) => {
   }
 }
 
-const nowToTimestamp = (timestamp: Date) => {
+export const nowToTimestamp = (timestamp: Date) => {
   const now = dayjs().local()
   const eventStart = dayjs(timestamp)
   return now.to(eventStart)
 }
 
-function fieldsToDate(
+export function fieldsToDayjs(
   dateString: string,
   timeString: string,
   timezoneOffset: number
@@ -44,7 +44,12 @@ function fieldsToDate(
     .set('hour', parseInt(hour))
     .set('minute', parseInt(minute))
     .set('second', 0)
-    .toDate()
 }
 
-export { eventTime, nowToTimestamp, fieldsToDate }
+export function fieldsToDate(
+  dateString: string,
+  timeString: string,
+  timezoneOffset: number
+) {
+  return fieldsToDayjs(dateString, timeString, timezoneOffset).toDate()
+}

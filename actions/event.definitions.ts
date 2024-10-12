@@ -1,4 +1,5 @@
-import { fieldsToDate } from '@/lib/format'
+import { fieldsToDate, fieldsToDayjs } from '@/lib/format'
+import dayjs from 'dayjs'
 import { z } from 'zod'
 
 export const CreateEventFormSchema = z
@@ -53,17 +54,21 @@ export const CreateEventFormSchema = z
   .refine(
     (data) => {
       const now = new Date()
+      const nowDayjs = dayjs().utcOffset(-data.timezoneOffset / 60)
       const startTimestamp = fieldsToDate(
         data.date,
         data.startTime,
         data.timezoneOffset
       )
+      const startDayjs = fieldsToDayjs(
+        data.date,
+        data.startTime,
+        data.timezoneOffset
+      )
 
-      // skip this refine if startTimestamp is different from today
+      // skip this refine if date is not today
       if (
-        now.getFullYear() !== now.getFullYear() ||
-        now.getMonth() !== now.getMonth() ||
-        now.getDate() !== now.getDate()
+        startDayjs.format().split('T')[0] !== nowDayjs.format().split('T')[0]
       ) {
         return true
       }
