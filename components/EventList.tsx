@@ -107,7 +107,7 @@ export default function EventList() {
                   {event.title}
                 </span>
                 {event.byMod && (
-                  <span className='self-start p-3'>
+                  <span className="self-start p-3">
                     <svg
                       className="w-6 h-6 text-secondary"
                       aria-hidden="true"
