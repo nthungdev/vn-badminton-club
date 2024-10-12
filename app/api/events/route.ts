@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
         break
       case 'past':
         events = await getPastEvents({ limit })
+        break
       default:
         return createErrorResponse('Invalid filter query parameter', 400)
     }
