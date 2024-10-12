@@ -12,6 +12,7 @@ export enum EventsCacheKey {
 }
 
 const createNodeCache = (name: NodeCacheName) => {
+  console.info(`Creating cache: ${name}`)
   return new NodeCache({
     stdTTL: 60 * 60 * 24, // 24 hours
   })
