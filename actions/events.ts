@@ -47,10 +47,6 @@ async function createEvent(
 
   // If any form fields are invalid, return early
   if (!validatedFields.success) {
-    console.log({
-      fieldErrors: validatedFields.error.flatten().fieldErrors,
-      errors: validatedFields.error,
-    })
     return {
       inputErrors: validatedFields.error.flatten().fieldErrors,
     }
