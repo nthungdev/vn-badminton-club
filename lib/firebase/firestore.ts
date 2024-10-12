@@ -58,7 +58,7 @@ async function getPastEvents({ limit }: { limit: number }) {
     const snapshot = await firestore
       .collection(COLLECTION_EVENTS)
       .where('startTimestamp', '<', new Date())
-      .orderBy('startTimestamp')
+      .orderBy('startTimestamp', 'desc')
       .limit(limit)
       .get()
 
