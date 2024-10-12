@@ -16,8 +16,6 @@ import {
 import {
   createEvent as _createEvent,
   updateEvent as _updateEvent,
-  getNewEvents as _getNewEvents,
-  getPastEvents as _getPastEvents,
   getEventById as _getEventById,
 } from '@/lib/firebase/firestore'
 import { menuHref } from '@/lib/menu'
@@ -196,28 +194,6 @@ async function updateEvent(
   }
 }
 
-async function getNewEvents() {
-  try {
-    const events = await _getNewEvents()
-    return events
-  } catch (error) {
-    // TODO format error
-    console.error('Error getting new events:', error)
-    throw new Error('Error getting new events')
-  }
-}
-
-async function getPastEvents() {
-  try {
-    const events = await _getPastEvents()
-    return events
-  } catch (error) {
-    // TODO format error
-    console.error('Error getting new events:', error)
-    throw new Error('Error getting new events')
-  }
-}
-
 async function getEventById(eventId: string) {
   try {
     const event = await _getEventById(eventId)
@@ -229,4 +205,4 @@ async function getEventById(eventId: string) {
   }
 }
 
-export { createEvent, updateEvent, getNewEvents, getPastEvents, getEventById }
+export { createEvent, updateEvent, getEventById }

@@ -1,3 +1,28 @@
+type ErrorApiResponse = {
+  success: false
+  error: {
+    name: string
+    message: string
+  }
+}
+
+type SuccessApiResponse<T> = {
+  success: true
+  data: T
+}
+
+type ApiResponse<T> = ErrorApiResponse | SuccessApiResponse<T>
+
+function createSuccessResponse(data: object, status: number) {
+  return Response.json(
+    {
+      success: true,
+      data,
+    },
+    { status }
+  )
+}
+
 function createErrorResponse(error: Error | unknown, status: number) {
   let name: string
   let message: string
@@ -14,7 +39,10 @@ function createErrorResponse(error: Error | unknown, status: number) {
   }
 
   return Response.json(
-    { error: { name, message } },
+    {
+      success: false,
+      error: { name, message },
+    },
     { status }
   )
 }
@@ -23,4 +51,5 @@ function createCustomErrorResponse(error: object, status: number) {
   return Response.json({ error }, { status })
 }
 
-export { createErrorResponse, createCustomErrorResponse }
+export { createSuccessResponse, createErrorResponse, createCustomErrorResponse }
+export type { ErrorApiResponse as ErrorResponse, SuccessApiResponse as SuccessResponse, ApiResponse }

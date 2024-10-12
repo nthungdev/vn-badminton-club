@@ -1,8 +1,28 @@
 import { createErrorResponse } from '@/lib/apiResponse'
-import { deleteEvent, getEventById, updateEvent } from '@/lib/firebase/firestore'
+import {
+  deleteEvent,
+  getEventById,
+  updateEvent,
+} from '@/lib/firebase/firestore'
 import { verifySession } from '@/lib/session'
 import { isRoleMod } from '@/lib/utils/auth'
 import { NextRequest } from 'next/server'
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const event = await getEventById(params.id)
+    if (!event) {
+      return createErrorResponse('Event not found', 404)
+    }
+
+    return Response.json({ event })
+  } catch (error) {
+    return createErrorResponse(error, 500)
+  }
+}
 
 export async function DELETE(
   request: NextRequest,

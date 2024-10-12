@@ -7,7 +7,7 @@ import { menuHref } from '@/lib/menu'
 import classNames from 'classnames'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { MouseEventHandler, useState } from 'react'
 
 interface RenderedEventPageProps {
   eventId: string
@@ -275,16 +275,10 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
 
             {props.showCancelButton && (
               <div>
-                <button
-                  type="button"
-                  className={classNames(
-                    'w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border text-red-700 focus:outline-none disabled:opacity-50 disabled:pointer-events-none bg-white hover:text-white focus:text-white hover:bg-red-700 focus:bg-red-700'
-                  )}
+                <CancelEventButton
                   disabled={pending}
                   onClick={() => handleCancelEvent()}
-                >
-                  Cancel Event
-                </button>
+                />
               </div>
             )}
           </div>
@@ -301,5 +295,26 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
         </div>
       )}
     </div>
+  )
+}
+
+function CancelEventButton({
+  disabled,
+  onClick,
+}: {
+  disabled?: boolean
+  onClick: MouseEventHandler<HTMLButtonElement>
+}) {
+  return (
+    <button
+      type="button"
+      className={classNames(
+        'w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border text-red-700 focus:outline-none disabled:opacity-50 disabled:pointer-events-none bg-white hover:text-white focus:text-white hover:bg-red-700 focus:bg-red-700'
+      )}
+      disabled={disabled}
+      onClick={onClick}
+    >
+      Cancel Event
+    </button>
   )
 }
