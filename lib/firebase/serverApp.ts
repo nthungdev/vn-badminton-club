@@ -17,7 +17,6 @@ const firebaseAdminConfig = {
 const firebaseServerApp = getApps()?.[0] || initializeApp(firebaseAdminConfig)
 
 const auth = getAuth(firebaseServerApp)
-// const firestore  = getFirestore()
 const firestore = getFirestore()
 
 const initAuth = () => {
@@ -31,4 +30,10 @@ const initApp = () => {
   }
 }
 
-export { auth, firestore, firebaseServerApp, initAuth, initApp }
+export {
+  auth,
+  firestore,
+  firebaseServerApp,
+  initAuth,
+  initApp,
+}
