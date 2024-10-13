@@ -1,15 +1,9 @@
 'use server'
 
-import {
-  SignInFormSchema,
-  SignInFormState,
-  SignUpFormSchema,
-  SignUpFormState,
-} from '@/lib/definitions'
-import { signInWithEmailPassword } from '@/lib/firebase/auth'
+import { SignUpFormSchema, SignUpFormState } from '@/lib/definitions'
 import { auth } from '@/lib/firebase/serverApp'
 import { menuHref } from '@/lib/menu'
-import { saveSession, verifySession } from '@/lib/session'
+import { verifyIdToken } from '@/lib/session'
 import { FirebaseAuthError } from 'firebase-admin/auth'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
@@ -66,7 +60,7 @@ const getUser = cache(async (uid: string) => {
 })
 
 export async function getMe() {
-  const { decodedIdToken } = await verifySession()
+  const { decodedIdToken } = await verifyIdToken()
   if (!decodedIdToken?.uid) return null
 
   const user = await getUser(decodedIdToken.uid)

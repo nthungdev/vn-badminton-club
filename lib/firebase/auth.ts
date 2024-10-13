@@ -2,6 +2,7 @@ import { FirebaseError } from 'firebase/app'
 import { auth } from './clientApp'
 import { AuthErrorCodes, signInWithEmailAndPassword } from 'firebase/auth'
 import { createAuthError } from './error'
+import { setCookie } from 'cookies-next'
 
 async function signInWithEmailPassword(email: string, password: string) {
   try {
@@ -10,6 +11,12 @@ async function signInWithEmailPassword(email: string, password: string) {
       email,
       password
     )
+    const idToken = await userCredential.user.getIdToken()
+    setCookie('session', idToken, {
+      // TODO verify this works
+      httpOnly: process.env.NODE_ENV !== 'development',
+      secure: process.env.NODE_ENV !== 'development',
+    })
     return userCredential
   } catch (error) {
     if (error instanceof FirebaseError) {

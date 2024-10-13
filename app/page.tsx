@@ -1,11 +1,10 @@
-import { getMe } from '@/actions/auth'
 import BasePage from '@/components/BasePage'
 import EventList from '@/components/EventList'
+import { getAuthenticatedAppForUser } from '@/lib/firebase/serverApp'
 import Link from 'next/link'
 
 export default async function PageHome() {
-  const me = await getMe()
-
+  const { me } = await getAuthenticatedAppForUser()
   const isAuth = !!me
 
   return (

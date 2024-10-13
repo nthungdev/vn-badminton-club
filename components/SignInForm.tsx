@@ -7,7 +7,6 @@ import { menuHref } from '@/lib/menu'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
-
 const INPUT_EMAIL_ID = 'sign-up-input-email'
 const INPUT_PASSWORD_ID = 'sign-up-input-password'
 

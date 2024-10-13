@@ -29,7 +29,6 @@ export default async function EventPage({
   const event = await getEventById(eventId)
   if (!event) {
     redirect('/404')
-    return
   }
 
   const me = await getMe()

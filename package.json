@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "yarn build-sw",
     "dev": "next dev",
     "build": "next build",
     "build-sw": "npx esbuild firebase-auth-sw.js --bundle --outfile=public/firebase-auth-sw.js",
@@ -12,6 +13,7 @@
   },
   "dependencies": {
     "classnames": "^2.5.1",
+    "cookies-next": "^4.3.0",
     "dayjs": "^1.11.13",
     "firebase": "^10.14.0",
     "firebase-admin": "^12.6.0",

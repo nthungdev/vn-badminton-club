@@ -1,6 +1,6 @@
 import { createErrorResponse } from '@/lib/apiResponse'
 import { getEventById, leaveEvent } from '@/lib/firebase/firestore'
-import { verifySession } from '@/lib/session'
+import { verifyIdToken } from '@/lib/session'
 import { isRoleMod } from '@/lib/utils/auth'
 import { NextRequest } from 'next/server'
 
@@ -12,7 +12,7 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { decodedIdToken } = await verifySession()
+  const { decodedIdToken } = await verifyIdToken()
   if (!decodedIdToken) {
     return createErrorResponse('Unauthorized', 401)
   }

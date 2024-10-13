@@ -32,7 +32,8 @@ const nextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self'",
+            // Allow the Firebase SDK to communicate with Firebase Auth
+            value: "default-src 'self' *.googleapis.com; script-src 'self'",
           },
         ],
       },
