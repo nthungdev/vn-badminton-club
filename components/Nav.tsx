@@ -1,7 +1,6 @@
 'use client'
 
 import { signOut } from '@/actions/auth'
-import { auth } from '@/lib/firebase/clientApp'
 import { firebaseConfig } from '@/lib/firebase/config'
 import { menuHref, MenuItem } from '@/lib/menu'
 import Link from 'next/link'

@@ -1,60 +1,16 @@
 'use client'
 
-import { INTERNAL_ERROR } from '@/lib/constants/errorMessages'
-import { SignInFormSchema, SignInFormState } from '@/lib/definitions'
-import { signInWithEmailPassword } from '@/lib/firebase/auth'
-import { menuHref } from '@/lib/menu'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { signIn } from '@/actions/auth'
+import { useFormState, useFormStatus } from 'react-dom'
 
 const INPUT_EMAIL_ID = 'sign-up-input-email'
 const INPUT_PASSWORD_ID = 'sign-up-input-password'
 
 export default function SignInForm() {
-  const [state, setState] = useState<SignInFormState>()
-  const [pending, setPending] = useState(false)
-  const router = useRouter()
-
-  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const form = event.currentTarget
-
-    // get FormData from form
-    const formData = new FormData(form)
-    const validatedFields = SignInFormSchema.safeParse({
-      email: formData.get('email'),
-      password: formData.get('password'),
-    })
-
-    if (!validatedFields.success) {
-      setState({
-        inputErrors: validatedFields.error.flatten().fieldErrors,
-      })
-      return
-    }
-
-    try {
-      setPending(true)
-      await signInWithEmailPassword(
-        validatedFields.data.email,
-        validatedFields.data.password
-      )
-      router.push(menuHref.home)
-    } catch (error) {
-      let signInError = INTERNAL_ERROR
-      if (error instanceof Error) {
-        signInError = error.message
-      } else {
-        console.error({ error })
-      }
-      setState({ signInError })
-    } finally {
-      setPending(false)
-    }
-  }
+  const [state, action] = useFormState(signIn, undefined)
 
   return (
-    <form className="w-full space-y-3" onSubmit={handleFormSubmit}>
+    <form className="w-full space-y-3" action={action}>
       <div className="relative">
         <input
           type="email"
@@ -128,7 +84,7 @@ export default function SignInForm() {
         </div>
       )}
 
-      <SubmitButton disabled={pending} />
+      <SubmitButton />
       {state?.signInError && (
         <p className="text-red-600">{state.signInError}</p>
       )}
@@ -136,12 +92,14 @@ export default function SignInForm() {
   )
 }
 
-function SubmitButton({ disabled }: { disabled?: boolean }) {
+function SubmitButton() {
+  const { pending } = useFormStatus()
+
   return (
     <button
       type="submit"
       className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-primary text-white hover:bg-primary-700 focus:outline-none focus:bg-primary-700 disabled:opacity-50 disabled:pointer-events-none"
-      disabled={disabled}
+      disabled={pending}
     >
       Sign In
     </button>

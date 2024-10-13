@@ -3,6 +3,8 @@ import { INTERNAL_ERROR } from '@/lib/constants/errorMessages'
 import { verifySession } from '@/lib/session'
 import { NextRequest, NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic' // defaults to auto
+
 export async function GET(request: NextRequest) {
   try {
     const sessionToken = request.cookies.get('session')
@@ -12,7 +14,7 @@ export async function GET(request: NextRequest) {
     const results = await verifySession(sessionToken.value)
     return NextResponse.json(results, { status: results.isAuth ? 200 : 401 })
   } catch (error) {
-    console.log('Error in GET /api/auth/signIn', {error})
+    console.log('Error in GET /api/auth/signIn', { error })
     return createErrorResponse(new Error(INTERNAL_ERROR), 401)
   }
 }

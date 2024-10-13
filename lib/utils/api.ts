@@ -1,7 +1,7 @@
 'server-only'
 
 import { NextRequest } from 'next/server'
-import { verifyIdToken, } from '@/lib/session'
+import { verifySession, } from '@/lib/session'
 import { auth } from '../firebase/serverApp'
 import { Role } from '../firebase/definitions'
 
@@ -11,7 +11,7 @@ async function validateAuthority(request: NextRequest) {
     return false
   }
 
-  const { decodedIdToken } = await verifyIdToken(session)
+  const { decodedIdToken } = await verifySession(session)
   if (!decodedIdToken) {
     return false
   }

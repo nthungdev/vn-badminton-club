@@ -3,10 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "predev": "yarn build-sw",
     "dev": "next dev",
     "build": "next build",
-    "build-sw": "npx esbuild firebase-auth-sw.js --bundle --outfile=public/firebase-auth-sw.js",
     "start": "next start",
     "lint": "next lint",
     "decap": "decap-server"

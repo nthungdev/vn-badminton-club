@@ -1,9 +1,9 @@
 'use server'
 
-import { SignUpFormSchema, SignUpFormState } from '@/lib/definitions'
+import { SignInFormSchema, SignInFormState, SignUpFormSchema, SignUpFormState } from '@/lib/definitions'
 import { auth } from '@/lib/firebase/serverApp'
 import { menuHref } from '@/lib/menu'
-import { verifyIdToken } from '@/lib/session'
+import { saveSession, verifySession } from '@/lib/session'
 import { FirebaseAuthError } from 'firebase-admin/auth'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
@@ -11,6 +11,7 @@ import { setUserRole } from '@/lib/firebase/utils'
 import { Role } from '@/lib/firebase/definitions'
 import { cache } from 'react'
 import { INTERNAL_ERROR } from '@/lib/constants/errorMessages'
+import { signInWithEmailPassword } from '@/lib/firebase/auth'
 
 export async function signUp(prevState: SignUpFormState, formData: FormData) {
   // Validate form fields
@@ -49,6 +50,37 @@ export async function signUp(prevState: SignUpFormState, formData: FormData) {
   redirect(menuHref.signIn)
 }
 
+export async function signIn(prevState: SignInFormState, formData: FormData) {
+  const validatedFields = SignInFormSchema.safeParse({
+    email: formData.get('email'),
+    password: formData.get('password'),
+  })
+
+  // If any form fields are invalid, return early
+  if (!validatedFields.success) {
+    return {
+      inputErrors: validatedFields.error.flatten().fieldErrors,
+    }
+  }
+
+  try {
+    const userCredential = await signInWithEmailPassword(
+      validatedFields.data.email,
+      validatedFields.data.password
+    )
+    const idToken = await userCredential.user.getIdToken()
+    await saveSession(idToken)
+  } catch (error) {
+    if (error instanceof Error) {
+      return { signInError: error.message }
+    }
+    console.log({ error })
+    return { signInError: INTERNAL_ERROR }
+  }
+
+  redirect(menuHref.home)
+}
+
 export async function signOut() {
   cookies().delete('session')
   redirect(menuHref.signIn)
@@ -60,7 +92,7 @@ const getUser = cache(async (uid: string) => {
 })
 
 export async function getMe() {
-  const { decodedIdToken } = await verifyIdToken()
+  const { decodedIdToken } = await verifySession()
   if (!decodedIdToken?.uid) return null
 
   const user = await getUser(decodedIdToken.uid)

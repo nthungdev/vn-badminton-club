@@ -37,4 +37,3 @@ next-env.d.ts
 
 # Firebase
 firebase-service-account.json
-public/firebase-auth-sw.js
