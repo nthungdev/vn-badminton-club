@@ -44,7 +44,7 @@ export async function verifyIdToken(idToken?: string) {
     }
     const decodedIdToken = await auth.verifyIdToken(_idToken)
     return { isAuth: true, decodedIdToken }
-  } catch (error) {
+  } catch {
     return {}
   }
 }

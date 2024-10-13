@@ -8,7 +8,7 @@ export async function middleware(request: NextRequest) {
 
   // Call the authentication endpoint
   // Cannot use verifySession here because middleware is using Edge runtime
-  const responseAPI = await fetch(`${request.nextUrl.origin}/api/signIn`, {
+  const responseAPI = await fetch(`${request.nextUrl.origin}/api/auth/signIn`, {
     headers: {
       Cookie: `session=${session?.value}`,
     },
