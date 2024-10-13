@@ -3,8 +3,11 @@
 import { headers } from 'next/headers'
 import { getApps, initializeApp } from 'firebase-admin/app'
 import { getAuth } from 'firebase-admin/auth'
+import { getAuth as getClientAuth } from 'firebase/auth'
 import { credential } from 'firebase-admin'
 import { getFirestore } from 'firebase-admin/firestore'
+import { initializeServerApp } from 'firebase/app'
+import { firebaseConfig } from './config'
 
 const firebaseAdminConfig = {
   credential: credential.cert({
@@ -19,21 +22,22 @@ const firebaseServerApp = getApps()?.[0] || initializeApp(firebaseAdminConfig)
 const auth = getAuth(firebaseServerApp)
 const firestore = getFirestore()
 
-const initAuth = () => {
+export async function getAuthenticatedAppForUser() {
   const idToken = headers().get('Authorization')?.split('Bearer ')[1]
-  return { idToken }
+
+  const firebaseServerApp = initializeServerApp(
+    firebaseConfig,
+    idToken
+      ? {
+          authIdToken: idToken,
+        }
+      : {}
+  )
+
+  const auth = getClientAuth(firebaseServerApp)
+  await auth.authStateReady()
+
+  return { firebaseServerApp, me: auth.currentUser }
 }
 
-const initApp = () => {
-  if (getApps().length <= 0) {
-    initializeApp(firebaseAdminConfig)
-  }
-}
-
-export {
-  auth,
-  firestore,
-  firebaseServerApp,
-  initAuth,
-  initApp,
-}
+export { auth, firestore, firebaseServerApp }

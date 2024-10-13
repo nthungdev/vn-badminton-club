@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build-sw": "npx esbuild firebase-auth-sw.js --bundle --outfile=public/firebase-auth-sw.js",
     "start": "next start",
     "lint": "next lint",
     "decap": "decap-server"
@@ -18,6 +19,7 @@
     "node-cache": "^5.1.2",
     "react": "^18",
     "react-dom": "^18",
+    "react-firebase-hooks": "^5.1.1",
     "server-only": "^0.0.1",
     "zod": "^3.23.8"
   },
@@ -29,6 +31,7 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "decap-server": "^3.1.2",
+    "esbuild": "^0.24.0",
     "eslint": "^8",
     "eslint-config-next": "14.2.14",
     "frontmatter-markdown-loader": "^3.7.0",
