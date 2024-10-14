@@ -4,6 +4,7 @@ import { signOut } from '@/actions/auth'
 import { menuHref, MenuItem } from '@/lib/menu'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import 'flowbite'
 
 interface NavProps {
   menu: MenuItem[]
@@ -57,18 +58,23 @@ export default function Nav(props: NavProps) {
 
         {props.displayName && (
           <span className="relative text-white font-semibold ml-auto group cursor-default">
-            {props.displayName}
+            <div
+              data-tooltip-target="user-tooltip"
+              className="hover:cursor-pointer"
+            >
+              {props.displayName}
+            </div>
 
-            {props.email && (
-              <div className="hidden group-hover:block absolute top-full right-0">
-                <div className="mt-1 bg-primary-100 px-3 py-2 text-gray-800 rounded-md shadow-md">
-                  <div className="capitalize text-right font-bold text-secondary">
-                    {props.role}
-                  </div>
-                  <div>{props.email}</div>
-                </div>
+            <div
+              id="user-tooltip"
+              role="tooltip"
+              className="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-gray-800 transition-opacity duration-300 bg-primary-100 rounded-lg shadow-md opacity-0 tooltip"
+            >
+              <div className="capitalize text-right font-bold text-secondary">
+                {props.role}
               </div>
-            )}
+              <div>{props.email}</div>
+            </div>
           </span>
         )}
       </div>
