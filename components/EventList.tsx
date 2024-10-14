@@ -13,7 +13,7 @@ export default function EventList() {
   const [upcomingEvents, setUpcomingEvents] = useState<HomeViewEvent[]>([])
   const [pastEvents, setPastEvents] = useState<HomeViewEvent[]>([])
   const [joinedEvents, setJoinedEvents] = useState<HomeViewEvent[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [selectedTab, setSelectedTab] = useState('upcoming')
   const { user } = useAuth()
 
@@ -26,7 +26,6 @@ export default function EventList() {
     joined: joinedEvents,
   }
   const events = eventsMap[selectedTab] || []
-  console.log({ events })
   const sortedPastEvents = events
     .filter((e) => e.startTimestamp.getTime() <= new Date().getTime())
     .toSorted((a, b) => b.startTimestamp.getTime() - a.startTimestamp.getTime())
