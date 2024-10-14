@@ -1,6 +1,11 @@
 import { createErrorResponse, createSuccessResponse } from '@/lib/apiResponse'
 import { HomeViewEvent } from '@/lib/firebase/definitions/event'
-import { getNewEvents, getPastEvents } from '@/lib/firebase/firestore'
+import {
+  getJoinedEvents,
+  getNewEvents,
+  getPastEvents,
+} from '@/lib/firebase/firestore'
+import { verifySession } from '@/lib/session'
 import { NextRequest } from 'next/server'
 
 const DEFAULT_GET_LIMIT = 10
@@ -23,6 +28,13 @@ export async function GET(request: NextRequest) {
         break
       case 'past':
         events = await getPastEvents({ limit })
+        break
+      case 'joined':
+        const { decodedIdToken } = await verifySession()
+        if (!decodedIdToken?.uid) {
+          return createErrorResponse('Unauthorized', 401)
+        }
+        events = await getJoinedEvents(decodedIdToken.uid, { limit })
         break
       default:
         return createErrorResponse('Invalid filter query parameter', 400)

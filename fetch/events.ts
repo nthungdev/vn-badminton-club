@@ -1,7 +1,39 @@
 import { EventsGetResponse } from '@/app/api/events/types'
 import AppError from '@/lib/AppError'
+import { HomeViewEvent } from '@/lib/firebase/definitions/event'
 
-async function getNewEvents() {
+function formatHomeViewEvents(events: HomeViewEvent[]) {
+  return events.map((e) => ({
+    ...e,
+    startTimestamp: new Date(e.startTimestamp),
+    endTimestamp: new Date(e.endTimestamp),
+  })) as HomeViewEvent[]
+}
+
+export async function getJoinedEvents() {
+  try {
+    const response: EventsGetResponse = await fetch(
+      '/api/events?filter=joined',
+      {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      }
+    ).then((r) => r.json())
+    if (!response.success) {
+      throw new AppError('Error', 'Error getting joined events')
+    }
+
+    return formatHomeViewEvents(response.data.events)
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error
+    }
+    console.error('Error getting joined events:', error)
+    throw new AppError('Error', 'Something went wrong')
+  }
+}
+
+export async function getNewEvents() {
   try {
     const response: EventsGetResponse = await fetch('/api/events?filter=new', {
       method: 'GET',
@@ -13,7 +45,7 @@ async function getNewEvents() {
       throw new AppError('Error', 'Error getting new events')
     }
 
-    return response.data.events
+    return formatHomeViewEvents(response.data.events)
   } catch (error) {
     if (error instanceof AppError) {
       throw error
@@ -23,7 +55,7 @@ async function getNewEvents() {
   }
 }
 
-async function getPastEvents() {
+export async function getPastEvents() {
   try {
     const response: EventsGetResponse = await fetch('/api/events?filter=past', {
       method: 'GET',
@@ -35,7 +67,7 @@ async function getPastEvents() {
       throw new AppError('Error', 'Error getting past events')
     }
 
-    return response.data.events
+    return formatHomeViewEvents(response.data.events)
   } catch (error) {
     if (error instanceof AppError) {
       throw error
@@ -44,5 +76,3 @@ async function getPastEvents() {
     throw new AppError('Error', 'Something went wrong')
   }
 }
-
-export { getNewEvents, getPastEvents }

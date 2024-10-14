@@ -1,11 +1,13 @@
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone'
+import relativeTime from 'dayjs/plugin/relativeTime'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
+dayjs.extend(relativeTime)
 
-export const eventTime = (startDate: Date, endDate: Date) => {
+export function eventTime(startDate: Date, endDate: Date) {
   const start = dayjs(startDate)
   const end = dayjs(endDate)
   const startEndSameDay = start.format('YYYYMMDD') === end.format('YYYYMMDD')
@@ -22,7 +24,7 @@ export const eventTime = (startDate: Date, endDate: Date) => {
   }
 }
 
-export const nowToTimestamp = (timestamp: Date) => {
+export function nowToTimestamp(timestamp: Date) {
   const now = dayjs().local()
   const eventStart = dayjs(timestamp)
   return now.to(eventStart)
