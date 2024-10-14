@@ -1,12 +1,6 @@
 'use server'
 
-import {
-  SignInFormSchema,
-  SignInFormState,
-  SignUpFormSchema,
-  SignUpFormState,
-} from '@/lib/definitions'
-import { signInWithEmailPassword } from '@/lib/firebase/auth'
+import { SignInFormSchema, SignInFormState, SignUpFormSchema, SignUpFormState } from '@/lib/definitions'
 import { auth } from '@/lib/firebase/serverApp'
 import { menuHref } from '@/lib/menu'
 import { saveSession, verifySession } from '@/lib/session'
@@ -15,9 +9,11 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { setUserRole } from '@/lib/firebase/utils'
 import { Role } from '@/lib/firebase/definitions'
-import { INTERNAL_ERROR_MESSAGE } from './constants'
+import { cache } from 'react'
+import { INTERNAL_ERROR } from '@/lib/constants/errorMessages'
+import { signInWithEmailPassword } from '@/lib/firebase/auth'
 
-async function signUp(prevState: SignUpFormState, formData: FormData) {
+export async function signUp(prevState: SignUpFormState, formData: FormData) {
   // Validate form fields
   const validatedFields = SignUpFormSchema.safeParse({
     name: formData.get('name'),
@@ -48,13 +44,13 @@ async function signUp(prevState: SignUpFormState, formData: FormData) {
     } else {
       console.error('Unknown Error:', error)
     }
-    return { signUpError: INTERNAL_ERROR_MESSAGE }
+    return { signUpError: INTERNAL_ERROR }
   }
 
   redirect(menuHref.signIn)
 }
 
-async function signIn(prevState: SignInFormState, formData: FormData) {
+export async function signIn(prevState: SignInFormState, formData: FormData) {
   const validatedFields = SignInFormSchema.safeParse({
     email: formData.get('email'),
     password: formData.get('password'),
@@ -68,33 +64,37 @@ async function signIn(prevState: SignInFormState, formData: FormData) {
   }
 
   try {
-    const idToken = await signInWithEmailPassword(
+    const userCredential = await signInWithEmailPassword(
       validatedFields.data.email,
       validatedFields.data.password
     )
+    const idToken = await userCredential.user.getIdToken()
     await saveSession(idToken)
   } catch (error) {
     if (error instanceof Error) {
       return { signInError: error.message }
     }
     console.log({ error })
-    return { signInError: INTERNAL_ERROR_MESSAGE }
+    return { signInError: INTERNAL_ERROR }
   }
 
   redirect(menuHref.home)
 }
 
-function signOut() {
+export async function signOut() {
   cookies().delete('session')
   redirect(menuHref.signIn)
 }
 
-async function getMe() {
-  const { decodedIdToken } = await verifySession()
-  if (!decodedIdToken) return null
+const getUser = cache(async (uid: string) => {
+  const user = await auth.getUser(uid)
+  return user
+})
 
-  const user = await auth.getUser(decodedIdToken.uid)
+export async function getMe() {
+  const { decodedIdToken } = await verifySession()
+  if (!decodedIdToken?.uid) return null
+
+  const user = await getUser(decodedIdToken.uid)
   return user
 }
-
-export { signUp, signIn, signOut, getMe }

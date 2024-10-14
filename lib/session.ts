@@ -2,10 +2,9 @@
 
 import { cookies } from 'next/headers'
 import { auth } from './firebase/serverApp'
-import { cache } from 'react'
 import { DecodedIdToken } from 'firebase-admin/auth'
 
-async function saveSession(idToken: string) {
+export async function saveSession(idToken: string) {
   const decodedToken = await auth.verifyIdToken(idToken)
 
   if (decodedToken) {
@@ -27,7 +26,7 @@ async function saveSession(idToken: string) {
   }
 }
 
-function deleteSession() {
+export function deleteSession() {
   cookies().delete('session')
 }
 
@@ -37,20 +36,30 @@ interface VerifySessionResult {
   session?: string
 }
 
-const verifySession: (session?: string) => Promise<VerifySessionResult> = cache(
-  async (session?: string) => {
-    const _session = session || cookies().get('session')?.value || ''
-    try {
-      const decodedIdToken = await auth.verifySessionCookie(_session, true)
-      if (!decodedIdToken.uid) {
-        return {}
-      }
-      return { isAuth: true, decodedIdToken, session: _session }
-    } catch {
+// export async function verifyIdToken(idToken?: string) {
+//   const _idToken = idToken || cookies().get('session')?.value
+//   try {
+//     if (!_idToken) {
+//       return {}
+//     }
+//     const decodedIdToken = await auth.verifyIdToken(_idToken)
+//     return { isAuth: true, decodedIdToken }
+//   } catch {
+//     return {}
+//   }
+// }
+
+export const verifySession = async (session?: string) => {
+  const _session = session || cookies().get('session')?.value || ''
+  try {
+    const decodedIdToken = await auth.verifySessionCookie(_session, true)
+    if (!decodedIdToken.uid) {
       return {}
     }
+    return { isAuth: true, decodedIdToken, session: _session }
+  } catch {
+    return {}
   }
-)
+}
 
-export { saveSession, deleteSession, verifySession }
 export type { VerifySessionResult }

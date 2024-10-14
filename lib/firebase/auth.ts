@@ -10,8 +10,7 @@ async function signInWithEmailPassword(email: string, password: string) {
       email,
       password
     )
-    const idToken = await userCredential.user.getIdToken()
-    return idToken
+    return userCredential
   } catch (error) {
     if (error instanceof FirebaseError) {
       if (error.code === AuthErrorCodes.INVALID_LOGIN_CREDENTIALS) {

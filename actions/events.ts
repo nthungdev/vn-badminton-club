@@ -6,7 +6,6 @@ import dayjs from 'dayjs'
 
 import { redirect } from 'next/navigation'
 import { getMe } from './auth'
-import { INTERNAL_ERROR_MESSAGE } from './constants'
 import {
   CreateEventFormSchema,
   CreateEventFormState,
@@ -23,6 +22,7 @@ import { Role } from '@/lib/firebase/definitions'
 import { CreateEvent, UpdateEvent } from '@/lib/firebase/definitions/event'
 import { isRedirectError } from 'next/dist/client/components/redirect'
 import { fieldsToDate } from '@/lib/format'
+import { INTERNAL_ERROR } from '@/lib/constants/errorMessages'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -90,7 +90,7 @@ async function createEvent(
 
     // TODO handle error
     console.log('create event error', { error })
-    return { submitError: INTERNAL_ERROR_MESSAGE }
+    return { submitError: INTERNAL_ERROR }
   }
 }
 
@@ -171,7 +171,7 @@ async function updateEvent(
 
     // TODO handle error
     console.log('create event error', { error })
-    return { submitError: INTERNAL_ERROR_MESSAGE }
+    return { submitError: INTERNAL_ERROR }
   }
 }
 

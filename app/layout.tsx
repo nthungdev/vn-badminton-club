@@ -2,6 +2,9 @@ import type { Metadata } from 'next'
 import Script from 'next/script'
 import localFont from 'next/font/local'
 import Header from '@/components/Header'
+import { AuthProvider } from '@/components/providers/AuthProvider'
+import { getAuthUser } from '@/lib/authUtils'
+
 import './globals.css'
 
 const geistSans = localFont({
@@ -25,6 +28,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const authUser = await getAuthUser()
+
   return (
     <html lang="en">
       <Script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></Script>
@@ -32,8 +37,10 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50`}
       >
         <div className="flex flex-col h-screen overflow-hidden">
-          <Header />
-          <div className="flex-1 overflow-auto">{children}</div>
+          <AuthProvider user={authUser}>
+            <Header />
+            <div className="flex-1 overflow-auto">{children}</div>
+          </AuthProvider>
         </div>
       </body>
     </html>
