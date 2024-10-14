@@ -20,6 +20,22 @@ export default function EventList() {
   const isAuthenticated = user !== null
   const tabs = ['upcoming', 'past'].concat(isAuthenticated ? ['joined'] : [])
 
+  const eventsMap: Record<string, HomeViewEvent[]> = {
+    upcoming: upcomingEvents,
+    past: pastEvents,
+    joined: joinedEvents,
+  }
+  const events = eventsMap[selectedTab] || []
+  console.log({ events })
+  const sortedPastEvents = events
+    .filter((e) => e.startTimestamp.getTime() <= new Date().getTime())
+    .toSorted((a, b) => b.startTimestamp.getTime() - a.startTimestamp.getTime())
+  const sortedFutureEvents = events
+    .filter((e) => e.startTimestamp.getTime() > new Date().getTime())
+    .toSorted((a, b) => a.startTimestamp.getTime() - b.startTimestamp.getTime())
+  const noEventText =
+    selectedTab === 'upcoming' ? 'No upcoming events.' : 'No past events.'
+
   useEffect(() => {
     const fetchUpcomingEvents = async () => {
       setLoading(true)
@@ -62,15 +78,6 @@ export default function EventList() {
     setLoading(false)
   }
 
-  const eventsMap: Record<string, HomeViewEvent[]> = {
-    upcoming: upcomingEvents,
-    past: pastEvents,
-    joined: joinedEvents,
-  }
-  const events = eventsMap[selectedTab] || []
-  const noEventText =
-    selectedTab === 'upcoming' ? 'No upcoming events.' : 'No past events.'
-
   return (
     <div className="max-w-md space-y-4">
       <div className="text-2xl font-semibold text-primary">Events</div>
@@ -102,14 +109,36 @@ export default function EventList() {
       )}
 
       {!loading && (
-        <div className="space-y-4">
+        <div className="space-y-8">
           {events.length === 0 && !loading && (
             <p className="text-gray-600 text-center">{noEventText}</p>
           )}
 
-          {events.map((event) => (
-            <EventCard key={event.id} {...event} />
-          ))}
+          {sortedFutureEvents.length !== 0 && (
+            <div className="space-y-2">
+              <div className="text-xl text-secondary font-semibold ml-1">
+                Upcoming
+              </div>
+              <div className='space-y-4'>
+                {sortedFutureEvents.map((event) => (
+                  <EventCard key={event.id} {...event} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {sortedPastEvents.length !== 0 && (
+            <div className="space-y-2">
+              <div className="text-xl text-secondary font-semibold ml-1">
+                Past
+              </div>
+              <div className='space-y-4'>
+                {sortedPastEvents.map((event) => (
+                  <EventCard key={event.id} {...event} />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

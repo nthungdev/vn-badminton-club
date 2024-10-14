@@ -1,5 +1,14 @@
 import { EventsGetResponse } from '@/app/api/events/types'
 import AppError from '@/lib/AppError'
+import { HomeViewEvent } from '@/lib/firebase/definitions/event'
+
+function formatHomeViewEvents(events: HomeViewEvent[]) {
+  return events.map((e) => ({
+    ...e,
+    startTimestamp: new Date(e.startTimestamp),
+    endTimestamp: new Date(e.endTimestamp),
+  })) as HomeViewEvent[]
+}
 
 export async function getJoinedEvents() {
   try {
@@ -14,7 +23,7 @@ export async function getJoinedEvents() {
       throw new AppError('Error', 'Error getting joined events')
     }
 
-    return response.data.events
+    return formatHomeViewEvents(response.data.events)
   } catch (error) {
     if (error instanceof AppError) {
       throw error
@@ -36,7 +45,7 @@ export async function getNewEvents() {
       throw new AppError('Error', 'Error getting new events')
     }
 
-    return response.data.events
+    return formatHomeViewEvents(response.data.events)
   } catch (error) {
     if (error instanceof AppError) {
       throw error
@@ -58,7 +67,7 @@ export async function getPastEvents() {
       throw new AppError('Error', 'Error getting past events')
     }
 
-    return response.data.events
+    return formatHomeViewEvents(response.data.events)
   } catch (error) {
     if (error instanceof AppError) {
       throw error

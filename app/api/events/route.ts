@@ -30,8 +30,7 @@ export async function GET(request: NextRequest) {
         events = await getPastEvents({ limit })
         break
       case 'joined':
-        const { decodedIdToken, session } = await verifySession()
-        console.log({session})
+        const { decodedIdToken } = await verifySession()
         if (!decodedIdToken?.uid) {
           return createErrorResponse('Unauthorized', 401)
         }
