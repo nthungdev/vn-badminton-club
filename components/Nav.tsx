@@ -1,6 +1,7 @@
 'use client'
 
 import { signOut } from '@/actions/auth'
+import { useAuth } from '@/app/contexts/AuthContext'
 import { firebaseConfig } from '@/lib/firebase/config'
 import { menuHref, MenuItem } from '@/lib/menu'
 import Link from 'next/link'
@@ -18,6 +19,8 @@ interface NavProps {
 
 export default function Nav(props: NavProps) {
   const { menu, isAuthenticated } = props
+  const { user } = useAuth()
+  console.log('Nav', { hasUser: !!user, user })
 
   const pathname = usePathname()
 

@@ -51,15 +51,13 @@ interface VerifySessionResult {
 
 export const verifySession = async (session?: string) => {
   const _session = session || cookies().get('session')?.value || ''
-  console.log('verifySession 1', { _session })
   try {
     const decodedIdToken = await auth.verifySessionCookie(_session, true)
     if (!decodedIdToken.uid) {
       return {}
     }
     return { isAuth: true, decodedIdToken, session: _session }
-  } catch (error) {
-    console.error('verifySession error', { error })
+  } catch {
     return {}
   }
 }
