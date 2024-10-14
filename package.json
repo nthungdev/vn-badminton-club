@@ -15,7 +15,7 @@
     "dayjs": "^1.11.13",
     "firebase": "^10.14.0",
     "firebase-admin": "^12.6.0",
-    "flowbite": "^2.5.2",
+    "flowbite-react": "^0.10.2",
     "next": "14.2.14",
     "node-cache": "^5.1.2",
     "react": "^18",

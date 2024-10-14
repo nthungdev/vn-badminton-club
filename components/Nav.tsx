@@ -4,7 +4,7 @@ import { signOut } from '@/actions/auth'
 import { menuHref, MenuItem } from '@/lib/menu'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import 'flowbite'
+import { Tooltip } from 'flowbite-react'
 
 interface NavProps {
   menu: MenuItem[]
@@ -57,27 +57,38 @@ export default function Nav(props: NavProps) {
         )}
 
         {props.displayName && (
-          <span className="relative text-white font-semibold ml-auto group cursor-default">
+          <Tooltip
+            className="bg-primary-100 text-gray-800"
+            theme={{
+              arrow: { style: { dark: 'bg-primary-100', light: 'bg-primary-100', auto: 'bg-primary-100' } },
+            }}
+            content={
+              <UserTooltipContent
+                email={props.email || ''}
+                role={props.role || ''}
+              />
+            }
+          >
             <div
               data-tooltip-target="user-tooltip"
-              className="hover:cursor-pointer"
+              className="hover:cursor-pointer text-white font-semibold ml-auto"
             >
               {props.displayName}
             </div>
-
-            <div
-              id="user-tooltip"
-              role="tooltip"
-              className="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-gray-800 transition-opacity duration-300 bg-primary-100 rounded-lg shadow-md opacity-0 tooltip"
-            >
-              <div className="capitalize text-right font-bold text-secondary">
-                {props.role}
-              </div>
-              <div>{props.email}</div>
-            </div>
-          </span>
+          </Tooltip>
         )}
       </div>
     </nav>
+  )
+}
+
+function UserTooltipContent({ role, email }: { role: string; email: string }) {
+  return (
+    <div>
+      <div className="capitalize text-right font-bold text-secondary">
+        {role}
+      </div>
+      <div>{email}</div>
+    </div>
   )
 }
