@@ -11,19 +11,23 @@ import { HomeViewEvent } from '@/lib/firebase/definitions/event'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import { eventTime, nowToTimestamp } from '@/lib/format'
 import AppError from '@/lib/AppError'
-import { getNewEvents, getPastEvents } from '@/fetch/events'
+import { getJoinedEvents, getNewEvents, getPastEvents } from '@/fetch/events'
+import { useAuth } from '@/app/contexts/AuthContext'
 
 dayjs.extend(relativeTime)
 dayjs.extend(utc)
 dayjs.extend(timezone)
 
-const tabs = ['upcoming', 'past']
-
 export default function EventList() {
   const [upcomingEvents, setUpcomingEvents] = useState<HomeViewEvent[]>([])
   const [pastEvents, setPastEvents] = useState<HomeViewEvent[]>([])
+  const [joinedEvents, setJoinedEvents] = useState<HomeViewEvent[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedTab, setSelectedTab] = useState('upcoming')
+  const { user } = useAuth()
+
+  const isAuthenticated = user !== null
+  const tabs = ['upcoming', 'past'].concat(isAuthenticated ? ['joined'] : [])
 
   useEffect(() => {
     const fetchUpcomingEvents = async () => {
@@ -44,20 +48,35 @@ export default function EventList() {
   const handleTabChange = async (tab: string) => {
     setSelectedTab(tab)
 
+    setLoading(true)
     if (tab === 'past' && pastEvents.length === 0) {
-      setLoading(true)
       try {
         await getPastEvents().then(setPastEvents)
       } catch (error) {
         if (error instanceof AppError) {
-          // TODO show error
+          // TODO show error ?
         }
+        console.log({ error })
       }
-      setLoading(false)
+    } else if (tab === 'joined' && joinedEvents.length === 0) {
+      try {
+        await getJoinedEvents().then(setJoinedEvents)
+      } catch (error) {
+        if (error instanceof AppError) {
+          // TODO show error ?
+        }
+        console.log({ error })
+      }
     }
+    setLoading(false)
   }
 
-  const events = selectedTab === 'upcoming' ? upcomingEvents : pastEvents
+  const eventsMap: Record<string, HomeViewEvent[]> = {
+    upcoming: upcomingEvents,
+    past: pastEvents,
+    joined: joinedEvents,
+  }
+  const events = eventsMap[selectedTab] || []
   const noEventText =
     selectedTab === 'upcoming' ? 'No upcoming events.' : 'No past events.'
 

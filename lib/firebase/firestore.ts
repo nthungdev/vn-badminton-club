@@ -16,6 +16,41 @@ import { EventsCacheKey, getNodeCache } from '../cache'
 
 const cache = getNodeCache('eventsCache')
 
+function snapshotToEvents(
+  snapshot: FirebaseFirestore.QuerySnapshot<FirebaseFirestore.DocumentData>
+) {
+  return snapshot.docs.map((doc) => {
+    const data = doc.data() as FirestoreEvent
+    const event: HomeViewEvent = {
+      ...data,
+      id: doc.id,
+      startTimestamp: data.startTimestamp.toDate(),
+      endTimestamp: data.endTimestamp.toDate(),
+    }
+    return event
+  })
+}
+
+export async function getJoinedEvents(
+  uid: string,
+  { limit }: { limit: number }
+) {
+  try {
+    const snapshot = await firestore
+      .collection(COLLECTION_EVENTS)
+      .where('participantIds', 'array-contains', uid)
+      .orderBy('startTimestamp')
+      .limit(limit)
+      .get()
+
+    const events = snapshotToEvents(snapshot)
+    return events
+  } catch (error) {
+    console.error('Error getting joined events:', error)
+    throw new Error('Error getting joined events')
+  }
+}
+
 async function getNewEvents({ limit }: { limit: number }) {
   try {
     if (cache.has(EventsCacheKey.NewEvents)) {
@@ -29,18 +64,7 @@ async function getNewEvents({ limit }: { limit: number }) {
       .limit(limit)
       .get()
 
-    const events = snapshot.docs.map((doc) => {
-      const data = doc.data() as FirestoreEvent
-
-      const event: HomeViewEvent = {
-        ...data,
-        id: doc.id,
-        startTimestamp: data.startTimestamp.toDate(),
-        endTimestamp: data.endTimestamp.toDate(),
-      }
-
-      return event
-    })
+    const events = snapshotToEvents(snapshot)
     cache.set(EventsCacheKey.NewEvents, events)
     return events
   } catch (error) {
@@ -62,18 +86,7 @@ async function getPastEvents({ limit }: { limit: number }) {
       .limit(limit)
       .get()
 
-    const events = snapshot.docs.map((doc) => {
-      const data = doc.data() as FirestoreEvent
-
-      const event: HomeViewEvent = {
-        ...data,
-        id: doc.id,
-        startTimestamp: data.startTimestamp.toDate(),
-        endTimestamp: data.endTimestamp.toDate(),
-      }
-
-      return event
-    })
+    const events = snapshotToEvents(snapshot)
     cache.set(EventsCacheKey.PastEvents, events)
     return events
   } catch (error) {

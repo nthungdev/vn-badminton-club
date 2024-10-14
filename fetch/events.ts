@@ -1,7 +1,30 @@
 import { EventsGetResponse } from '@/app/api/events/types'
 import AppError from '@/lib/AppError'
 
-async function getNewEvents() {
+export async function getJoinedEvents() {
+  try {
+    const response: EventsGetResponse = await fetch(
+      '/api/events?filter=joined',
+      {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      }
+    ).then((r) => r.json())
+    if (!response.success) {
+      throw new AppError('Error', 'Error getting joined events')
+    }
+
+    return response.data.events
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error
+    }
+    console.error('Error getting joined events:', error)
+    throw new AppError('Error', 'Something went wrong')
+  }
+}
+
+export async function getNewEvents() {
   try {
     const response: EventsGetResponse = await fetch('/api/events?filter=new', {
       method: 'GET',
@@ -23,7 +46,7 @@ async function getNewEvents() {
   }
 }
 
-async function getPastEvents() {
+export async function getPastEvents() {
   try {
     const response: EventsGetResponse = await fetch('/api/events?filter=past', {
       method: 'GET',
@@ -44,5 +67,3 @@ async function getPastEvents() {
     throw new AppError('Error', 'Something went wrong')
   }
 }
-
-export { getNewEvents, getPastEvents }
