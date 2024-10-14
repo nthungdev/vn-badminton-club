@@ -1,8 +1,9 @@
 'server-only'
 
-import { UserRecord } from 'firebase-admin/auth'
+import { DecodedIdToken, UserRecord } from 'firebase-admin/auth'
 import { Role } from './firebase/definitions'
 import { auth } from './firebase/serverApp'
+import { AuthContextUser } from '@/app/contexts/AuthContext'
 
 function getUserRole(user: UserRecord) {
   return user.customClaims?.role as Role | undefined
@@ -18,6 +19,17 @@ async function getUserById(userId: string) {
   return {
     uid: user.uid,
     displayName: user.displayName,
+  }
+}
+
+export function toAuthUser(decodedIdToken: DecodedIdToken): AuthContextUser {
+  return {
+    ...decodedIdToken,
+    uid: decodedIdToken.uid,
+    email: decodedIdToken.email!,
+    displayName: decodedIdToken.name,
+    emailVerified: decodedIdToken.email_verified ?? false,
+    role: decodedIdToken?.role,
   }
 }
 

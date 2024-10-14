@@ -5,8 +5,7 @@ import Header from '@/components/Header'
 import './globals.css'
 import { verifySession } from '@/lib/session'
 import { AuthProvider } from '@/components/providers/AuthProvider'
-import { DecodedIdToken } from 'firebase-admin/auth'
-import { AuthContextUser } from './contexts/AuthContext'
+import { toAuthUser } from '@/lib/authUtils'
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -24,24 +23,13 @@ export const metadata: Metadata = {
   description: process.env.SITE_DESCRIPTION,
 }
 
-export function toUser(decodedIdToken: DecodedIdToken): AuthContextUser {
-  return {
-    ...decodedIdToken,
-    uid: decodedIdToken.uid,
-    email: decodedIdToken.email!,
-    displayName: decodedIdToken.name,
-    emailVerified: decodedIdToken.email_verified ?? false,
-    role: decodedIdToken?.role,
-  }
-}
-
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
   const { decodedIdToken, isAuth } = await verifySession()
-  const user = isAuth ? toUser(decodedIdToken) : null
+  const user = isAuth ? toAuthUser(decodedIdToken) : null
 
   return (
     <html lang="en">
