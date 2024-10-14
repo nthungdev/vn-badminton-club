@@ -50,9 +50,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
       setPending(true)
       await fetch(url, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
       }).then((r) => r.json())
 
       setParticipants(
@@ -118,9 +116,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
       setPending(true)
       const { success } = await fetch(`/api/events/${props.eventId}`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
       }).then((r) => r.json())
       if (!success) {
         throw new Error('Failed to cancel event')

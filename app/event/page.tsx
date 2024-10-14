@@ -2,19 +2,11 @@
 
 import { getEventById } from '@/actions/events'
 import { redirect } from 'next/navigation'
-
-import relativeTime from 'dayjs/plugin/relativeTime'
-import utc from 'dayjs/plugin/utc'
-import timezone from 'dayjs/plugin/timezone'
 import dayjs from 'dayjs'
-import { getMe } from '@/actions/auth'
 import { EventParticipant } from '@/lib/firebase/definitions/event'
 import RenderedEventPage from './RenderedEventPage'
 import { Role } from '@/lib/firebase/definitions'
-
-dayjs.extend(relativeTime)
-dayjs.extend(utc)
-dayjs.extend(timezone)
+import { getAuthUser } from '@/lib/authUtils'
 
 export default async function EventPage({
   searchParams: { e },
@@ -31,15 +23,15 @@ export default async function EventPage({
     redirect('/404')
   }
 
-  const me = await getMe()
+  const me = await getAuthUser()
   if (!me) {
     console.error('Error getting user')
-    throw new Error('Error getting user')
+    throw new Error('User information not found')
   }
 
   const isPastEvent = dayjs().isAfter(dayjs(event.startTimestamp))
   const isMeOrganizer = me.uid === event.organizer.uid
-  const isMeMod = me.customClaims?.role === Role.Mod
+  const isMeMod = me?.role === Role.Mod
 
   const selfParticipant = {
     uid: me.uid,
