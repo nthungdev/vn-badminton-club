@@ -1,12 +1,9 @@
 'use client'
 
 import { signOut } from '@/actions/auth'
-import { useAuth } from '@/app/contexts/AuthContext'
-import { firebaseConfig } from '@/lib/firebase/config'
 import { menuHref, MenuItem } from '@/lib/menu'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect } from 'react'
 
 interface NavProps {
   menu: MenuItem[]
@@ -19,24 +16,8 @@ interface NavProps {
 
 export default function Nav(props: NavProps) {
   const { menu, isAuthenticated } = props
-  const { user } = useAuth()
-  console.log('Nav', { hasUser: !!user, user })
 
   const pathname = usePathname()
-
-  // Register the service worker that sends auth state back to server
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      const serializedFirebaseConfig = encodeURIComponent(
-        JSON.stringify(firebaseConfig)
-      )
-      const serviceWorkerUrl = `/firebase-auth-sw.js?firebaseConfig=${serializedFirebaseConfig}`
-
-      navigator.serviceWorker
-        .register(serviceWorkerUrl)
-        .then((registration) => console.log('scope is: ', registration.scope))
-    }
-  }, [])
 
   return (
     <nav className="max-w-[85rem] w-full mx-auto px-4 sm:flex sm:items-center sm:justify-between">
