@@ -58,8 +58,8 @@ export default async function EventPage({
       endTimestamp={event.endTimestamp}
       title={event.title}
       showJoinButton={!isPastEvent}
-      showCancelButton={isMeOrganizer || isMeMod}
-      showUpdateButton={isMeOrganizer || isMeMod}
+      showCancelButton={(isMeOrganizer || isMeMod) && !isPastEvent}
+      showUpdateButton={(isMeOrganizer || isMeMod) && !isPastEvent}
     />
   )
 }
