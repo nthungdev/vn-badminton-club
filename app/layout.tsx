@@ -2,10 +2,10 @@ import type { Metadata } from 'next'
 import Script from 'next/script'
 import localFont from 'next/font/local'
 import Header from '@/components/Header'
-import './globals.css'
-import { verifySession } from '@/lib/session'
 import { AuthProvider } from '@/components/providers/AuthProvider'
-import { toAuthUser } from '@/lib/authUtils'
+import { getAuthUser } from '@/lib/authUtils'
+
+import './globals.css'
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -28,8 +28,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const { decodedIdToken, isAuth } = await verifySession()
-  const user = isAuth ? toAuthUser(decodedIdToken) : null
+  const authUser = await getAuthUser()
 
   return (
     <html lang="en">
@@ -38,7 +37,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50`}
       >
         <div className="flex flex-col h-screen overflow-hidden">
-          <AuthProvider user={user}>
+          <AuthProvider user={authUser}>
             <Header />
             <div className="flex-1 overflow-auto">{children}</div>
           </AuthProvider>
