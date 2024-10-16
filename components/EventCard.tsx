@@ -8,6 +8,8 @@ interface EventCardProps {
   byMod: boolean
   startTimestamp: Date
   endTimestamp: Date
+  participantIds: string[]
+  slots: number
 }
 
 export default function EventCard(props: EventCardProps) {
@@ -29,12 +31,21 @@ export default function EventCard(props: EventCardProps) {
         <div className="text-gray-500">
           {nowToTimestamp(props.startTimestamp)}
         </div>
-        <Link
-          href={`/event?e=${props.id}`}
-          className="mt-3 inline-flex items-center gap-x-1 text-sm font-semibold rounded-lg border border-transparent text-secondary decoration-2 hover:text-primary hover:underline focus:underline focus:outline-none focus:text-primary disabled:opacity-50 disabled:pointer-events-none"
-        >
-          View
-        </Link>
+        <div className="mt-2 w-full flex flex-row justify-between items-center">
+          <span className='bg-secondary-100 rounded-full py-1 px-3'>
+            <span className="font-semibold text-secondary">
+              {props.participantIds.length} / {props.slots}
+            </span>
+            <span> </span>
+            <span className='text-secondary'>Participants</span>
+          </span>
+          <Link
+            href={`/event?e=${props.id}`}
+            className="self-end p-1 inline-flex text-sm font-semibold rounded-lg border border-transparent text-secondary decoration-2 hover:text-primary hover:underline focus:underline focus:outline-none focus:text-primary disabled:opacity-50 disabled:pointer-events-none"
+          >
+            View
+          </Link>
+        </div>
       </div>
     </div>
   )
