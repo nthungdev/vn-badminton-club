@@ -27,7 +27,6 @@ export interface CreateEvent {
   startTimestamp: Date
   endTimestamp: Date
   slots: number
-  participantIds: string[]
   // uid of the user who created the event
   createdBy: string
   byMod: boolean
