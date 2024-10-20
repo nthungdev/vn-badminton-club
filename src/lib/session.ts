@@ -1,6 +1,6 @@
 'server-only'
 
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { auth } from '../firebase/serverApp'
 import { DecodedIdToken } from 'firebase-admin/auth'
 
@@ -37,7 +37,7 @@ interface VerifySessionResult {
 }
 
 export const verifySession = async (session?: string) => {
-  const _session = session || cookies().get('session')?.value || ''
+  const _session = session || cookies().get('session')?.value || headers().get('Authorization')?.split('Bearer ')?.[1] || ''
   try {
     const decodedIdToken = await auth.verifySessionCookie(_session, true)
     if (!decodedIdToken.uid) {
