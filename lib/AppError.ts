@@ -1,9 +1,9 @@
 export default class AppError extends Error {
   name: string
 
-  constructor(name: string, message: string, cause?: unknown) {
+  constructor(message: string, cause?: unknown) {
     super()
-    this.name = name
+    this.name = 'AppError'
     this.message = message
     this.cause = cause
   }

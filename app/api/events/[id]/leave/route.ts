@@ -15,7 +15,6 @@ export async function PATCH(
   const { id } = params
 
   try {
-    // TODO make sure now is not 8 hrs before the event
     await leaveEvent(decodedIdToken.uid, id)
     return Response.json({ success: true })
   } catch (error) {

@@ -1,14 +1,19 @@
 'use client'
 
-import { ParticipateEventButton } from '@/components/ParticipateEventButton'
-import { EventParticipant } from '@/lib/firebase/definitions/event'
-import { eventTime } from '@/lib/format'
-import { menuHref } from '@/lib/menu'
-import classNames from 'classnames'
+import { MouseEventHandler, useState } from 'react'
 import { Tooltip } from 'flowbite-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { MouseEventHandler, useState } from 'react'
+import classNames from 'classnames'
+
+import { ParticipateEventButton } from '@/components/ParticipateEventButton'
+import { joinEvent, leaveEvent } from '@/fetch/events'
+import { EventParticipant } from '@/lib/firebase/definitions/event'
+import { eventTime } from '@/lib/format'
+import { menuHref } from '@/lib/menu'
+import { UNKNOWN_ERROR } from '@/lib/constants/errorMessages'
+import { useToastsContext } from '../contexts/ToastsContext'
+import AppError from '@/lib/AppError'
 
 interface RenderedEventPageProps {
   eventId: string
@@ -27,12 +32,37 @@ interface RenderedEventPageProps {
 
 export default function RenderedEventPage(props: RenderedEventPageProps) {
   const router = useRouter()
+  const { addToast } = useToastsContext()
   const [participants, setParticipants] = useState(props.participants)
   const [pending, setPending] = useState(false)
   const [kickMode, setKickMode] = useState(false)
   const [updateMode, setUpdateMode] = useState(false)
 
   const time = eventTime(props.startTimestamp, props.endTimestamp)
+  const kickToggleText = kickMode ? 'Cancel' : 'Kick Participant'
+  const joined = participants.some((p) => p.uid === props.selfParticipant.uid)
+  const showKickButton =
+    props.showUpdateButton &&
+    participants.length > 0 &&
+    !(
+      participants.length === 1 &&
+      participants.some((p) => p.uid === props.selfParticipant.uid)
+    )
+
+  function handleError(error: unknown) {
+    console.log('handleError', error)
+    if (error instanceof AppError) {
+      addToast({
+        message: error.message,
+        type: 'error',
+      })
+    } else {
+      addToast({
+        message: UNKNOWN_ERROR,
+        type: 'error',
+      })
+    }
+  }
 
   const handleParticipateButton = async () => {
     if (joined) {
@@ -45,22 +75,20 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
     }
 
     try {
-      const url = joined
-        ? `/api/events/${props.eventId}/leave`
-        : `/api/events/${props.eventId}/join`
       setPending(true)
-      await fetch(url, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-      }).then((r) => r.json())
 
+      if (joined) {
+        await leaveEvent(props.eventId)
+      } else {
+        await joinEvent(props.eventId)
+      }
       setParticipants(
         joined
           ? participants.filter((p) => p.uid !== props.selfParticipant.uid)
           : [...participants, props.selfParticipant]
       )
     } catch (error) {
-      console.error('Error joining event:', error)
+      handleError(error)
     } finally {
       setPending(false)
     }
@@ -98,8 +126,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
         return updated
       })
     } catch (error) {
-      console.error('Error kicking participant:', error)
-      window.alert('Error kicking participant')
+      handleError(error)
     } finally {
       setPending(false)
     }
@@ -124,8 +151,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
       }
       router.replace(menuHref.home)
     } catch (error) {
-      console.error('Error canceling event:', error)
-      window.alert('Error canceling event')
+      handleError(error)
     } finally {
       setPending(false)
     }
@@ -134,16 +160,6 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
   const handleUpdateEventToggle = () => {
     setUpdateMode(!updateMode)
   }
-
-  const kickToggleText = kickMode ? 'Cancel' : 'Kick Participant'
-  const joined = participants.some((p) => p.uid === props.selfParticipant.uid)
-  const showKickButton =
-    props.showUpdateButton &&
-    participants.length > 0 &&
-    !(
-      participants.length === 1 &&
-      participants.some((p) => p.uid === props.selfParticipant.uid)
-    )
 
   return (
     <div className="h-full flex flex-col">
