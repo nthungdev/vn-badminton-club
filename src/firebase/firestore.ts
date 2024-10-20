@@ -8,27 +8,32 @@ import {
   FirestoreEvent,
   HomeViewEvent,
   UpdateEvent,
+  WriteEvent,
 } from './definitions/event'
 import { COLLECTION_EVENTS } from './firestore.constant'
 import { firestore } from './serverApp'
-import { getUserById } from '../lib/authUtils'
-import { EventsCacheKey, getNodeCache } from '../lib/cache'
 import AppError from '../lib/AppError'
 import {
+  EVENT_FULL_ERROR,
   EVENT_NOT_FOUND_ERROR,
   EVENT_ORGANIZER_NOT_FOUND_ERROR,
+  UNKNOWN_ERROR,
 } from '@/constants/errorMessages'
+import { EventsCacheKey, getNodeCache } from '@/lib/cache'
+import { getUserById } from '@/lib/authUtils'
 
 const cache = getNodeCache('eventsCache')
 
 const EVENT_CUTOFF = 8 * 60 * 60 * 1000 // 8 hours
 
-function isEventFull(event: FirestoreEvent) {
+const eventCollection = firestore.collection(COLLECTION_EVENTS)
+
+function isEventFull(event: CreatedEvent | WriteEvent) {
   return event.participantIds.length + event.guests.length >= event.slots
 }
 
-const eventPublicConverter = {
-  toFirestore: (data: HomeViewEvent) => {
+const eventReadConverter = {
+  toFirestore: (data: CreatedEvent) => {
     return { ...data }
   },
   fromFirestore: (snapshot: QueryDocumentSnapshot<FirestoreEvent>) => {
@@ -43,7 +48,27 @@ const eventPublicConverter = {
       endTimestamp: data.endTimestamp.toDate(),
       participantIds: data.participantIds || [],
       guests: data.guests || [],
-    } as HomeViewEvent
+    }
+  },
+}
+
+const eventWriteConverter = {
+  toFirestore: (data: WriteEvent) => {
+    return { ...data }
+  },
+  fromFirestore: (snapshot: QueryDocumentSnapshot<FirestoreEvent>) => {
+    const data = snapshot.data()
+    return {
+      id: snapshot.id,
+      title: data.title,
+      byMod: data.byMod,
+      createdBy: data.createdBy,
+      slots: data.slots,
+      startTimestamp: data.startTimestamp.toDate(),
+      endTimestamp: data.endTimestamp.toDate(),
+      participantIds: data.participantIds || [],
+      guests: data.guests || [],
+    }
   },
 }
 
@@ -64,9 +89,8 @@ export async function getJoinedEvents(
   { limit }: { limit: number }
 ) {
   try {
-    const snapshot = await firestore
-      .collection(COLLECTION_EVENTS)
-      .withConverter(eventPublicConverter)
+    const snapshot = await eventCollection
+      .withConverter(eventReadConverter)
       .where('participantIds', 'array-contains', uid)
       .orderBy('startTimestamp')
       .limit(limit)
@@ -84,8 +108,8 @@ export async function getNewEvents({ limit }: { limit: number }) {
       return cache.get(EventsCacheKey.NewEvents) as HomeViewEvent[]
     }
 
-    const snapshot = await firestore
-      .collection(COLLECTION_EVENTS)
+    const snapshot = await eventCollection
+      .withConverter(eventReadConverter)
       .where('startTimestamp', '>=', new Date())
       .orderBy('startTimestamp')
       .limit(limit)
@@ -106,8 +130,8 @@ export async function getPastEvents({ limit }: { limit: number }) {
       return cache.get(EventsCacheKey.PastEvents) as HomeViewEvent[]
     }
 
-    const snapshot = await firestore
-      .collection(COLLECTION_EVENTS)
+    const snapshot = await eventCollection
+      .withConverter(eventReadConverter)
       .where('startTimestamp', '<', new Date())
       .orderBy('startTimestamp', 'desc')
       .limit(limit)
@@ -123,9 +147,8 @@ export async function getPastEvents({ limit }: { limit: number }) {
 }
 
 export async function getEventById(eventId: string) {
-  const eventsRef = firestore
-    .collection(COLLECTION_EVENTS)
-    .withConverter(eventPublicConverter)
+  const eventsRef = eventCollection
+    .withConverter(eventReadConverter)
     .doc(eventId)
 
   try {
@@ -162,6 +185,7 @@ export async function getEventById(eventId: string) {
 
         const event: CreatedEvent = {
           ...data,
+          id: doc.id,
           participants,
           organizer,
         }
@@ -184,9 +208,11 @@ export async function getEventById(eventId: string) {
 
 export async function createEvent(event: CreateEvent) {
   try {
-    const doc = await firestore
-      .collection(COLLECTION_EVENTS)
-      .add({ ...event, participantIds: [] })
+    const doc = await eventCollection.add({
+      ...event,
+      participantIds: [],
+      guests: [],
+    })
     cache.del(EventsCacheKey.NewEvents)
     return doc.id
   } catch (error) {
@@ -197,10 +223,7 @@ export async function createEvent(event: CreateEvent) {
 
 export async function updateEvent(eventId: string, event: UpdateEvent) {
   try {
-    await firestore
-      .collection(COLLECTION_EVENTS)
-      .doc(eventId)
-      .update({ ...event })
+    await eventCollection.doc(eventId).update({ ...event })
     cache.del(EventsCacheKey.NewEvents)
   } catch (error) {
     console.error('Error updating event:', error)
@@ -210,31 +233,39 @@ export async function updateEvent(eventId: string, event: UpdateEvent) {
 
 export async function deleteEvent(eventId: string) {
   try {
-    await firestore.collection(COLLECTION_EVENTS).doc(eventId).delete()
+    await eventCollection.doc(eventId).delete()
     cache.del(EventsCacheKey.NewEvents)
     cache.del(EventsCacheKey.PastEvents)
   } catch (error) {
     console.error('Error deleting event:', error)
-    throw new Error('Error deleting event')
+    throw new AppError(UNKNOWN_ERROR)
   }
 }
 
 export async function joinEvent(uid: string, eventId: string) {
-  const eventRef = firestore.collection(COLLECTION_EVENTS).doc(eventId)
+  const eventReadRef = eventCollection
+    .withConverter(eventReadConverter)
+    .doc(eventId)
+  const eventWriteRef = eventCollection
+    .withConverter(eventWriteConverter)
+    .doc(eventId)
 
   try {
     const error = await firestore.runTransaction(async (transaction) => {
-      const doc = await transaction.get(eventRef)
+      const doc = await transaction.get(eventReadRef)
       if (!doc.exists) {
         return 'Event not found'
       }
-
-      const data = doc.data() as FirestoreEvent
-      if (data.participantIds.length >= data.slots) {
-        return 'Event is full'
+      const data = doc.data()
+      if (!doc.exists || !data) {
+        return EVENT_NOT_FOUND_ERROR
       }
 
-      transaction.update(eventRef, {
+      if (isEventFull(data)) {
+        return EVENT_FULL_ERROR
+      }
+
+      transaction.update(eventWriteRef, {
         participantIds: FieldValue.arrayUnion(uid),
       })
     })
@@ -289,23 +320,25 @@ export async function leaveEvent(uid: string, eventId: string) {
   }
 }
 
-export async function addGuest(uid: string, eventId: string) {
-  const eventRef = firestore.collection(COLLECTION_EVENTS).doc(eventId)
+export async function addGuest(eventId: string, uid: string, name: string) {
+  const eventRef = eventCollection
+    .withConverter(eventWriteConverter)
+    .doc(eventId)
 
   try {
     const error = await firestore.runTransaction(async (transaction) => {
       const doc = await transaction.get(eventRef)
-      if (!doc.exists) {
-        return 'Event not found'
+      const data = doc.data()
+      if (!doc.exists || !data) {
+        return EVENT_NOT_FOUND_ERROR
       }
 
-      const data = doc.data() as FirestoreEvent
-      if (data.participantIds.length >= data.slots) {
-        return 'Event is full'
+      if (isEventFull(data)) {
+        return EVENT_FULL_ERROR
       }
 
       transaction.update(eventRef, {
-        participantIds: FieldValue.arrayUnion(uid),
+        guests: FieldValue.arrayUnion({ addedBy: uid, name }),
       })
     })
 
@@ -313,12 +346,46 @@ export async function addGuest(uid: string, eventId: string) {
       throw new Error(error)
     }
 
-    console.info(`User ${uid} joined event ${eventId}`)
+    console.info(`User ${uid} added guest ${name} to event ${eventId}`)
     cache.del(EventsCacheKey.NewEvents)
   } catch (error) {
     if (error instanceof AppError) {
       throw error
     }
-    throw new Error('Error joining event')
+    console.log('Error adding guest to event:', { error })
+    throw new Error('Error adding guest to event')
+  }
+}
+
+export async function kickGuest(eventId: string, uid: string, name: string) {
+  const eventRef = eventCollection
+    .withConverter(eventWriteConverter)
+    .doc(eventId)
+
+  try {
+    const error = await firestore.runTransaction(async (transaction) => {
+      const doc = await transaction.get(eventRef)
+      const data = doc.data()
+      if (!doc.exists || !data) {
+        return EVENT_NOT_FOUND_ERROR
+      }
+
+      transaction.update(eventRef, {
+        guests: FieldValue.arrayRemove({ addedBy: uid, name }),
+      })
+    })
+
+    if (error) {
+      throw new Error(error)
+    }
+
+    console.info(`User ${uid} kicking guest ${name} from event ${eventId}`)
+    cache.del(EventsCacheKey.NewEvents)
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error
+    }
+    console.log('Error kicking guest from event:', { error })
+    throw new Error('Error kicking guest from event')
   }
 }

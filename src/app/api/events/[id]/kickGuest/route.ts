@@ -1,7 +1,9 @@
 import { createErrorResponse } from '@/lib/apiResponse'
-import { addGuest } from '@/firebase/firestore'
+import { getEventById, kickGuest } from '@/firebase/firestore'
 import { verifySession } from '@/lib/session'
 import { NextRequest } from 'next/server'
+import { isRoleMod } from '@/lib/utils/auth'
+import { EVENT_NOT_FOUND_ERROR } from '@/constants/errorMessages'
 
 interface EventGuestAddRequest {
   name?: string
@@ -24,7 +26,21 @@ export async function PATCH(
   }
 
   try {
-    await addGuest(eventId, decodedIdToken.uid, data.name)
+    const event = await getEventById(eventId)
+    if (!event) {
+      return createErrorResponse(EVENT_NOT_FOUND_ERROR, 404)
+    }
+
+    // Check if the user is the event creator
+    // Check if the user a mod
+    if (
+      event.organizer.uid !== decodedIdToken.uid &&
+      !(await isRoleMod(decodedIdToken.uid))
+    ) {
+      return createErrorResponse('Unauthorized', 401)
+    }
+
+    await kickGuest(eventId, decodedIdToken.uid, data.name)
     return Response.json({ success: true })
   } catch (error) {
     return createErrorResponse(error, 500)
