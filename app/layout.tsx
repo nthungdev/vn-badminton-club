@@ -4,8 +4,10 @@ import localFont from 'next/font/local'
 import Header from '@/components/Header'
 import { AuthProvider } from '@/components/providers/AuthProvider'
 import { getAuthUser } from '@/lib/authUtils'
+import ToastsOverlay from '@/components/ToastsOverlay'
 
 import './globals.css'
+import ToastsProvider from '@/components/providers/ToastsProvider'
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -36,11 +38,14 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50`}
       >
-        <div className="flex flex-col h-screen overflow-hidden">
-          <AuthProvider user={authUser}>
-            <Header />
-            <div className="flex-1 overflow-auto">{children}</div>
-          </AuthProvider>
+        <div className="relative flex flex-col h-screen overflow-hidden">
+          <ToastsProvider>
+            <ToastsOverlay />
+            <AuthProvider user={authUser}>
+              <Header />
+              <div className="flex-1 overflow-auto">{children}</div>
+            </AuthProvider>
+          </ToastsProvider>
         </div>
       </body>
     </html>
