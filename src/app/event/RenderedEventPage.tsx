@@ -7,8 +7,17 @@ import { useRouter } from 'next/navigation'
 import classNames from 'classnames'
 
 import { ParticipateEventButton } from '@/components/ParticipateEventButton'
-import { joinEvent, leaveEvent } from '@/fetch/events'
-import { EventParticipant } from '@/firebase/definitions/event'
+import {
+  addGuest,
+  joinEvent,
+  kick,
+  kickGuest,
+  leaveEvent,
+} from '@/fetch/events'
+import {
+  EventParticipant,
+  FirestoreEventGuest,
+} from '@/firebase/definitions/event'
 import { eventTime } from '@/lib/format'
 import { menuHref } from '@/lib/menu'
 import { UNKNOWN_ERROR } from '@/constants/errorMessages'
@@ -24,33 +33,51 @@ interface RenderedEventPageProps {
   endTimestamp: Date
   slots: number
   participants: EventParticipant[]
+  guests: FirestoreEventGuest[]
   selfParticipant: EventParticipant
   showJoinButton: boolean
   showCancelButton: boolean
   showUpdateButton: boolean
 }
 
+function isEventParticipant(
+  participant: EventParticipant | FirestoreEventGuest
+): participant is EventParticipant {
+  return (participant as EventParticipant).uid !== undefined
+}
+
+function isFirestoreEventGuest(
+  participant: EventParticipant | FirestoreEventGuest
+): participant is FirestoreEventGuest {
+  return (participant as FirestoreEventGuest).guestId !== undefined
+}
+
 export default function RenderedEventPage(props: RenderedEventPageProps) {
   const router = useRouter()
   const { addToast } = useToastsContext()
-  const [participants, setParticipants] = useState(props.participants)
+  const [participants, setParticipants] = useState<
+    (EventParticipant | FirestoreEventGuest)[]
+  >([...props.participants, ...props.guests])
   const [pending, setPending] = useState(false)
   const [kickMode, setKickMode] = useState(false)
   const [updateMode, setUpdateMode] = useState(false)
 
   const time = eventTime(props.startTimestamp, props.endTimestamp)
   const kickToggleText = kickMode ? 'Cancel' : 'Kick Participant'
-  const joined = participants.some((p) => p.uid === props.selfParticipant.uid)
+  const joined = participants.some(
+    (p) => isEventParticipant(p) && p.uid === props.selfParticipant.uid
+  )
   const showKickButton =
     props.showUpdateButton &&
     participants.length > 0 &&
     !(
       participants.length === 1 &&
-      participants.some((p) => p.uid === props.selfParticipant.uid)
+      participants.some(
+        (p) => isEventParticipant(p) && p.uid === props.selfParticipant.uid
+      )
     )
 
   function handleError(error: unknown) {
-    console.log('handleError', error)
     if (error instanceof AppError) {
       addToast({
         message: error.message,
@@ -84,7 +111,10 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
       }
       setParticipants(
         joined
-          ? participants.filter((p) => p.uid !== props.selfParticipant.uid)
+          ? participants.filter(
+              (p) =>
+                isEventParticipant(p) && p.uid !== props.selfParticipant.uid
+            )
           : [...participants, props.selfParticipant]
       )
     } catch (error) {
@@ -94,37 +124,66 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
     }
   }
 
+  async function handleAddGuest() {
+    try {
+      const name = window.prompt('Enter the name of the guest you want to add:')
+      if (name === null) {
+        return
+      }
+      if (name === '') {
+        throw new AppError('No name entered')
+      }
+
+      const guest = await addGuest(props.eventId, name)
+
+      setParticipants([...participants, guest])
+    } catch (error) {
+      handleError(error)
+    }
+  }
+
   const handleKickParticipantToggle = () => {
     setKickMode(!kickMode)
   }
 
-  const handleKick = async (uid: string) => {
+  const handleKick = async (
+    participant: EventParticipant | FirestoreEventGuest
+  ) => {
     try {
-      const url = `/api/events/${props.eventId}/kick`
       setPending(true)
-      const { error } = await fetch(url, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ uid }),
-      }).then((res) => res.json())
-
-      if (error) {
-        throw new Error(error.message)
+      if (isEventParticipant(participant)) {
+        await kick(props.eventId, participant.uid)
+        setParticipants(() => {
+          const updated = participants.filter(
+            (p) => isEventParticipant(p) && p.uid !== participant.uid
+          )
+          if (
+            updated.length === 0 ||
+            (updated.length === 1 &&
+              updated.some(
+                (p) =>
+                  isEventParticipant(p) && p.uid === props.selfParticipant.uid
+              ))
+          ) {
+            setKickMode(false)
+          }
+          return updated
+        })
+      } else {
+        await kickGuest(props.eventId, participant.guestId)
+        setParticipants(() => {
+          const updated = participants.filter(
+            (p) =>
+              isFirestoreEventGuest(p) &&
+              p.addedBy !== participant.addedBy &&
+              p.displayName !== participant.displayName
+          )
+          if (updated.length === 0) {
+            setKickMode(false)
+          }
+          return updated
+        })
       }
-
-      setParticipants(() => {
-        const updated = participants.filter((p) => p.uid !== uid)
-        if (
-          updated.length === 0 ||
-          (updated.length === 1 &&
-            updated.some((p) => p.uid === props.selfParticipant.uid))
-        ) {
-          setKickMode(false)
-        }
-        return updated
-      })
     } catch (error) {
       handleError(error)
     } finally {
@@ -247,7 +306,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
                           className="inline-flex items-center p-1 ms-2 text-sm text-secondary-300 bg-transparent rounded-sm hover:bg-secondary-200 hover:text-secondary-900"
                           data-dismiss-target="#badge-dismiss-default"
                           aria-label="Remove"
-                          onClick={() => handleKick(participant.uid)}
+                          onClick={() => handleKick(participant)}
                           disabled={pending}
                         >
                           <svg
@@ -293,8 +352,8 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
                   )}
                 </div>
               )}
-              {showKickButton && (
-                <div className="flex flex-row justify-end">
+              <div className="flex flex-row justify-end space-x-2">
+                {showKickButton && (
                   <button
                     className={classNames(
                       'py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent focus:outline-none disabled:opacity-50 disabled:pointer-events-none',
@@ -306,8 +365,19 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
                   >
                     {kickToggleText}
                   </button>
-                </div>
-              )}
+                )}
+                <button
+                  className={classNames(
+                    'py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent focus:outline-none disabled:opacity-50 disabled:pointer-events-none',
+                    kickMode
+                      ? 'text-white bg-red-600 hover:bg-red-700 focus:bg-red-700'
+                      : 'text-secondary-700 hover:text-white focus:text-white hover:bg-secondary-700 focus:bg-secondary-700'
+                  )}
+                  onClick={handleAddGuest}
+                >
+                  Add Guest
+                </button>
+              </div>
             </div>
 
             {props.showUpdateButton && (

@@ -1,6 +1,9 @@
 import { EventsGetResponse } from '@/app/api/events/types'
 import AppError from '@/lib/AppError'
 import { HomeViewEvent } from '@/firebase/definitions/event'
+import { UNKNOWN_ERROR } from '@/constants/errorMessages'
+import { EventsAddGuestResponse } from '@/app/api/events/[id]/addGuest/type'
+import { EventsKickGuestResponse } from '@/app/api/events/[id]/kickGuest/type'
 
 function formatHomeViewEvents(events: HomeViewEvent[]) {
   return events.map((e) => ({
@@ -133,5 +136,49 @@ export async function kick(eventId: string, uid: string) {
       throw error
     }
     throw new AppError('Something went wrong', error)
+  }
+}
+
+export async function addGuest(eventId: string, displayName: string) {
+  const url = `/api/events/${eventId}/addGuest`
+
+  try {
+    const response: EventsAddGuestResponse = await fetch(url, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ displayName }),
+    }).then((r) => r.json())
+    if (!response.success) {
+      throw new AppError(response.error.message)
+    }
+    return response.data.guest
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error
+    }
+    throw new AppError(UNKNOWN_ERROR)
+  }
+}
+
+export async function kickGuest(
+  eventId: string,
+  guestId: string
+) {
+  const url = `/api/events/${eventId}/kickGuest`
+
+  try {
+    const response: EventsKickGuestResponse = await fetch(url, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ guestId }),
+    }).then((r) => r.json())
+    if (!response.success) {
+      throw new AppError(response.error.message)
+    }
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error
+    }
+    throw new AppError(UNKNOWN_ERROR)
   }
 }

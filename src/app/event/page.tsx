@@ -44,6 +44,7 @@ export default async function EventPage({
       eventId={event.id}
       selfParticipant={selfParticipant}
       participants={event.participants}
+      guests={event.guests}
       organizerDisplayName={event.organizer.displayName}
       slots={event.slots}
       startTimestamp={event.startTimestamp}
