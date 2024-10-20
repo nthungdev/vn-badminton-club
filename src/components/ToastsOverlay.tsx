@@ -7,8 +7,6 @@ import { useToastsContext } from '@/app/contexts/ToastsContext'
 export default function ToastsOverlay() {
   const { toasts } = useToastsContext()
 
-  console.log('toasts', toasts)
-
   return (
     <div
       id="toasts-overlay"
