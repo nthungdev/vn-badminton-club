@@ -6,6 +6,7 @@ import {
   CreateEvent,
   EventParticipant,
   FirestoreEvent,
+  FirestoreEventGuest,
   HomeViewEvent,
   UpdateEvent,
   WriteEvent,
@@ -193,7 +194,7 @@ export async function getEventById(eventId: string) {
       }
     )
 
-    if (error) {
+    if (error !== undefined) {
       throw new AppError(error)
     }
 
@@ -320,34 +321,49 @@ export async function leaveEvent(uid: string, eventId: string) {
   }
 }
 
-export async function addGuest(eventId: string, uid: string, name: string) {
+export async function addGuest(
+  eventId: string,
+  uid: string,
+  displayName: string
+) {
   const eventRef = eventCollection
     .withConverter(eventWriteConverter)
     .doc(eventId)
 
   try {
-    const error = await firestore.runTransaction(async (transaction) => {
-      const doc = await transaction.get(eventRef)
-      const data = doc.data()
-      if (!doc.exists || !data) {
-        return EVENT_NOT_FOUND_ERROR
+    const { error, guest } = await firestore.runTransaction(
+      async (transaction) => {
+        const doc = await transaction.get(eventRef)
+        const data = doc.data()
+        if (!doc.exists || !data) {
+          return { error: EVENT_NOT_FOUND_ERROR }
+        }
+
+        if (isEventFull(data)) {
+          return { error: EVENT_FULL_ERROR }
+        }
+
+        const guest: FirestoreEventGuest = {
+          addedBy: uid,
+          guestId: new Date().getTime().toString(),
+          displayName,
+        }
+
+        transaction.update(eventRef, {
+          guests: FieldValue.arrayUnion(guest),
+        })
+
+        return { guest }
       }
+    )
 
-      if (isEventFull(data)) {
-        return EVENT_FULL_ERROR
-      }
-
-      transaction.update(eventRef, {
-        guests: FieldValue.arrayUnion({ addedBy: uid, name }),
-      })
-    })
-
-    if (error) {
+    if (error !== undefined) {
       throw new Error(error)
     }
 
-    console.info(`User ${uid} added guest ${name} to event ${eventId}`)
+    console.info(`User ${uid} added guest ${displayName} to event ${eventId}`)
     cache.del(EventsCacheKey.NewEvents)
+    return guest
   } catch (error) {
     if (error instanceof AppError) {
       throw error
@@ -357,7 +373,7 @@ export async function addGuest(eventId: string, uid: string, name: string) {
   }
 }
 
-export async function kickGuest(eventId: string, uid: string, name: string) {
+export async function kickGuest(eventId: string, guestId: string) {
   const eventRef = eventCollection
     .withConverter(eventWriteConverter)
     .doc(eventId)
@@ -371,7 +387,7 @@ export async function kickGuest(eventId: string, uid: string, name: string) {
       }
 
       transaction.update(eventRef, {
-        guests: FieldValue.arrayRemove({ addedBy: uid, name }),
+        guests: data.guests.filter((guest) => guest.guestId !== guestId),
       })
     })
 
@@ -379,7 +395,7 @@ export async function kickGuest(eventId: string, uid: string, name: string) {
       throw new Error(error)
     }
 
-    console.info(`User ${uid} kicking guest ${name} from event ${eventId}`)
+    console.info(`Guest ${guestId} was kicked from event ${eventId}`)
     cache.del(EventsCacheKey.NewEvents)
   } catch (error) {
     if (error instanceof AppError) {

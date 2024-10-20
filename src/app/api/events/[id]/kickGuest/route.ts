@@ -5,8 +5,8 @@ import { NextRequest } from 'next/server'
 import { isRoleMod } from '@/lib/utils/auth'
 import { EVENT_NOT_FOUND_ERROR } from '@/constants/errorMessages'
 
-interface EventGuestAddRequest {
-  name?: string
+interface EventGuestKickRequest {
+  guestId: string
 }
 
 export async function PATCH(
@@ -19,10 +19,10 @@ export async function PATCH(
   }
 
   const { id: eventId } = params
-  const data: EventGuestAddRequest = await request.json()
+  const data: EventGuestKickRequest = await request.json()
 
-  if (!data.name) {
-    return createErrorResponse('Missing guest name', 400)
+  if (!data.guestId) {
+    return createErrorResponse('Missing guestId', 400)
   }
 
   try {
@@ -40,7 +40,7 @@ export async function PATCH(
       return createErrorResponse('Unauthorized', 401)
     }
 
-    await kickGuest(eventId, decodedIdToken.uid, data.name)
+    await kickGuest(eventId, data.guestId)
     return Response.json({ success: true })
   } catch (error) {
     return createErrorResponse(error, 500)

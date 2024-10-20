@@ -1,10 +1,10 @@
-import { createErrorResponse } from '@/lib/apiResponse'
+import { createErrorResponse, createSuccessResponse } from '@/lib/apiResponse'
 import { addGuest } from '@/firebase/firestore'
 import { verifySession } from '@/lib/session'
 import { NextRequest } from 'next/server'
 
 interface EventGuestAddRequest {
-  name?: string
+  displayName?: string
 }
 
 export async function PATCH(
@@ -19,13 +19,13 @@ export async function PATCH(
   const { id: eventId } = params
   const data: EventGuestAddRequest = await request.json()
 
-  if (!data.name) {
-    return createErrorResponse('Missing guest name', 400)
+  if (!data.displayName) {
+    return createErrorResponse('Missing guest displayName', 400)
   }
 
   try {
-    await addGuest(eventId, decodedIdToken.uid, data.name)
-    return Response.json({ success: true })
+    const guest = await addGuest(eventId, decodedIdToken.uid, data.displayName)
+    return createSuccessResponse({ guest })
   } catch (error) {
     return createErrorResponse(error, 500)
   }
