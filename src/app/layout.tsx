@@ -1,13 +1,13 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
 import localFont from 'next/font/local'
-import Header from '@/src/components/Header'
-import { AuthProvider } from '@/src/components/providers/AuthProvider'
-import { getAuthUser } from '@/src/lib/authUtils'
-import ToastsOverlay from '@/src/components/ToastsOverlay'
+import Header from '@/components/Header'
+import { AuthProvider } from '@/components/providers/AuthProvider'
+import { getAuthUser } from '@/lib/authUtils'
+import ToastsOverlay from '@/components/ToastsOverlay'
 
 import './globals.css'
-import ToastsProvider from '@/src/components/providers/ToastsProvider'
+import ToastsProvider from '@/components/providers/ToastsProvider'
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',

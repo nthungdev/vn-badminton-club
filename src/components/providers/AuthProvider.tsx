@@ -1,6 +1,6 @@
 'use client'
 
-import { AuthContext, AuthContextUser } from '@/src/app/contexts/AuthContext'
+import { AuthContext, AuthContextUser } from '@/app/contexts/AuthContext'
 
 export interface AuthProviderProps {
   user: AuthContextUser | null

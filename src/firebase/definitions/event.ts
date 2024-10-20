@@ -12,6 +12,11 @@ export interface AppEvent {
   byMod: boolean
 }
 
+export interface FirestoreEventGuest {
+  name: string
+  addedBy: string
+}
+
 export interface FirestoreEvent {
   title: string
   startTimestamp: Timestamp
@@ -20,6 +25,7 @@ export interface FirestoreEvent {
   createdBy: string
   byMod: boolean
   participantIds: string[]
+  guests: FirestoreEventGuest[]
 }
 
 export interface CreateEvent {

@@ -36,19 +36,6 @@ interface VerifySessionResult {
   session?: string
 }
 
-// export async function verifyIdToken(idToken?: string) {
-//   const _idToken = idToken || cookies().get('session')?.value
-//   try {
-//     if (!_idToken) {
-//       return {}
-//     }
-//     const decodedIdToken = await auth.verifyIdToken(_idToken)
-//     return { isAuth: true, decodedIdToken }
-//   } catch {
-//     return {}
-//   }
-// }
-
 export const verifySession = async (session?: string) => {
   const _session = session || cookies().get('session')?.value || ''
   try {

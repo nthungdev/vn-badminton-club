@@ -1,7 +1,7 @@
 'use client'
 
-import BasePage from '@/src/components/BasePage'
-import SignInForm from '@/src/components/SignInForm'
+import BasePage from '@/components/BasePage'
+import SignInForm from '@/components/SignInForm'
 
 export default function PageSignIn() {
   return (

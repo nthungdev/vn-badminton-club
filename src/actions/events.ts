@@ -16,13 +16,13 @@ import {
   createEvent as _createEvent,
   updateEvent as _updateEvent,
   getEventById as _getEventById,
-} from '@/src/firebase/firestore'
-import { menuHref } from '@/src/lib/menu'
-import { Role } from '@/src/firebase/definitions'
-import { CreateEvent, UpdateEvent } from '@/src/firebase/definitions/event'
+} from '@/firebase/firestore'
+import { menuHref } from '@/lib/menu'
+import { Role } from '@/firebase/definitions'
+import { CreateEvent, UpdateEvent } from '@/firebase/definitions/event'
 import { isRedirectError } from 'next/dist/client/components/redirect'
-import { fieldsToDate } from '@/src/lib/format'
-import { INTERNAL_ERROR } from '@/src/constants/errorMessages'
+import { fieldsToDate } from '@/lib/format'
+import { INTERNAL_ERROR } from '@/constants/errorMessages'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)

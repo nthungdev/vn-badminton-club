@@ -1,6 +1,6 @@
-import { createErrorResponse } from '@/src/lib/apiResponse'
-import { INTERNAL_ERROR } from '@/src/constants/errorMessages'
-import { verifySession } from '@/src/lib/session'
+import { createErrorResponse } from '@/lib/apiResponse'
+import { INTERNAL_ERROR } from '@/constants/errorMessages'
+import { verifySession } from '@/lib/session'
 import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic' // defaults to auto

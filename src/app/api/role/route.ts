@@ -1,9 +1,9 @@
-import { createErrorResponse } from '@/src/lib/apiResponse'
-import { RolePostRequest } from '@/src/firebase/definitions'
-import { AuthError } from '@/src/firebase/error'
-import { auth } from '@/src/firebase/serverApp'
-import { setUserRole } from '@/src/firebase/utils'
-import { validateAuthority } from '@/src/lib/utils/api'
+import { createErrorResponse } from '@/lib/apiResponse'
+import { RolePostRequest } from '@/firebase/definitions'
+import { AuthError } from '@/firebase/error'
+import { auth } from '@/firebase/serverApp'
+import { setUserRole } from '@/firebase/utils'
+import { validateAuthority } from '@/lib/utils/api'
 import { NextRequest } from 'next/server'
 
 // These routes require user with mod privileges to access them.

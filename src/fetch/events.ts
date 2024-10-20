@@ -1,6 +1,6 @@
-import { EventsGetResponse } from '@/src/app/api/events/types'
-import AppError from '@/src/lib/AppError'
-import { HomeViewEvent } from '@/src/firebase/definitions/event'
+import { EventsGetResponse } from '@/app/api/events/types'
+import AppError from '@/lib/AppError'
+import { HomeViewEvent } from '@/firebase/definitions/event'
 
 function formatHomeViewEvents(events: HomeViewEvent[]) {
   return events.map((e) => ({

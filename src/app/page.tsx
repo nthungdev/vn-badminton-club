@@ -1,6 +1,6 @@
-import BasePage from '@/src/components/BasePage'
-import EventList from '@/src/components/EventList'
-import { getAuthUser } from '@/src/lib/authUtils'
+import BasePage from '@/components/BasePage'
+import EventList from '@/components/EventList'
+import { getAuthUser } from '@/lib/authUtils'
 import Link from 'next/link'
 
 export default async function PageHome() {

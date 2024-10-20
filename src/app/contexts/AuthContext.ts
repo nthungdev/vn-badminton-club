@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react'
-import { Role } from '@/src/firebase/definitions'
+import { Role } from '@/firebase/definitions'
 
 export interface AuthContextUser {
   uid: string

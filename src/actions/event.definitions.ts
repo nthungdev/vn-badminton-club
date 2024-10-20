@@ -1,4 +1,4 @@
-import { fieldsToDate, fieldsToDayjs } from '@/src/lib/format'
+import { fieldsToDate, fieldsToDayjs } from '@/lib/format'
 import dayjs from 'dayjs'
 import { z } from 'zod'
 

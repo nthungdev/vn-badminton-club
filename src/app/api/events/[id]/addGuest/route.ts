@@ -12,12 +12,12 @@ export async function PATCH(
     return createErrorResponse('Unauthorized', 401)
   }
 
-  const { id } = params
+  const { id: eventId } = params
 
   try {
     // TODO make sure the event is not full
     // TODO make sure the event is not past
-    await joinEvent(decodedIdToken.uid, id)
+    await joinEvent(decodedIdToken.uid, eventId)
     return Response.json({ success: true })
   } catch (error) {
     console.error('Error joining event:', error)

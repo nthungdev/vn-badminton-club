@@ -1,7 +1,7 @@
-import { createErrorResponse } from '@/src/lib/apiResponse'
-import { getEventById, leaveEvent } from '@/src/firebase/firestore'
-import { verifySession } from '@/src/lib/session'
-import { isRoleMod } from '@/src/lib/utils/auth'
+import { createErrorResponse } from '@/lib/apiResponse'
+import { getEventById, leaveEvent } from '@/firebase/firestore'
+import { verifySession } from '@/lib/session'
+import { isRoleMod } from '@/lib/utils/auth'
 import { NextRequest } from 'next/server'
 
 interface EventParticipantKickRequest {

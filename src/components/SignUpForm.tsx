@@ -1,6 +1,6 @@
 'use client'
 
-import { signUp } from '@/src/actions/auth'
+import { signUp } from '@/actions/auth'
 import { useFormState, useFormStatus } from 'react-dom'
 
 const INPUT_EMAIL_ID = 'sign-up-input-email'

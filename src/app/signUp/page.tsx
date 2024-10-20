@@ -1,7 +1,7 @@
 'use client'
 
-import BasePage from '@/src/components/BasePage'
-import SignUpForm from '@/src/components/SignUpForm'
+import BasePage from '@/components/BasePage'
+import SignUpForm from '@/components/SignUpForm'
 
 export default function PageSignUp() {
 

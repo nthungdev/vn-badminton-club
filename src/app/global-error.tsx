@@ -1,6 +1,6 @@
 'use client'
 
-import BasePage from '@/src/components/BasePage'
+import BasePage from '@/components/BasePage'
 import Link from 'next/link'
 
 import './globals.css'

@@ -1,12 +1,12 @@
 // Netlify cannot ignore deploying upon new posts to support incremental static regeneration
 
-import { getEventById } from '@/src/actions/events'
+import { getEventById } from '@/actions/events'
 import { redirect } from 'next/navigation'
 import dayjs from 'dayjs'
-import { EventParticipant } from '@/src/firebase/definitions/event'
+import { EventParticipant } from '@/firebase/definitions/event'
 import RenderedEventPage from './RenderedEventPage'
-import { Role } from '@/src/firebase/definitions'
-import { getAuthUser } from '@/src/lib/authUtils'
+import { Role } from '@/firebase/definitions'
+import { getAuthUser } from '@/lib/authUtils'
 
 export default async function EventPage({
   searchParams: { e },

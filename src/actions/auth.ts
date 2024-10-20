@@ -1,17 +1,17 @@
 'use server'
 
-import { SignInFormSchema, SignInFormState, SignUpFormSchema, SignUpFormState } from '@/src/lib/definitions'
-import { auth } from '@/src/firebase/serverApp'
-import { menuHref } from '@/src/lib/menu'
-import { saveSession, verifySession } from '@/src/lib/session'
+import { SignInFormSchema, SignInFormState, SignUpFormSchema, SignUpFormState } from '@/lib/definitions'
+import { auth } from '@/firebase/serverApp'
+import { menuHref } from '@/lib/menu'
+import { saveSession, verifySession } from '@/lib/session'
 import { FirebaseAuthError } from 'firebase-admin/auth'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { setUserRole } from '@/src/firebase/utils'
-import { Role } from '@/src/firebase/definitions'
+import { setUserRole } from '@/firebase/utils'
+import { Role } from '@/firebase/definitions'
 import { cache } from 'react'
-import { INTERNAL_ERROR } from '@/src/constants/errorMessages'
-import { signInWithEmailPassword } from '@/src/firebase/auth'
+import { INTERNAL_ERROR } from '@/constants/errorMessages'
+import { signInWithEmailPassword } from '@/firebase/auth'
 
 export async function signUp(prevState: SignUpFormState, formData: FormData) {
   // Validate form fields

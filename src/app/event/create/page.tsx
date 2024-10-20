@@ -1,5 +1,5 @@
-import BasePage from "@/src/components/BasePage";
-import EventForm from "@/src/components/EventForm";
+import BasePage from "@/components/BasePage";
+import EventForm from "@/components/EventForm";
 
 export default function PageEventCreate() {
   return <BasePage>

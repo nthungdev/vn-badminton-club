@@ -6,14 +6,14 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import classNames from 'classnames'
 
-import { ParticipateEventButton } from '@/src/components/ParticipateEventButton'
-import { joinEvent, leaveEvent } from '@/src/fetch/events'
-import { EventParticipant } from '@/src/firebase/definitions/event'
-import { eventTime } from '@/src/lib/format'
-import { menuHref } from '@/src/lib/menu'
-import { UNKNOWN_ERROR } from '@/src/constants/errorMessages'
+import { ParticipateEventButton } from '@/components/ParticipateEventButton'
+import { joinEvent, leaveEvent } from '@/fetch/events'
+import { EventParticipant } from '@/firebase/definitions/event'
+import { eventTime } from '@/lib/format'
+import { menuHref } from '@/lib/menu'
+import { UNKNOWN_ERROR } from '@/constants/errorMessages'
 import { useToastsContext } from '../contexts/ToastsContext'
-import AppError from '@/src/lib/AppError'
+import AppError from '@/lib/AppError'
 
 interface RenderedEventPageProps {
   eventId: string

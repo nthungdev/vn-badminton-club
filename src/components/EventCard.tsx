@@ -1,4 +1,4 @@
-import { eventTime, nowToTimestamp } from '@/src/lib/format'
+import { eventTime, nowToTimestamp } from '@/lib/format'
 import Link from 'next/link'
 import EventCardModBadge from './EventCardModBadge'
 
