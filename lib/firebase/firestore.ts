@@ -19,19 +19,23 @@ const cache = getNodeCache('eventsCache')
 
 const EVENT_CUTOFF = 8 * 60 * 60 * 1000 // 8 hours
 
+function docToEvent(
+  doc: FirebaseFirestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>
+) {
+  const data = doc.data() as FirestoreEvent
+  const event: HomeViewEvent = {
+    ...data,
+    id: doc.id,
+    startTimestamp: data.startTimestamp.toDate(),
+    endTimestamp: data.endTimestamp.toDate(),
+  }
+  return event
+}
+
 function snapshotToEvents(
   snapshot: FirebaseFirestore.QuerySnapshot<FirebaseFirestore.DocumentData>
 ) {
-  return snapshot.docs.map((doc) => {
-    const data = doc.data() as FirestoreEvent
-    const event: HomeViewEvent = {
-      ...data,
-      id: doc.id,
-      startTimestamp: data.startTimestamp.toDate(),
-      endTimestamp: data.endTimestamp.toDate(),
-    }
-    return event
-  })
+  return snapshot.docs.map(docToEvent)
 }
 
 export async function getJoinedEvents(
@@ -118,7 +122,7 @@ async function getEventById(eventId: string) {
       data.createdBy
     )) as EventParticipant | null
     if (!organizer) {
-      throw new Error('Organizer not found')
+      throw new AppError('Organizer not found')
     }
 
     const event: CreatedEvent = {
@@ -132,7 +136,9 @@ async function getEventById(eventId: string) {
 
     return event
   } catch (error) {
-    console.error('Error getting event:', error)
+    if (error instanceof AppError) {
+      throw error
+    }
     throw new Error('Error getting event')
   }
 }
@@ -201,7 +207,9 @@ async function joinEvent(uid: string, eventId: string) {
     console.info(`User ${uid} joined event ${eventId}`)
     cache.del(EventsCacheKey.NewEvents)
   } catch (error) {
-    console.error('Error joining event:', error)
+    if (error instanceof AppError) {
+      throw error
+    }
     throw new Error('Error joining event')
   }
 }
@@ -235,7 +243,9 @@ async function leaveEvent(uid: string, eventId: string) {
 
     cache.del(EventsCacheKey.NewEvents)
   } catch (error) {
-    console.error('Error leaving event:', error)
+    if (error instanceof AppError) {
+      throw error
+    }
     throw new Error('Error leaving event')
   }
 }
