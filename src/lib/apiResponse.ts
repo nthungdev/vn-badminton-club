@@ -13,7 +13,7 @@ type SuccessApiResponse<T> = {
 
 type ApiResponse<T> = ErrorApiResponse | SuccessApiResponse<T>
 
-function createSuccessResponse(data: object, status: number) {
+function createSuccessResponse(data: object, status: number = 200) {
   return Response.json(
     {
       success: true,
