@@ -1,7 +1,7 @@
 'server-only'
 
 import { NextRequest } from 'next/server'
-import { verifySession, } from '@/src/lib/session'
+import { verifySession, } from '@/lib/session'
 import { auth } from '../../firebase/serverApp'
 import { Role } from '../../firebase/definitions'
 

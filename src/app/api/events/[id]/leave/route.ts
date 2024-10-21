@@ -1,6 +1,6 @@
-import { createErrorResponse } from '@/src/lib/apiResponse'
-import { leaveEvent } from '@/src/firebase/firestore'
-import { verifySession } from '@/src/lib/session'
+import { createErrorResponse } from '@/lib/apiResponse'
+import { leaveEvent } from '@/firebase/firestore'
+import { verifySession } from '@/lib/session'
 import { NextRequest } from 'next/server'
 
 export async function PATCH(

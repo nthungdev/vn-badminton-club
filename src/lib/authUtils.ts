@@ -3,7 +3,7 @@
 import { DecodedIdToken, UserRecord } from 'firebase-admin/auth'
 import { Role } from '../firebase/definitions'
 import { auth } from '../firebase/serverApp'
-import { AuthContextUser } from '@/src/app/contexts/AuthContext'
+import { AuthContextUser } from '@/app/contexts/AuthContext'
 import { verifySession } from './session'
 
 export function getUserRole(user: UserRecord) {

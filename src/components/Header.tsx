@@ -1,6 +1,6 @@
-import { AuthGuard, menu } from '@/src/lib/menu'
+import { AuthGuard, menu } from '@/lib/menu'
 import Nav from './Nav'
-import { getAuthUser } from '@/src/lib/authUtils'
+import { getAuthUser } from '@/lib/authUtils'
 
 export default async function Header() {
   const me = await getAuthUser()

@@ -1,11 +1,11 @@
-import { createErrorResponse, createSuccessResponse } from '@/src/lib/apiResponse'
-import { HomeViewEvent } from '@/src/firebase/definitions/event'
+import { createErrorResponse, createSuccessResponse } from '@/lib/apiResponse'
+import { HomeViewEvent } from '@/firebase/definitions/event'
 import {
   getJoinedEvents,
   getNewEvents,
   getPastEvents,
-} from '@/src/firebase/firestore'
-import { verifySession } from '@/src/lib/session'
+} from '@/firebase/firestore'
+import { verifySession } from '@/lib/session'
 import { NextRequest } from 'next/server'
 
 const DEFAULT_GET_LIMIT = 10

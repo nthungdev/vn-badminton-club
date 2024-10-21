@@ -1,7 +1,7 @@
 'use client'
 
-import { signOut } from '@/src/actions/auth'
-import { menuHref, MenuItem } from '@/src/lib/menu'
+import { signOut } from '@/actions/auth'
+import { menuHref, MenuItem } from '@/lib/menu'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Tooltip } from 'flowbite-react'

@@ -1,5 +1,5 @@
-import { ApiResponse } from "@/src/lib/apiResponse";
-import { HomeViewEvent } from "@/src/firebase/definitions/event";
+import { ApiResponse } from '@/lib/apiResponse'
+import { HomeViewEvent } from '@/firebase/definitions/event'
 
 export type EventsGetResponse = ApiResponse<{ events: HomeViewEvent[] }>
 

@@ -1,15 +1,10 @@
 import { Timestamp } from 'firebase-admin/firestore'
 
-export interface AppEvent {
-  title: string
-  startTimestamp: Date
-  date: string
-  startTime: string
-  endTime: string
-  slots: number
-  // uid of the user who created the event
-  createdBy: string
-  byMod: boolean
+export interface FirestoreEventGuest {
+  displayName: string
+  addedBy: string
+  userDisplayName: string
+  guestId: string
 }
 
 export interface FirestoreEvent {
@@ -20,6 +15,7 @@ export interface FirestoreEvent {
   createdBy: string
   byMod: boolean
   participantIds: string[]
+  guests: FirestoreEventGuest[]
 }
 
 export interface CreateEvent {
@@ -44,14 +40,22 @@ export type EventParticipant = {
   displayName: string
 }
 
-export type CreatedEvent = CreateEvent & {
+export type CreatedEvent = HomeViewEvent & {
   id: string
   organizer: EventParticipant
   participantIds: string[]
   participants: EventParticipant[]
 }
 
+export type WriteEvent = CreateEvent & {
+  // id: string
+  participantIds: string[]
+  guests: FirestoreEventGuest[]
+}
+
 export type HomeViewEvent = CreateEvent & {
   id: string
   participantIds: string[]
+  guests: FirestoreEventGuest[]
 }
+

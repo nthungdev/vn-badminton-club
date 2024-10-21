@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import classNames from 'classnames'
-import { HomeViewEvent } from '@/src/firebase/definitions/event'
-import LoadingSpinner from '@/src/components/LoadingSpinner'
-import AppError from '@/src/lib/AppError'
-import { getJoinedEvents, getNewEvents, getPastEvents } from '@/src/fetch/events'
-import { useAuth } from '@/src/app/contexts/AuthContext'
-import EventCard from '@/src/components/EventCard'
+import { HomeViewEvent } from '@/firebase/definitions/event'
+import LoadingSpinner from '@/components/LoadingSpinner'
+import AppError from '@/lib/AppError'
+import { getJoinedEvents, getNewEvents, getPastEvents } from '@/fetch/events'
+import { useAuth } from '@/app/contexts/AuthContext'
+import EventCard from '@/components/EventCard'
 
 export default function EventList() {
   const [upcomingEvents, setUpcomingEvents] = useState<HomeViewEvent[]>([])

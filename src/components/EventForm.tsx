@@ -3,8 +3,8 @@
 import { useFormState, useFormStatus } from 'react-dom'
 import DateInput from './DateInput'
 import TimeInput from './TimeInput'
-import { createEvent, updateEvent } from '@/src/actions/events'
-import { CreatedEvent } from '@/src/firebase/definitions/event'
+import { createEvent, updateEvent } from '@/actions/events'
+import { CreatedEvent } from '@/firebase/definitions/event'
 import dayjs from 'dayjs'
 import LoadingSpinner from './LoadingSpinner'
 
