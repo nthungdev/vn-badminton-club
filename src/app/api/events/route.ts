@@ -8,7 +8,7 @@ import {
 import { verifySession } from '@/lib/session'
 import { NextRequest } from 'next/server'
 
-const DEFAULT_GET_LIMIT = 10
+const DEFAULT_GET_LIMIT = 100
 
 export async function GET(request: NextRequest) {
   const filter = request.nextUrl.searchParams.get('filter')
