@@ -23,6 +23,7 @@ import { menuHref } from '@/lib/menu'
 import { UNKNOWN_ERROR } from '@/constants/errorMessages'
 import { useToastsContext } from '../contexts/ToastsContext'
 import AppError from '@/lib/AppError'
+import dayjs from 'dayjs'
 
 interface GroupedParticipants {
   users: EventParticipant[]
@@ -180,6 +181,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
   const [kickMode, setKickMode] = useState(false)
   const [updateMode, setUpdateMode] = useState(false)
 
+  const isPastEvent = dayjs().isAfter(dayjs(props.startTimestamp))
   const time = eventTime(props.startTimestamp, props.endTimestamp)
   const kickToggleText = 'Kick Participant'
   const meJoined = participants.some(
@@ -194,9 +196,11 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
     (p) => isFirestoreEventGuest(p) && p.addedBy === props.selfParticipant.uid
   )
   const showKickButton =
+    !isPastEvent &&
     participants.length > 0 &&
     !isOnlySelfParticipant &&
     (props.showUpdateButton || hasMyGuests)
+  const showAddGuestButton = !isPastEvent
   const kickableParticipants = participants.filter((p) => {
     if (isEventParticipant(p) && p.uid === props.selfParticipant.uid) {
       return false
@@ -519,17 +523,19 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
                     {kickToggleText}
                   </button>
                 )}
-                <button
-                  className={classNames(
-                    'py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent focus:outline-none disabled:opacity-50 disabled:pointer-events-none transition-colors',
-                    kickMode
-                      ? 'text-white bg-red-600 hover:bg-red-700 focus:bg-red-700'
-                      : 'text-secondary-700 hover:text-white focus:text-white hover:bg-secondary-700 focus:bg-secondary-700'
-                  )}
-                  onClick={handleAddGuest}
-                >
-                  Add Guest
-                </button>
+                {showAddGuestButton && (
+                  <button
+                    className={classNames(
+                      'py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent focus:outline-none disabled:opacity-50 disabled:pointer-events-none transition-colors',
+                      kickMode
+                        ? 'text-white bg-red-600 hover:bg-red-700 focus:bg-red-700'
+                        : 'text-secondary-700 hover:text-white focus:text-white hover:bg-secondary-700 focus:bg-secondary-700'
+                    )}
+                    onClick={handleAddGuest}
+                  >
+                    Add Guest
+                  </button>
+                )}
               </div>
             </div>
 
