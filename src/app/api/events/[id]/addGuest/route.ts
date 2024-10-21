@@ -24,7 +24,12 @@ export async function PATCH(
   }
 
   try {
-    const guest = await addGuest(eventId, decodedIdToken.uid, data.displayName)
+    const guest = await addGuest(
+      eventId,
+      decodedIdToken.uid,
+      decodedIdToken.name,
+      data.displayName
+    )
     return createSuccessResponse({ guest })
   } catch (error) {
     return createErrorResponse(error, 500)
