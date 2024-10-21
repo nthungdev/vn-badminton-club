@@ -3,6 +3,7 @@ import { Timestamp } from 'firebase-admin/firestore'
 export interface FirestoreEventGuest {
   displayName: string
   addedBy: string
+  userDisplayName: string
   guestId: string
 }
 

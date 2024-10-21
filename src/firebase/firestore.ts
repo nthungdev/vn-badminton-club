@@ -76,7 +76,7 @@ const eventWriteConverter = {
 async function getEventParticipantFromUid(uid: string) {
   const user = await getUserById(uid)
   if (!user) {
-    throw new Error('User not found')
+    throw new AppError('User not found')
   }
   const eventParticipant: EventParticipant = {
     uid: user.uid,
@@ -271,8 +271,8 @@ export async function joinEvent(uid: string, eventId: string) {
       })
     })
 
-    if (error) {
-      throw new Error(error)
+    if (error !== undefined) {
+      throw new AppError(error)
     }
 
     console.info(`User ${uid} joined event ${eventId}`)
@@ -321,9 +321,38 @@ export async function leaveEvent(uid: string, eventId: string) {
   }
 }
 
+export async function kick(eventId: string, uid: string) {
+  const eventRef = firestore.collection(COLLECTION_EVENTS).doc(eventId)
+
+  try {
+    const error = await firestore.runTransaction(async (transaction) => {
+      const doc = await transaction.get(eventRef)
+      if (!doc.exists) {
+        return 'Event not found'
+      }
+
+      transaction.update(eventRef, {
+        participantIds: FieldValue.arrayRemove(uid),
+      })
+    })
+
+    if (error) {
+      throw new AppError(error)
+    }
+
+    cache.del(EventsCacheKey.NewEvents)
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error
+    }
+    throw new Error('Error kicking user from event')
+  }
+}
+
 export async function addGuest(
   eventId: string,
   uid: string,
+  userDisplayName: string,
   displayName: string
 ) {
   const eventRef = eventCollection
@@ -345,6 +374,7 @@ export async function addGuest(
 
         const guest: FirestoreEventGuest = {
           addedBy: uid,
+          userDisplayName,
           guestId: new Date().getTime().toString(),
           displayName,
         }
@@ -358,7 +388,7 @@ export async function addGuest(
     )
 
     if (error !== undefined) {
-      throw new Error(error)
+      throw new AppError(error)
     }
 
     console.info(`User ${uid} added guest ${displayName} to event ${eventId}`)
@@ -373,17 +403,34 @@ export async function addGuest(
   }
 }
 
-export async function kickGuest(eventId: string, guestId: string) {
+export async function kickGuest(
+  eventId: string,
+  guestId: string,
+  meUid: string,
+  { checkPermission = true }: { checkPermission: boolean }
+) {
   const eventRef = eventCollection
     .withConverter(eventWriteConverter)
     .doc(eventId)
 
   try {
-    const error = await firestore.runTransaction(async (transaction) => {
+    const errorMessage = await firestore.runTransaction(async (transaction) => {
       const doc = await transaction.get(eventRef)
       const data = doc.data()
       if (!doc.exists || !data) {
         return EVENT_NOT_FOUND_ERROR
+      }
+
+      if (checkPermission) {
+        const guest = data.guests.find((guest) => guest.guestId === guestId)
+        if (guest) {
+          if (guest.addedBy !== meUid  && data.createdBy !== meUid) {
+            return 'Unauthorized. You are not allowed to kick this guest.'
+          }
+        } else {
+          // Might happen when race condition: the guest was already kicked by someone else
+          return 'Guest not found.'
+        }
       }
 
       transaction.update(eventRef, {
@@ -391,8 +438,8 @@ export async function kickGuest(eventId: string, guestId: string) {
       })
     })
 
-    if (error) {
-      throw new Error(error)
+    if (errorMessage !== undefined) {
+      throw new AppError(errorMessage)
     }
 
     console.info(`Guest ${guestId} was kicked from event ${eventId}`)
