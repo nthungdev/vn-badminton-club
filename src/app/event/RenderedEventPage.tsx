@@ -181,12 +181,14 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
   const [kickMode, setKickMode] = useState(false)
   const [updateMode, setUpdateMode] = useState(false)
 
+  const isEventFull = participants.length >= props.slots
   const isPastEvent = dayjs().isAfter(dayjs(props.startTimestamp))
   const time = eventTime(props.startTimestamp, props.endTimestamp)
   const kickToggleText = 'Kick Participant'
   const meJoined = participants.some(
     (p) => isEventParticipant(p) && p.uid === props.selfParticipant.uid
   )
+  const shouldDisableParticipateButton = pending && meJoined ? true : isEventFull
   const isOnlySelfParticipant =
     participants.length === 1 &&
     participants.some(
@@ -519,6 +521,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
                         : 'text-secondary-700 hover:text-white focus:text-white hover:bg-secondary-700 focus:bg-secondary-700'
                     )}
                     onClick={handleKickParticipantToggle}
+                    disabled={isPastEvent}
                   >
                     {kickToggleText}
                   </button>
@@ -532,6 +535,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
                         : 'text-secondary-700 hover:text-white focus:text-white hover:bg-secondary-700 focus:bg-secondary-700'
                     )}
                     onClick={handleAddGuest}
+                    disabled={isEventFull}
                   >
                     Add Guest
                   </button>
@@ -570,7 +574,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
         <div className="p-4 shadow-inner">
           <ParticipateEventButton
             joined={meJoined}
-            disabled={pending}
+            disabled={shouldDisableParticipateButton}
             onClick={handleParticipateButton}
           />
         </div>
