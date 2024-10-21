@@ -3,6 +3,7 @@
 import { cookies, headers } from 'next/headers'
 import { auth } from '../firebase/serverApp'
 import { DecodedIdToken } from 'firebase-admin/auth'
+import { Role } from '@/firebase/definitions'
 
 export async function saveSession(idToken: string) {
   const decodedToken = await auth.verifyIdToken(idToken)
@@ -36,10 +37,16 @@ interface VerifySessionResult {
   session?: string
 }
 
+export interface AppDecodedIdToken extends DecodedIdToken {
+  email: string
+  name: string
+  role: Role
+}
+
 export const verifySession = async (session?: string) => {
   const _session = session || cookies().get('session')?.value || headers().get('Authorization')?.split('Bearer ')?.[1] || ''
   try {
-    const decodedIdToken = await auth.verifySessionCookie(_session, true)
+    const decodedIdToken = await auth.verifySessionCookie(_session, true) as AppDecodedIdToken
     if (!decodedIdToken.uid) {
       return {}
     }
