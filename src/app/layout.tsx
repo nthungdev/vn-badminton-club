@@ -8,6 +8,7 @@ import ToastsOverlay from '@/components/ToastsOverlay'
 
 import './globals.css'
 import ToastsProvider from '@/components/providers/ToastsProvider'
+import Head from 'next/head'
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -34,6 +35,9 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
+      <Head>
+        <link rel="shortcut icon" href="/favicon.ico" />
+      </Head>
       <Script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></Script>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50`}
