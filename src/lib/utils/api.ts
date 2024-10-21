@@ -1,9 +1,8 @@
 'server-only'
 
 import { NextRequest } from 'next/server'
-import { verifySession, } from '@/lib/session'
-import { auth } from '../../firebase/serverApp'
-import { Role } from '../../firebase/definitions'
+import { verifySession } from '@/lib/session'
+import { Role } from '@/firebase/definitions'
 
 async function validateAuthority(request: NextRequest) {
   const session = request.headers.get('Authorization')?.split('Bearer ')[1]
@@ -16,8 +15,7 @@ async function validateAuthority(request: NextRequest) {
     return false
   }
 
-  const user = await auth.getUser(decodedIdToken.uid)
-  const role: string | undefined = user.customClaims?.role
+  const role: string = decodedIdToken.role
   if (role !== Role.Mod) {
     return false
   }
