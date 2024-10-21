@@ -24,6 +24,17 @@ import { UNKNOWN_ERROR } from '@/constants/errorMessages'
 import { useToastsContext } from '../contexts/ToastsContext'
 import AppError from '@/lib/AppError'
 
+interface GroupedParticipants {
+  users: EventParticipant[]
+  userGuests: Record<
+    string,
+    {
+      userDisplayName: string
+      guests: FirestoreEventGuest[]
+    }
+  >
+}
+
 interface KickListProps {
   disabled?: boolean
   participants: (EventParticipant | FirestoreEventGuest)[]
@@ -81,16 +92,7 @@ function KickModal({
 }: {
   show: boolean
   onClose: () => void
-  participantsGrouped: {
-    users: EventParticipant[]
-    userGuests: Record<
-      string,
-      {
-        userDisplayName: string
-        guests: FirestoreEventGuest[]
-      }
-    >
-  }
+  participantsGrouped: GroupedParticipants
   disabled?: boolean
   selfParticipant: EventParticipant
   onKick: (participant: EventParticipant | FirestoreEventGuest) => void
@@ -179,8 +181,8 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
   const [updateMode, setUpdateMode] = useState(false)
 
   const time = eventTime(props.startTimestamp, props.endTimestamp)
-  const kickToggleText = kickMode ? 'Cancel' : 'Kick Participant'
-  const joined = participants.some(
+  const kickToggleText = 'Kick Participant'
+  const meJoined = participants.some(
     (p) => isEventParticipant(p) && p.uid === props.selfParticipant.uid
   )
   const isOnlySelfParticipant =
@@ -208,6 +210,30 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
       return isFirestoreEventGuest(p) && p.addedBy === props.selfParticipant.uid
     }
   })
+  const participantsGrouped = participants.reduce(
+    (prev, curr) => {
+      if (isEventParticipant(curr)) {
+        return { ...prev, users: [...prev.users, curr] }
+      } else if (isFirestoreEventGuest(curr)) {
+        return {
+          ...prev,
+          userGuests: {
+            ...prev.userGuests,
+            [curr.addedBy]: {
+              ...prev.userGuests[curr.addedBy],
+              userDisplayName: curr.userDisplayName,
+              guests: [...(prev.userGuests[curr.addedBy]?.guests || []), curr],
+            },
+          },
+        }
+      }
+      return prev
+    },
+    {
+      users: [],
+      userGuests: {}
+    } as GroupedParticipants
+  )
   const kickableParticipantsGrouped = kickableParticipants.reduce(
     (prev, curr) => {
       if (isEventParticipant(curr)) {
@@ -228,15 +254,9 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
       return prev
     },
     {
-      users: [] as EventParticipant[],
-      userGuests: {} as Record<
-        string,
-        {
-          userDisplayName: string
-          guests: FirestoreEventGuest[]
-        }
-      >,
-    }
+      users: [],
+      userGuests: {}
+    } as GroupedParticipants
   )
 
   function handleError(error: unknown) {
@@ -254,7 +274,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
   }
 
   const handleParticipateButton = async () => {
-    if (joined) {
+    if (meJoined) {
       const confirmed = window.confirm(
         'Are you sure you want to leave this event?'
       )
@@ -266,13 +286,13 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
     try {
       setPending(true)
 
-      if (joined) {
+      if (meJoined) {
         await leaveEvent(props.eventId)
       } else {
         await joinEvent(props.eventId)
       }
       setParticipants(
-        joined
+        meJoined
           ? participants.filter(
               (p) =>
                 isEventParticipant(p) && p.uid !== props.selfParticipant.uid
@@ -375,7 +395,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
   return (
     <div className="h-full flex flex-col">
       <div className="p-4 space-y-4 flex-1 overflow-y-auto">
-        <div className="max-w-md mx-auto space-y-10">
+        <div className="max-w-lg mx-auto space-y-10">
           <div>
             <div className="text-gray-600 text-center text-sm">Event</div>
             <h1 className="text-xl font-bold text-center text-primary">
@@ -443,24 +463,47 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
                   {participants.length} / {props.slots}
                 </span>
               </div>
-              <div className="p-4 bg-white border shadow-sm rounded-xl space-y-1">
+              <div className="px-4 py-2 bg-white border shadow-sm rounded-xl divide-y-2">
                 {participants.length === 0 && (
                   <div className="text-center text-gray-600">
                     No one has joined this event.
                   </div>
                 )}
-                {participants.length > 0 && (
-                  <ul className="space-y-1 flex flex-col justify-center items-center">
-                    {participants.map((participant, index) => (
-                      <li
-                        key={index}
-                        className="text-center inline-flex px-3 py-1"
-                      >
-                        {participant.displayName}
+                {participantsGrouped.users.length > 0 && (
+                  <ul className="space-y-1 flex flex-col py-2">
+                    {participantsGrouped.users.map((participant, index) => (
+                      <li key={index} className="px-3 py-1">
+                        <span className="font-medium text-secondary-700">
+                          {participant.displayName}
+                        </span>
+                        {isFirestoreEventGuest(participant) && (
+                          <span className="text-gray-600">
+                            <br />
+                            {`(${participant.userDisplayName}'s guest)`}
+                          </span>
+                        )}
                       </li>
                     ))}
                   </ul>
                 )}
+                {
+                  Object.entries(participantsGrouped.userGuests).map(
+                    ([userId, guestData]) => (
+                      <div className='px-3 py-2 space-y-1'>
+                        <div className='font-medium text-gray-600'>{guestData.userDisplayName}'s guests'</div>
+                        <ul key={userId} className="space-y-1 flex flex-col">
+                        {guestData.guests.map((guest, index) => (
+                          <li key={index} className="py-1">
+                            <span className="font-medium text-secondary-700">
+                              {guest.displayName}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                      </div>
+                    )
+                  )
+                }
               </div>
               <div className="flex flex-row justify-end space-x-2">
                 {showKickButton && (
@@ -520,7 +563,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
       {props.showJoinButton && (
         <div className="p-4 shadow-inner">
           <ParticipateEventButton
-            joined={joined}
+            joined={meJoined}
             disabled={pending}
             onClick={handleParticipateButton}
           />
