@@ -1,5 +1,5 @@
-import { createErrorResponse } from '@/lib/apiResponse'
-import { getEventById, leaveEvent } from '@/firebase/firestore'
+import { createErrorResponse, createSuccessResponse } from '@/lib/apiResponse'
+import { getEventById, kick } from '@/firebase/firestore'
 import { verifySession } from '@/lib/session'
 import { isRoleMod } from '@/lib/utils/auth'
 import { NextRequest } from 'next/server'
@@ -40,11 +40,10 @@ export async function PATCH(
       return createErrorResponse('Unauthorized', 401)
     }
 
-    await leaveEvent(data.uid, eventId)
-
-    return Response.json({ success: true })
+    await kick(eventId, data.uid)
+    return createSuccessResponse({ success: true })
   } catch (error) {
-    console.error('Error leaving event:', error)
+    console.error('Error kicking user from event:', error)
     return createErrorResponse(error, 500)
   }
 }
