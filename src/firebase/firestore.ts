@@ -7,7 +7,6 @@ import {
   EventParticipant,
   FirestoreEvent,
   FirestoreEventGuest,
-  HomeViewEvent,
   UpdateEvent,
   WriteEvent,
 } from './definitions/event'
@@ -105,9 +104,9 @@ export async function getJoinedEvents(
 
 export async function getNewEvents({ limit }: { limit: number }) {
   try {
-    if (cache.has(EventsCacheKey.NewEvents)) {
-      return cache.get(EventsCacheKey.NewEvents) as HomeViewEvent[]
-    }
+    // if (cache.has(EventsCacheKey.NewEvents)) {
+    //   return cache.get(EventsCacheKey.NewEvents) as HomeViewEvent[]
+    // }
 
     const snapshot = await eventCollection
       .withConverter(eventReadConverter)
@@ -127,9 +126,9 @@ export async function getNewEvents({ limit }: { limit: number }) {
 
 export async function getPastEvents({ limit }: { limit: number }) {
   try {
-    if (cache.has(EventsCacheKey.PastEvents)) {
-      return cache.get(EventsCacheKey.PastEvents) as HomeViewEvent[]
-    }
+    // if (cache.has(EventsCacheKey.PastEvents)) {
+    //   return cache.get(EventsCacheKey.PastEvents) as HomeViewEvent[]
+    // }
 
     const snapshot = await eventCollection
       .withConverter(eventReadConverter)
