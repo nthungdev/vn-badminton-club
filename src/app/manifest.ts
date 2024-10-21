@@ -3,7 +3,7 @@ import { MetadataRoute } from 'next'
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: process.env.SITE_TITLE,
-    short_name: process.env.SITE_TITLE,
+    short_name: process.env.SITE_SHORT_TITLE,
     description: process.env.SITE_DESCRIPTION,
     start_url: '/',
     display: 'standalone',
