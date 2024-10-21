@@ -168,7 +168,8 @@ export async function getEventById(eventId: string) {
             participants.push(eventParticipant)
           } catch (error) {
             console.error(
-              `Cannot get event participant ${uid} in event ${eventId}`
+              `Cannot get event participant ${uid} in event ${eventId}`,
+              { error }
             )
             continue
           }
@@ -424,7 +425,7 @@ export async function kickGuest(
       if (checkPermission) {
         const guest = data.guests.find((guest) => guest.guestId === guestId)
         if (guest) {
-          if (guest.addedBy !== meUid  && data.createdBy !== meUid) {
+          if (guest.addedBy !== meUid && data.createdBy !== meUid) {
             return 'Unauthorized. You are not allowed to kick this guest.'
           }
         } else {
