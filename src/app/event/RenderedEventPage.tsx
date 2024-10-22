@@ -5,13 +5,7 @@ import { Tooltip } from 'flowbite-react'
 import Link from 'next/link'
 import classNames from 'classnames'
 import dayjs from 'dayjs'
-import {
-  addGuest,
-  joinEvent,
-  kick,
-  kickGuest,
-  leaveEvent,
-} from '@/fetch/events'
+import { addGuest, kick, kickGuest } from '@/fetch/events'
 import {
   EventParticipant,
   FirestoreEventGuest,
@@ -146,37 +140,16 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
     } as GroupedParticipants
   )
 
-  const handleParticipateButton = async () => {
-    if (meJoined) {
-      const confirmed = window.confirm(
-        'Are you sure you want to leave this event?'
-      )
-      if (!confirmed) {
-        return
-      }
-    }
+  const handleJoinedEvent = () => {
+    setParticipants([...participants, props.selfParticipant])
+  }
 
-    try {
-      setPending(true)
-
-      if (meJoined) {
-        await leaveEvent(props.eventId)
-      } else {
-        await joinEvent(props.eventId)
-      }
-      setParticipants(
-        meJoined
-          ? participants.filter(
-              (p) =>
-                isEventParticipant(p) && p.uid !== props.selfParticipant.uid
-            )
-          : [...participants, props.selfParticipant]
+  const handleLeftEvent = () => {
+    setParticipants(
+      participants.filter(
+        (p) => isEventParticipant(p) && p.uid !== props.selfParticipant.uid
       )
-    } catch (error) {
-      handleError(error)
-    } finally {
-      setPending(false)
-    }
+    )
   }
 
   async function handleAddGuest() {
@@ -406,7 +379,10 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
           <JoinLeaveEventButton
             joined={meJoined}
             disabled={shouldDisableParticipateButton}
-            onClick={handleParticipateButton}
+            eventId={props.eventId}
+            onPending={setPending}
+            onJoined={handleJoinedEvent}
+            onLeft={handleLeftEvent}
           />
         </div>
       )}

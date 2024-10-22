@@ -1,14 +1,47 @@
-import classNames from 'classnames'
-import { MouseEventHandler } from 'react'
+'use client'
 
-interface JoinLeaveEventButtonProps {
+import { joinEvent, leaveEvent } from '@/fetch/events'
+import useErrorHandler from '@/hooks/useErrorHandler'
+import classNames from 'classnames'
+import { ComponentProps } from 'react'
+
+interface JoinLeaveEventButtonProps extends ComponentProps<'button'> {
+  eventId: string
   joined: boolean
-  disabled?: boolean
-  onClick: MouseEventHandler<HTMLButtonElement>
+  onPending: (pending: boolean) => void
+  onJoined: () => void
+  onLeft: () => void
 }
 
 export default function JoinLeaveEventButton(props: JoinLeaveEventButtonProps) {
+  const handleError = useErrorHandler()
+
   const buttonText = props.joined ? 'Leave Event' : 'Join Event'
+
+  const handleParticipateButton = async () => {
+    try {
+      props.onPending(true)
+
+      if (props.joined) {
+        const confirmed = window.confirm(
+          'Are you sure you want to leave this event?'
+        )
+        if (!confirmed) {
+          return
+        }
+
+        await leaveEvent(props.eventId)
+        props.onLeft()
+      } else {
+        await joinEvent(props.eventId)
+        props.onJoined()
+      }
+    } catch (error) {
+      handleError(error)
+    } finally {
+      props.onPending(false)
+    }
+  }
 
   return (
     <button
@@ -20,7 +53,7 @@ export default function JoinLeaveEventButton(props: JoinLeaveEventButtonProps) {
           : 'bg-primary hover:bg-primary-700 focus:bg-primary-700'
       )}
       disabled={props.disabled}
-      onClick={props.onClick}
+      onClick={handleParticipateButton}
     >
       {buttonText}
     </button>
