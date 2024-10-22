@@ -5,8 +5,8 @@ import { Modal, Tooltip } from 'flowbite-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import classNames from 'classnames'
-
-import { JoinLeaveEventButton } from '@/components/ParticipateEventButton'
+import dayjs from 'dayjs'
+import { JoinLeaveEventButton } from '@/app/event/ParticipateEventButton'
 import {
   addGuest,
   joinEvent,
@@ -21,9 +21,8 @@ import {
 import { eventTime } from '@/lib/format'
 import { menuHref } from '@/lib/menu'
 import { UNKNOWN_ERROR } from '@/constants/errorMessages'
-import { useToastsContext } from '../contexts/ToastsContext'
+import { useToastsContext } from '../../contexts/ToastsContext'
 import AppError from '@/lib/AppError'
-import dayjs from 'dayjs'
 
 interface GroupedParticipants {
   users: EventParticipant[]
