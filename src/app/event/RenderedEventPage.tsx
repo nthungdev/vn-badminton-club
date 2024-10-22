@@ -67,7 +67,6 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
   const isEventFull = participants.length >= props.slots
   const isPastEvent = dayjs().isAfter(dayjs(props.startTimestamp))
   const time = eventTime(props.startTimestamp, props.endTimestamp)
-  const kickToggleText = 'Kick Participant'
   const meJoined = participants.some(
     (p) => isEventParticipant(p) && p.uid === props.selfParticipant.uid
   )
@@ -401,7 +400,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
                     onClick={handleKickParticipantToggle}
                     disabled={isPastEvent || kickMode}
                   >
-                    {kickToggleText}
+                    Kick Participant
                   </ParticipantActionButton>
                 )}
                 {showAddGuestButton && (
