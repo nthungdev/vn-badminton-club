@@ -1,7 +1,7 @@
 'use client'
 
 import { ComponentProps, MouseEventHandler, useState } from 'react'
-import { Modal, Tooltip } from 'flowbite-react'
+import { Tooltip } from 'flowbite-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import classNames from 'classnames'
@@ -23,124 +23,8 @@ import { menuHref } from '@/lib/menu'
 import { UNKNOWN_ERROR } from '@/constants/errorMessages'
 import { useToastsContext } from '../../contexts/ToastsContext'
 import AppError from '@/lib/AppError'
-
-interface GroupedParticipants {
-  users: EventParticipant[]
-  userGuests: Record<
-    string,
-    {
-      userDisplayName: string
-      guests: FirestoreEventGuest[]
-    }
-  >
-}
-
-interface KickListProps {
-  disabled?: boolean
-  participants: (EventParticipant | FirestoreEventGuest)[]
-  onKick: (participant: EventParticipant | FirestoreEventGuest) => void
-}
-
-function KickList(props: KickListProps) {
-  return (
-    <ul className="flex flex-wrap flex-row">
-      {props.participants.map((participant, index) => (
-        <li
-          key={index}
-          id="badge-dismiss-default"
-          className="inline-flex items-center mr-2 my-1 px-3 py-1 font-medium text-white bg-secondary-700 rounded"
-        >
-          {participant.displayName}
-          <button
-            type="button"
-            className="inline-flex items-center p-1 ms-2 text-sm text-secondary-300 bg-transparent rounded-sm hover:bg-secondary-200 hover:text-secondary-900"
-            data-dismiss-target="#badge-dismiss-default"
-            aria-label="Remove"
-            onClick={() => props.onKick(participant)}
-            disabled={props.disabled}
-          >
-            <svg
-              className="w-2 h-2"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 14 14"
-            >
-              <path
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-              />
-            </svg>
-            <span className="sr-only">Remove badge</span>
-          </button>
-        </li>
-      ))}
-    </ul>
-  )
-}
-
-function KickModal({
-  show,
-  onClose,
-  participantsGrouped,
-  selfParticipant,
-  onKick,
-  disabled,
-}: {
-  show: boolean
-  onClose: () => void
-  participantsGrouped: GroupedParticipants
-  disabled?: boolean
-  selfParticipant: EventParticipant
-  onKick: (participant: EventParticipant | FirestoreEventGuest) => void
-}) {
-  return (
-    <Modal show={show} onClose={onClose}>
-      <Modal.Header>
-        <span>Kick Participants</span>
-      </Modal.Header>
-      <Modal.Body className="py-2">
-        <div className="divide-y-2">
-          {participantsGrouped.users.length > 0 && (
-            <div className="space-y-1 py-3">
-              <div className="text-xl font-bold">Users</div>
-              <KickList
-                participants={participantsGrouped.users}
-                onKick={onKick}
-                disabled={disabled}
-              />
-            </div>
-          )}
-
-          <div className="divide-y-2">
-            {Object.entries(participantsGrouped.userGuests).map(
-              ([userId, guestData]) => (
-                <div key={userId} className="space-y-1 py-3">
-                  <div className="text-lg">
-                    <span className="font-bold">
-                      {userId === selfParticipant.uid
-                        ? 'My'
-                        : `${guestData.userDisplayName}'s`}
-                    </span>{' '}
-                    Guests
-                  </div>
-                  <KickList
-                    participants={guestData.guests}
-                    onKick={onKick}
-                    disabled={disabled}
-                  />
-                </div>
-              )
-            )}
-          </div>
-        </div>
-      </Modal.Body>
-    </Modal>
-  )
-}
+import { GroupedParticipants } from './types'
+import KickParticipantModal from './KickParticipantModal'
 
 interface RenderedEventPageProps {
   eventId: string
@@ -568,7 +452,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
         </div>
       )}
 
-      <KickModal
+      <KickParticipantModal
         show={kickMode}
         onClose={() => setKickMode(false)}
         onKick={handleKick}
