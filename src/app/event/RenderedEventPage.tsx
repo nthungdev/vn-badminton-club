@@ -1,12 +1,12 @@
 'use client'
 
-import { MouseEventHandler, useState } from 'react'
+import { ComponentProps, MouseEventHandler, useState } from 'react'
 import { Modal, Tooltip } from 'flowbite-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import classNames from 'classnames'
 
-import { ParticipateEventButton } from '@/components/ParticipateEventButton'
+import { JoinLeaveEventButton } from '@/components/ParticipateEventButton'
 import {
   addGuest,
   joinEvent,
@@ -188,7 +188,8 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
   const meJoined = participants.some(
     (p) => isEventParticipant(p) && p.uid === props.selfParticipant.uid
   )
-  const shouldDisableParticipateButton = pending && meJoined ? true : isEventFull
+  const shouldDisableParticipateButton =
+    pending && meJoined ? true : isEventFull
   const isOnlySelfParticipant =
     participants.length === 1 &&
     participants.some(
@@ -513,32 +514,20 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
               </div>
               <div className="flex flex-row justify-end space-x-2">
                 {showKickButton && (
-                  <button
-                    className={classNames(
-                      'py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent focus:outline-none disabled:opacity-50 disabled:pointer-events-none transition-colors',
-                      kickMode
-                        ? 'text-white bg-red-600 hover:bg-red-700 focus:bg-red-700'
-                        : 'text-secondary-700 hover:text-white focus:text-white hover:bg-secondary-700 focus:bg-secondary-700'
-                    )}
+                  <ParticipantActionButton
                     onClick={handleKickParticipantToggle}
-                    disabled={isPastEvent}
+                    disabled={isPastEvent || kickMode}
                   >
                     {kickToggleText}
-                  </button>
+                  </ParticipantActionButton>
                 )}
                 {showAddGuestButton && (
-                  <button
-                    className={classNames(
-                      'py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent focus:outline-none disabled:opacity-50 disabled:pointer-events-none transition-colors',
-                      kickMode
-                        ? 'text-white bg-red-600 hover:bg-red-700 focus:bg-red-700'
-                        : 'text-secondary-700 hover:text-white focus:text-white hover:bg-secondary-700 focus:bg-secondary-700'
-                    )}
+                  <ParticipantActionButton
                     onClick={handleAddGuest}
-                    disabled={isEventFull}
+                    disabled={isEventFull || kickMode}
                   >
                     Add Guest
-                  </button>
+                  </ParticipantActionButton>
                 )}
               </div>
             </div>
@@ -572,7 +561,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
 
       {props.showJoinButton && (
         <div className="p-4 shadow-inner">
-          <ParticipateEventButton
+          <JoinLeaveEventButton
             joined={meJoined}
             disabled={shouldDisableParticipateButton}
             onClick={handleParticipateButton}
@@ -609,6 +598,22 @@ function CancelEventButton({
       onClick={onClick}
     >
       Cancel Event
+    </button>
+  )
+}
+
+function ParticipantActionButton(props: ComponentProps<'button'>) {
+  const { children, className, ...restProps } = props
+
+  return (
+    <button
+      {...restProps}
+      className={classNames(
+        'py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent focus:outline-none disabled:opacity-50 disabled:pointer-events-none transition-colors text-secondary-700 hover:text-white focus:text-white hover:bg-secondary-700 focus:bg-secondary-700',
+        className
+      )}
+    >
+      {children}
     </button>
   )
 }

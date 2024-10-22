@@ -3,13 +3,13 @@
 import classNames from 'classnames'
 import { MouseEventHandler } from 'react'
 
-interface ParticipateEventButtonProps {
+interface JoinLeaveEventButtonProps {
   joined: boolean
   disabled?: boolean
   onClick: MouseEventHandler<HTMLButtonElement>
 }
 
-export function ParticipateEventButton(props: ParticipateEventButtonProps) {
+export function JoinLeaveEventButton(props: JoinLeaveEventButtonProps) {
   const buttonText = props.joined ? 'Leave Event' : 'Join Event'
 
   return (
