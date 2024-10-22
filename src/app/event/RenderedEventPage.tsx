@@ -1,9 +1,8 @@
 'use client'
 
-import { ComponentProps, MouseEventHandler, useState } from 'react'
+import { ComponentProps, useState } from 'react'
 import { Tooltip } from 'flowbite-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import classNames from 'classnames'
 import dayjs from 'dayjs'
 import {
@@ -20,11 +19,11 @@ import {
 import { eventTime } from '@/lib/format'
 import { menuHref } from '@/lib/menu'
 import AppError from '@/lib/AppError'
-import { UNKNOWN_ERROR } from '@/constants/errorMessages'
-import { useToastsContext } from '@/contexts/ToastsContext'
+import useErrorHandler from '@/hooks/useErrorHandler'
 import { GroupedParticipants } from './types'
 import JoinLeaveEventButton from './JoinLeaveEventButton'
 import KickParticipantModal from './KickParticipantModal'
+import CancelEventButton from './CancelEventButton'
 
 interface RenderedEventPageProps {
   eventId: string
@@ -55,8 +54,7 @@ function isFirestoreEventGuest(
 }
 
 export default function RenderedEventPage(props: RenderedEventPageProps) {
-  const router = useRouter()
-  const { addToast } = useToastsContext()
+  const handleError = useErrorHandler()
   const [participants, setParticipants] = useState<
     (EventParticipant | FirestoreEventGuest)[]
   >([...props.participants, ...props.guests])
@@ -148,20 +146,6 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
     } as GroupedParticipants
   )
 
-  function handleError(error: unknown) {
-    if (error instanceof AppError) {
-      addToast({
-        message: error.message,
-        type: 'error',
-      })
-    } else {
-      addToast({
-        message: UNKNOWN_ERROR,
-        type: 'error',
-      })
-    }
-  }
-
   const handleParticipateButton = async () => {
     if (meJoined) {
       const confirmed = window.confirm(
@@ -245,31 +229,6 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
           return updated
         })
       }
-    } catch (error) {
-      handleError(error)
-    } finally {
-      setPending(false)
-    }
-  }
-
-  const handleCancelEvent = async () => {
-    const confirmed = window.confirm(
-      'Are you sure you want to cancel this event?'
-    )
-    if (!confirmed) {
-      return
-    }
-
-    try {
-      setPending(true)
-      const { success } = await fetch(`/api/events/${props.eventId}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-      }).then((r) => r.json())
-      if (!success) {
-        throw new Error('Failed to cancel event')
-      }
-      router.replace(menuHref.home)
     } catch (error) {
       handleError(error)
     } finally {
@@ -433,7 +392,8 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
               <div>
                 <CancelEventButton
                   disabled={pending}
-                  onClick={() => handleCancelEvent()}
+                  eventId={props.eventId}
+                  onPending={setPending}
                 />
               </div>
             )}
@@ -460,27 +420,6 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
         disabled={pending}
       />
     </div>
-  )
-}
-
-function CancelEventButton({
-  disabled,
-  onClick,
-}: {
-  disabled?: boolean
-  onClick: MouseEventHandler<HTMLButtonElement>
-}) {
-  return (
-    <button
-      type="button"
-      className={classNames(
-        'w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border text-red-700 focus:outline-none disabled:opacity-50 disabled:pointer-events-none bg-white hover:text-white focus:text-white hover:bg-red-700 focus:bg-red-700 transition-colors'
-      )}
-      disabled={disabled}
-      onClick={onClick}
-    >
-      Cancel Event
-    </button>
   )
 }
 
