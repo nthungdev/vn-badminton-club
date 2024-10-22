@@ -6,7 +6,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import classNames from 'classnames'
 import dayjs from 'dayjs'
-import { JoinLeaveEventButton } from '@/app/event/ParticipateEventButton'
 import {
   addGuest,
   joinEvent,
@@ -20,10 +19,11 @@ import {
 } from '@/firebase/definitions/event'
 import { eventTime } from '@/lib/format'
 import { menuHref } from '@/lib/menu'
-import { UNKNOWN_ERROR } from '@/constants/errorMessages'
-import { useToastsContext } from '../../contexts/ToastsContext'
 import AppError from '@/lib/AppError'
+import { UNKNOWN_ERROR } from '@/constants/errorMessages'
+import { useToastsContext } from '@/contexts/ToastsContext'
 import { GroupedParticipants } from './types'
+import JoinLeaveEventButton from './JoinLeaveEventButton'
 import KickParticipantModal from './KickParticipantModal'
 
 interface RenderedEventPageProps {
