@@ -1,6 +1,6 @@
 'use client'
 
-import { ComponentProps, useState } from 'react'
+import { useState } from 'react'
 import { Tooltip } from 'flowbite-react'
 import Link from 'next/link'
 import classNames from 'classnames'
@@ -18,6 +18,7 @@ import { GroupedParticipants } from './types'
 import JoinLeaveEventButton from './JoinLeaveEventButton'
 import KickParticipantModal from './KickParticipantModal'
 import CancelEventButton from './CancelEventButton'
+import ParticipantActionButton from './ParticipantActionButton'
 
 interface RenderedEventPageProps {
   eventId: string
@@ -396,21 +397,5 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
         disabled={pending}
       />
     </div>
-  )
-}
-
-function ParticipantActionButton(props: ComponentProps<'button'>) {
-  const { children, className, ...restProps } = props
-
-  return (
-    <button
-      {...restProps}
-      className={classNames(
-        'py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent focus:outline-none disabled:opacity-50 disabled:pointer-events-none transition-colors text-secondary-700 hover:text-white focus:text-white hover:bg-secondary-700 focus:bg-secondary-700',
-        className
-      )}
-    >
-      {children}
-    </button>
   )
 }
