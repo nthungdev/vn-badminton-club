@@ -19,6 +19,8 @@ import JoinLeaveEventButton from './JoinLeaveEventButton'
 import KickParticipantModal from './KickParticipantModal'
 import CancelEventButton from './CancelEventButton'
 import ParticipantActionButton from './ParticipantActionButton'
+import { isEventParticipant, isFirestoreEventGuest } from './utils'
+import GroupedParticipantList from './GroupedParticipantList'
 
 interface RenderedEventPageProps {
   eventId: string
@@ -34,18 +36,6 @@ interface RenderedEventPageProps {
   showJoinButton: boolean
   showCancelButton: boolean
   showUpdateButton: boolean
-}
-
-function isEventParticipant(
-  participant: EventParticipant | FirestoreEventGuest
-): participant is EventParticipant {
-  return (participant as EventParticipant).uid !== undefined
-}
-
-function isFirestoreEventGuest(
-  participant: EventParticipant | FirestoreEventGuest
-): participant is FirestoreEventGuest {
-  return (participant as FirestoreEventGuest).guestId !== undefined
 }
 
 export default function RenderedEventPage(props: RenderedEventPageProps) {
@@ -286,46 +276,9 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
                 </span>
               </div>
               <div className="px-4 py-2 bg-white border shadow-sm rounded-xl divide-y-2">
-                {participants.length === 0 && (
-                  <div className="text-center text-gray-600">
-                    No one has joined this event.
-                  </div>
-                )}
-                {participantsGrouped.users.length > 0 && (
-                  <ul className="space-y-1 flex flex-col py-2">
-                    {participantsGrouped.users.map((participant, index) => (
-                      <li key={index} className="px-3 py-1">
-                        <span className="font-medium text-secondary-700">
-                          {participant.displayName}
-                        </span>
-                        {isFirestoreEventGuest(participant) && (
-                          <span className="text-gray-600">
-                            <br />
-                            {`(${participant.userDisplayName}'s guest)`}
-                          </span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                {Object.entries(participantsGrouped.userGuests).map(
-                  ([userId, guestData]) => (
-                    <div key={userId} className="px-3 py-2 space-y-1">
-                      <div className="font-medium text-gray-600">
-                        {guestData.userDisplayName}&apos;s guests
-                      </div>
-                      <ul key={userId} className="space-y-1 flex flex-col">
-                        {guestData.guests.map((guest, index) => (
-                          <li key={index} className="py-1">
-                            <span className="font-medium text-secondary-700">
-                              {guest.displayName}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )
-                )}
+                <GroupedParticipantList
+                  participantsGrouped={participantsGrouped}
+                />
               </div>
               <div className="flex flex-row justify-end space-x-2">
                 {showKickButton && (
