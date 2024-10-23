@@ -1,5 +1,5 @@
+import { isFirestoreEventGuest } from '@/lib/utils/events'
 import { GroupedParticipants } from './types'
-import { isFirestoreEventGuest } from './utils'
 
 export default function GroupedParticipantList({
   participantsGrouped,

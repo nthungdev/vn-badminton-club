@@ -6,6 +6,7 @@ import {
 } from '@/firebase/definitions/event'
 import { GroupedParticipants } from './types'
 import { Modal } from 'flowbite-react'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface KickListProps {
   disabled?: boolean
@@ -57,7 +58,6 @@ function KickList(props: KickListProps) {
 export default function KickParticipantModal({
   show,
   participantsGrouped,
-  selfParticipant,
   disabled,
   onKick,
   onClose,
@@ -65,10 +65,11 @@ export default function KickParticipantModal({
   show: boolean
   participantsGrouped: GroupedParticipants
   disabled?: boolean
-  selfParticipant: EventParticipant
   onClose: () => void
   onKick: (participant: EventParticipant | FirestoreEventGuest) => void
 }) {
+  const { user } = useAuth()
+
   return (
     <Modal show={show} onClose={onClose}>
       <Modal.Header>
@@ -93,7 +94,7 @@ export default function KickParticipantModal({
                 <div key={userId} className="space-y-1 py-3">
                   <div className="text-lg">
                     <span className="font-bold">
-                      {userId === selfParticipant.uid
+                      {userId === user!.uid
                         ? 'My'
                         : `${guestData.userDisplayName}'s`}
                     </span>{' '}

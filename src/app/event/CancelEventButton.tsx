@@ -4,20 +4,34 @@ import { ComponentProps } from 'react'
 import useErrorHandler from '@/hooks/useErrorHandler'
 import AppError from '@/lib/AppError'
 import { menuHref } from '@/lib/menu'
+import {
+  CreatedEvent,
+  EventParticipant,
+  FirestoreEventGuest,
+} from '@/firebase/definitions/event'
+import {
+  BUTTON_CANCEL_EVENT_CONFIRM,
+  BUTTON_CONFIRM_CANCEL_EVENT_CONFIRM_HAS_PARTICIPANTS,
+} from '@/lib/constants/events'
 
 interface CancelEventButtonProps extends ComponentProps<'button'> {
-  eventId: string
+  event: CreatedEvent
+  participants: (EventParticipant | FirestoreEventGuest)[]
   onPending: (pending: boolean) => void
 }
 
 export default function CancelEventButton(props: CancelEventButtonProps) {
-  const { onPending, eventId, ...restProps } = props
+  const { onPending, event, ...restProps } = props
   const router = useRouter()
   const handleError = useErrorHandler()
 
+  const hasParticipants = props.participants.length > 0
+
   const handleCancelEvent = async () => {
     const confirmed = window.confirm(
-      'Are you sure you want to cancel this event?'
+      hasParticipants
+        ? BUTTON_CONFIRM_CANCEL_EVENT_CONFIRM_HAS_PARTICIPANTS
+        : BUTTON_CANCEL_EVENT_CONFIRM
     )
     if (!confirmed) {
       return
@@ -25,7 +39,7 @@ export default function CancelEventButton(props: CancelEventButtonProps) {
 
     try {
       onPending(true)
-      const { success } = await fetch(`/api/events/${eventId}`, {
+      const { success } = await fetch(`/api/events/${event.id}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
       }).then((r) => r.json())

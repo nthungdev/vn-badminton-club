@@ -15,8 +15,6 @@ export async function PATCH(
   const { id } = params
 
   try {
-    // TODO make sure the event is not full
-    // TODO make sure the event is not past
     await joinEvent(decodedIdToken.uid, id)
     return Response.json({ success: true })
   } catch (error) {
