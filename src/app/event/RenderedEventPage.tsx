@@ -28,7 +28,12 @@ import {
   isPast,
 } from '@/lib/utils/events'
 import { useAuth } from '@/contexts/AuthContext'
-import { BUTTON_KICK_PAST_EVENT_CUTOFF } from '@/lib/constants/events'
+import {
+  BUTTON_ADD_GUEST,
+  BUTTON_CONFIRM_ADD_GUEST_PAST_EVENT_CUTOFF,
+  BUTTON_KICK_PAST_EVENT_CUTOFF,
+  BUTTON_UPDATE,
+} from '@/lib/constants/events'
 
 interface RenderedEventPageProps {
   event: CreatedEvent
@@ -145,6 +150,10 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
 
   async function handleAddGuest() {
     try {
+      if (!window.confirm(BUTTON_CONFIRM_ADD_GUEST_PAST_EVENT_CUTOFF)) {
+        return
+      }
+
       const name = window.prompt('Enter the name of the guest you want to add:')
       if (name === null) {
         return
@@ -305,7 +314,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
                     onClick={handleAddGuest}
                     disabled={isEventFull || kickMode}
                   >
-                    Add Guest
+                    {BUTTON_ADD_GUEST}
                   </ParticipantActionButton>
                 )}
               </div>
@@ -321,7 +330,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
                   )}
                   onClick={handleUpdateEventToggle}
                 >
-                  Update Event
+                  {BUTTON_UPDATE}
                 </Link>
               </div>
             )}
