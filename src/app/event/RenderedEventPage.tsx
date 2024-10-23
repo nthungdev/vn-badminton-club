@@ -150,7 +150,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
 
   async function handleAddGuest() {
     try {
-      if (!window.confirm(BUTTON_CONFIRM_ADD_GUEST_PAST_EVENT_CUTOFF)) {
+      if (isPastEventCutoff && !window.confirm(BUTTON_CONFIRM_ADD_GUEST_PAST_EVENT_CUTOFF)) {
         return
       }
 
