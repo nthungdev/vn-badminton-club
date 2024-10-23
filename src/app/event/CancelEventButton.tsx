@@ -10,6 +10,7 @@ import {
   FirestoreEventGuest,
 } from '@/firebase/definitions/event'
 import {
+  BUTTON_CANCEL,
   BUTTON_CANCEL_EVENT_CONFIRM,
   BUTTON_CONFIRM_CANCEL_EVENT_CONFIRM_HAS_PARTICIPANTS,
 } from '@/lib/constants/events'
@@ -63,7 +64,7 @@ export default function CancelEventButton(props: CancelEventButtonProps) {
       )}
       onClick={handleCancelEvent}
     >
-      Cancel Event
+      {BUTTON_CANCEL}
     </button>
   )
 }
