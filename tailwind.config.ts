@@ -40,6 +40,7 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      ringColor: colors['nutmeg'],
       colors: {
         background: 'var(--background)',
         foreground: 'var(--foreground)',

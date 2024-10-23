@@ -1,201 +1,68 @@
 'use client'
 
-import { MouseEventHandler, useState } from 'react'
-import { Modal, Tooltip } from 'flowbite-react'
+import { useState } from 'react'
+import { Tooltip } from 'flowbite-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import classNames from 'classnames'
-
-import { ParticipateEventButton } from '@/components/ParticipateEventButton'
+import dayjs from 'dayjs'
+import { addGuest, kick, kickGuest } from '@/fetch/events'
 import {
-  addGuest,
-  joinEvent,
-  kick,
-  kickGuest,
-  leaveEvent,
-} from '@/fetch/events'
-import {
+  CreatedEvent,
   EventParticipant,
   FirestoreEventGuest,
 } from '@/firebase/definitions/event'
 import { eventTime } from '@/lib/format'
 import { menuHref } from '@/lib/menu'
-import { UNKNOWN_ERROR } from '@/constants/errorMessages'
-import { useToastsContext } from '../contexts/ToastsContext'
 import AppError from '@/lib/AppError'
-import dayjs from 'dayjs'
-
-interface GroupedParticipants {
-  users: EventParticipant[]
-  userGuests: Record<
-    string,
-    {
-      userDisplayName: string
-      guests: FirestoreEventGuest[]
-    }
-  >
-}
-
-interface KickListProps {
-  disabled?: boolean
-  participants: (EventParticipant | FirestoreEventGuest)[]
-  onKick: (participant: EventParticipant | FirestoreEventGuest) => void
-}
-
-function KickList(props: KickListProps) {
-  return (
-    <ul className="flex flex-wrap flex-row">
-      {props.participants.map((participant, index) => (
-        <li
-          key={index}
-          id="badge-dismiss-default"
-          className="inline-flex items-center mr-2 my-1 px-3 py-1 font-medium text-white bg-secondary-700 rounded"
-        >
-          {participant.displayName}
-          <button
-            type="button"
-            className="inline-flex items-center p-1 ms-2 text-sm text-secondary-300 bg-transparent rounded-sm hover:bg-secondary-200 hover:text-secondary-900"
-            data-dismiss-target="#badge-dismiss-default"
-            aria-label="Remove"
-            onClick={() => props.onKick(participant)}
-            disabled={props.disabled}
-          >
-            <svg
-              className="w-2 h-2"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 14 14"
-            >
-              <path
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-              />
-            </svg>
-            <span className="sr-only">Remove badge</span>
-          </button>
-        </li>
-      ))}
-    </ul>
-  )
-}
-
-function KickModal({
-  show,
-  onClose,
-  participantsGrouped,
-  selfParticipant,
-  onKick,
-  disabled,
-}: {
-  show: boolean
-  onClose: () => void
-  participantsGrouped: GroupedParticipants
-  disabled?: boolean
-  selfParticipant: EventParticipant
-  onKick: (participant: EventParticipant | FirestoreEventGuest) => void
-}) {
-  return (
-    <Modal show={show} onClose={onClose}>
-      <Modal.Header>
-        <span>Kick Participants</span>
-      </Modal.Header>
-      <Modal.Body className="py-2">
-        <div className="divide-y-2">
-          {participantsGrouped.users.length > 0 && (
-            <div className="space-y-1 py-3">
-              <div className="text-xl font-bold">Users</div>
-              <KickList
-                participants={participantsGrouped.users}
-                onKick={onKick}
-                disabled={disabled}
-              />
-            </div>
-          )}
-
-          <div className="divide-y-2">
-            {Object.entries(participantsGrouped.userGuests).map(
-              ([userId, guestData]) => (
-                <div key={userId} className="space-y-1 py-3">
-                  <div className="text-lg">
-                    <span className="font-bold">
-                      {userId === selfParticipant.uid
-                        ? 'My'
-                        : `${guestData.userDisplayName}'s`}
-                    </span>{' '}
-                    Guests
-                  </div>
-                  <KickList
-                    participants={guestData.guests}
-                    onKick={onKick}
-                    disabled={disabled}
-                  />
-                </div>
-              )
-            )}
-          </div>
-        </div>
-      </Modal.Body>
-    </Modal>
-  )
-}
+import useErrorHandler from '@/hooks/useErrorHandler'
+import { GroupedParticipants } from './types'
+import JoinLeaveEventButton from './JoinLeaveEventButton'
+import KickParticipantModal from './KickParticipantModal'
+import CancelEventButton from './CancelEventButton'
+import ParticipantActionButton from './ParticipantActionButton'
+import GroupedParticipantList from './GroupedParticipantList'
+import {
+  DEFAULT_EVENT_CUTOFF,
+  isEventParticipant,
+  isFirestoreEventGuest,
+  isPast,
+} from '@/lib/utils/events'
+import { useAuth } from '@/contexts/AuthContext'
+import {
+  BUTTON_ADD_GUEST,
+  BUTTON_CONFIRM_ADD_GUEST_PAST_EVENT_CUTOFF,
+  BUTTON_KICK_PAST_EVENT_CUTOFF,
+  BUTTON_UPDATE,
+} from '@/lib/constants/events'
 
 interface RenderedEventPageProps {
-  eventId: string
-  title: string
-  byMod: boolean
-  organizerDisplayName: string
-  startTimestamp: Date
-  endTimestamp: Date
-  slots: number
-  participants: EventParticipant[]
-  guests: FirestoreEventGuest[]
-  selfParticipant: EventParticipant
+  event: CreatedEvent
   showJoinButton: boolean
   showCancelButton: boolean
   showUpdateButton: boolean
 }
 
-function isEventParticipant(
-  participant: EventParticipant | FirestoreEventGuest
-): participant is EventParticipant {
-  return (participant as EventParticipant).uid !== undefined
-}
-
-function isFirestoreEventGuest(
-  participant: EventParticipant | FirestoreEventGuest
-): participant is FirestoreEventGuest {
-  return (participant as FirestoreEventGuest).guestId !== undefined
-}
-
 export default function RenderedEventPage(props: RenderedEventPageProps) {
-  const router = useRouter()
-  const { addToast } = useToastsContext()
+  const { event } = props
+  const { user } = useAuth()
+  const handleError = useErrorHandler()
   const [participants, setParticipants] = useState<
     (EventParticipant | FirestoreEventGuest)[]
-  >([...props.participants, ...props.guests])
+  >([...event.participants, ...event.guests])
   const [pending, setPending] = useState(false)
   const [kickMode, setKickMode] = useState(false)
   const [updateMode, setUpdateMode] = useState(false)
 
-  const isEventFull = participants.length >= props.slots
-  const isPastEvent = dayjs().isAfter(dayjs(props.startTimestamp))
-  const time = eventTime(props.startTimestamp, props.endTimestamp)
-  const kickToggleText = 'Kick Participant'
-  const meJoined = participants.some(
-    (p) => isEventParticipant(p) && p.uid === props.selfParticipant.uid
-  )
-  const shouldDisableParticipateButton = pending && meJoined ? true : isEventFull
+  const isEventFull = participants.length >= event.slots
+  const isPastEvent = dayjs().isAfter(dayjs(event.startTimestamp))
+  const time = eventTime(event.startTimestamp, event.endTimestamp)
+  const isPastEventCutoff = isPast(event.endTimestamp, DEFAULT_EVENT_CUTOFF)
+
   const isOnlySelfParticipant =
     participants.length === 1 &&
-    participants.some(
-      (p) => isEventParticipant(p) && p.uid === props.selfParticipant.uid
-    )
+    participants.some((p) => isEventParticipant(p) && p.uid === user!.uid)
   const hasMyGuests = participants.some(
-    (p) => isFirestoreEventGuest(p) && p.addedBy === props.selfParticipant.uid
+    (p) => isFirestoreEventGuest(p) && p.addedBy === user!.uid
   )
   const showKickButton =
     !isPastEvent &&
@@ -204,7 +71,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
     (props.showUpdateButton || hasMyGuests)
   const showAddGuestButton = !isPastEvent
   const kickableParticipants = participants.filter((p) => {
-    if (isEventParticipant(p) && p.uid === props.selfParticipant.uid) {
+    if (isEventParticipant(p) && p.uid === user!.uid) {
       return false
     }
 
@@ -213,7 +80,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
       return true
     } else {
       // Only show guests added by the current user
-      return isFirestoreEventGuest(p) && p.addedBy === props.selfParticipant.uid
+      return isFirestoreEventGuest(p) && p.addedBy === user!.uid
     }
   })
   const participantsGrouped = participants.reduce(
@@ -265,55 +132,28 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
     } as GroupedParticipants
   )
 
-  function handleError(error: unknown) {
-    if (error instanceof AppError) {
-      addToast({
-        message: error.message,
-        type: 'error',
-      })
-    } else {
-      addToast({
-        message: UNKNOWN_ERROR,
-        type: 'error',
-      })
-    }
+  const handleJoinedEvent = () => {
+    setParticipants([
+      ...participants,
+      {
+        uid: user!.uid,
+        displayName: user!.displayName || '',
+      },
+    ])
   }
 
-  const handleParticipateButton = async () => {
-    if (meJoined) {
-      const confirmed = window.confirm(
-        'Are you sure you want to leave this event?'
-      )
-      if (!confirmed) {
-        return
-      }
-    }
-
-    try {
-      setPending(true)
-
-      if (meJoined) {
-        await leaveEvent(props.eventId)
-      } else {
-        await joinEvent(props.eventId)
-      }
-      setParticipants(
-        meJoined
-          ? participants.filter(
-              (p) =>
-                isEventParticipant(p) && p.uid !== props.selfParticipant.uid
-            )
-          : [...participants, props.selfParticipant]
-      )
-    } catch (error) {
-      handleError(error)
-    } finally {
-      setPending(false)
-    }
+  const handleLeftEvent = () => {
+    setParticipants(
+      participants.filter((p) => isEventParticipant(p) && p.uid !== user!.uid)
+    )
   }
 
   async function handleAddGuest() {
     try {
+      if (isPastEventCutoff && !window.confirm(BUTTON_CONFIRM_ADD_GUEST_PAST_EVENT_CUTOFF)) {
+        return
+      }
+
       const name = window.prompt('Enter the name of the guest you want to add:')
       if (name === null) {
         return
@@ -322,7 +162,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
         throw new AppError('No name entered')
       }
 
-      const guest = await addGuest(props.eventId, name)
+      const guest = await addGuest(event.id, name)
 
       setParticipants([...participants, guest])
     } catch (error) {
@@ -340,7 +180,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
     try {
       setPending(true)
       if (isEventParticipant(participant)) {
-        await kick(props.eventId, participant.uid)
+        await kick(event.id, participant.uid)
         setParticipants(() => {
           const updated = participants.filter((p) =>
             isEventParticipant(p) ? p.uid !== participant.uid : true
@@ -351,7 +191,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
           return updated
         })
       } else {
-        await kickGuest(props.eventId, participant.guestId)
+        await kickGuest(event.id, participant.guestId)
         setParticipants(() => {
           const updated = participants.filter((p) =>
             isFirestoreEventGuest(p) ? p.guestId !== participant.guestId : true
@@ -369,33 +209,19 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
     }
   }
 
-  const handleCancelEvent = async () => {
-    const confirmed = window.confirm(
-      'Are you sure you want to cancel this event?'
-    )
-    if (!confirmed) {
-      return
-    }
-
-    try {
-      setPending(true)
-      const { success } = await fetch(`/api/events/${props.eventId}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-      }).then((r) => r.json())
-      if (!success) {
-        throw new Error('Failed to cancel event')
-      }
-      router.replace(menuHref.home)
-    } catch (error) {
-      handleError(error)
-    } finally {
-      setPending(false)
-    }
-  }
-
   const handleUpdateEventToggle = () => {
     setUpdateMode(!updateMode)
+  }
+
+  function renderKickParticipantButton() {
+    return (
+      <ParticipantActionButton
+        onClick={handleKickParticipantToggle}
+        disabled={kickMode || isPastEventCutoff}
+      >
+        Kick Participant
+      </ParticipantActionButton>
+    )
   }
 
   return (
@@ -405,7 +231,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
           <div>
             <div className="text-gray-600 text-center text-sm">Event</div>
             <h1 className="text-xl font-bold text-center text-primary">
-              {props.title}
+              {event.title}
             </h1>
           </div>
 
@@ -414,8 +240,8 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
               <span className="font-semibold">Organizer</span>
               <div className="p-4 bg-white border shadow-sm rounded-xl">
                 <div className="text-center">
-                  {props.organizerDisplayName}
-                  {props.byMod && (
+                  {event.organizer.displayName}
+                  {event.byMod && (
                     <span>
                       <Tooltip
                         className="inline-block bg-secondary"
@@ -466,79 +292,30 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
               <div className="flex flex-row justify-between">
                 <span className="font-semibold">Participants</span>
                 <span className="text-right w-full font-semibold text-primary">
-                  {participants.length} / {props.slots}
+                  {participants.length} / {event.slots}
                 </span>
               </div>
               <div className="px-4 py-2 bg-white border shadow-sm rounded-xl divide-y-2">
-                {participants.length === 0 && (
-                  <div className="text-center text-gray-600">
-                    No one has joined this event.
-                  </div>
-                )}
-                {participantsGrouped.users.length > 0 && (
-                  <ul className="space-y-1 flex flex-col py-2">
-                    {participantsGrouped.users.map((participant, index) => (
-                      <li key={index} className="px-3 py-1">
-                        <span className="font-medium text-secondary-700">
-                          {participant.displayName}
-                        </span>
-                        {isFirestoreEventGuest(participant) && (
-                          <span className="text-gray-600">
-                            <br />
-                            {`(${participant.userDisplayName}'s guest)`}
-                          </span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                {Object.entries(participantsGrouped.userGuests).map(
-                  ([userId, guestData]) => (
-                    <div key={userId} className="px-3 py-2 space-y-1">
-                      <div className="font-medium text-gray-600">
-                        {guestData.userDisplayName}&apos;s guests
-                      </div>
-                      <ul key={userId} className="space-y-1 flex flex-col">
-                        {guestData.guests.map((guest, index) => (
-                          <li key={index} className="py-1">
-                            <span className="font-medium text-secondary-700">
-                              {guest.displayName}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )
-                )}
+                <GroupedParticipantList
+                  participantsGrouped={participantsGrouped}
+                />
               </div>
               <div className="flex flex-row justify-end space-x-2">
-                {showKickButton && (
-                  <button
-                    className={classNames(
-                      'py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent focus:outline-none disabled:opacity-50 disabled:pointer-events-none transition-colors',
-                      kickMode
-                        ? 'text-white bg-red-600 hover:bg-red-700 focus:bg-red-700'
-                        : 'text-secondary-700 hover:text-white focus:text-white hover:bg-secondary-700 focus:bg-secondary-700'
-                    )}
-                    onClick={handleKickParticipantToggle}
-                    disabled={isPastEvent}
-                  >
-                    {kickToggleText}
-                  </button>
-                )}
+                {showKickButton &&
+                  (isPastEventCutoff ? (
+                    <Tooltip content={BUTTON_KICK_PAST_EVENT_CUTOFF}>
+                      {renderKickParticipantButton()}
+                    </Tooltip>
+                  ) : (
+                    renderKickParticipantButton()
+                  ))}
                 {showAddGuestButton && (
-                  <button
-                    className={classNames(
-                      'py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent focus:outline-none disabled:opacity-50 disabled:pointer-events-none transition-colors',
-                      kickMode
-                        ? 'text-white bg-red-600 hover:bg-red-700 focus:bg-red-700'
-                        : 'text-secondary-700 hover:text-white focus:text-white hover:bg-secondary-700 focus:bg-secondary-700'
-                    )}
+                  <ParticipantActionButton
                     onClick={handleAddGuest}
-                    disabled={isEventFull}
+                    disabled={isEventFull || kickMode}
                   >
-                    Add Guest
-                  </button>
+                    {BUTTON_ADD_GUEST}
+                  </ParticipantActionButton>
                 )}
               </div>
             </div>
@@ -546,14 +323,14 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
             {props.showUpdateButton && (
               <div>
                 <Link
-                  href={`${menuHref.updateEvent}?e=${props.eventId}`}
+                  href={`${menuHref.updateEvent}?e=${event.id}`}
                   type="button"
                   className={classNames(
-                    'w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border text-secondary-700 focus:outline-none disabled:opacity-50 disabled:pointer-events-none bg-white hover:text-white focus:text-white hover:bg-secondary-700 focus:bg-secondary-700 transition-colors'
+                    'w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border text-secondary-700 focus:outline-none disabled:opacity-50 disabled:pointer-events-none bg-white hover:text-white hover:bg-secondary-700 focus:ring transition-colors'
                   )}
                   onClick={handleUpdateEventToggle}
                 >
-                  Update Event
+                  {BUTTON_UPDATE}
                 </Link>
               </div>
             )}
@@ -562,7 +339,9 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
               <div>
                 <CancelEventButton
                   disabled={pending}
-                  onClick={() => handleCancelEvent()}
+                  event={event}
+                  participants={participants}
+                  onPending={setPending}
                 />
               </div>
             )}
@@ -572,43 +351,24 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
 
       {props.showJoinButton && (
         <div className="p-4 shadow-inner">
-          <ParticipateEventButton
-            joined={meJoined}
-            disabled={shouldDisableParticipateButton}
-            onClick={handleParticipateButton}
+          <JoinLeaveEventButton
+            event={event}
+            disabled={pending || undefined}
+            participants={participants}
+            onPending={setPending}
+            onJoined={handleJoinedEvent}
+            onLeft={handleLeftEvent}
           />
         </div>
       )}
 
-      <KickModal
+      <KickParticipantModal
         show={kickMode}
         onClose={() => setKickMode(false)}
         onKick={handleKick}
         participantsGrouped={kickableParticipantsGrouped}
-        selfParticipant={props.selfParticipant}
         disabled={pending}
       />
     </div>
-  )
-}
-
-function CancelEventButton({
-  disabled,
-  onClick,
-}: {
-  disabled?: boolean
-  onClick: MouseEventHandler<HTMLButtonElement>
-}) {
-  return (
-    <button
-      type="button"
-      className={classNames(
-        'w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border text-red-700 focus:outline-none disabled:opacity-50 disabled:pointer-events-none bg-white hover:text-white focus:text-white hover:bg-red-700 focus:bg-red-700 transition-colors'
-      )}
-      disabled={disabled}
-      onClick={onClick}
-    >
-      Cancel Event
-    </button>
   )
 }

@@ -1,7 +1,7 @@
 'use client'
 
-import { ToastOptions, ToastsContext } from '@/app/contexts/ToastsContext'
 import { useState } from 'react'
+import { ToastOptions, ToastsContext } from '@/contexts/ToastsContext'
 
 export default function ToastsProvider({
   children,

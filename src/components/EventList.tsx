@@ -6,7 +6,7 @@ import { HomeViewEvent } from '@/firebase/definitions/event'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import AppError from '@/lib/AppError'
 import { getJoinedEvents, getNewEvents, getPastEvents } from '@/fetch/events'
-import { useAuth } from '@/app/contexts/AuthContext'
+import { useAuth } from '@/contexts/AuthContext'
 import EventCard from '@/components/EventCard'
 
 export default function EventList() {

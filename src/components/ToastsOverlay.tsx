@@ -2,7 +2,7 @@
 
 import { Toast } from 'flowbite-react'
 import { HiExclamation } from 'react-icons/hi'
-import { useToastsContext } from '@/app/contexts/ToastsContext'
+import { useToastsContext } from '@/contexts/ToastsContext'
 
 export default function ToastsOverlay() {
   const { toasts } = useToastsContext()

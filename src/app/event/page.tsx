@@ -3,7 +3,6 @@
 import { getEventById } from '@/actions/events'
 import { redirect } from 'next/navigation'
 import dayjs from 'dayjs'
-import { EventParticipant } from '@/firebase/definitions/event'
 import RenderedEventPage from './RenderedEventPage'
 import { Role } from '@/firebase/definitions'
 import { getAuthUser } from '@/lib/authUtils'
@@ -33,23 +32,9 @@ export default async function EventPage({
   const isMeOrganizer = me.uid === event.organizer.uid
   const isMeMod = me?.role === Role.Mod
 
-  const selfParticipant = {
-    uid: me.uid,
-    displayName: me.displayName,
-  } as EventParticipant
-
   return (
     <RenderedEventPage
-      byMod={event.byMod}
-      eventId={event.id}
-      selfParticipant={selfParticipant}
-      participants={event.participants}
-      guests={event.guests}
-      organizerDisplayName={event.organizer.displayName}
-      slots={event.slots}
-      startTimestamp={event.startTimestamp}
-      endTimestamp={event.endTimestamp}
-      title={event.title}
+      event={event}
       showJoinButton={!isPastEvent}
       showCancelButton={(isMeOrganizer || isMeMod) && !isPastEvent}
       showUpdateButton={(isMeOrganizer || isMeMod) && !isPastEvent}
