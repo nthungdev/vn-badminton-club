@@ -326,7 +326,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
                   href={`${menuHref.updateEvent}?e=${event.id}`}
                   type="button"
                   className={classNames(
-                    'w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border text-secondary-700 focus:outline-none disabled:opacity-50 disabled:pointer-events-none bg-white hover:text-white focus:text-white hover:bg-secondary-700 focus:bg-secondary-700 transition-colors'
+                    'w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border text-secondary-700 focus:outline-none disabled:opacity-50 disabled:pointer-events-none bg-white hover:text-white hover:bg-secondary-700 focus:ring transition-colors'
                   )}
                   onClick={handleUpdateEventToggle}
                 >

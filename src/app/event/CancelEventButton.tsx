@@ -59,7 +59,7 @@ export default function CancelEventButton(props: CancelEventButtonProps) {
       {...restProps}
       type="button"
       className={classNames(
-        'w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border text-red-700 focus:outline-none disabled:opacity-50 disabled:pointer-events-none bg-white hover:text-white focus:text-white hover:bg-red-700 focus:bg-red-700 transition-colors'
+        'w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border text-red-700 focus:outline-none disabled:opacity-50 disabled:pointer-events-none bg-white hover:text-white hover:bg-red-700 transition-colors focus:ring ring-red-400'
       )}
       onClick={handleCancelEvent}
     >
