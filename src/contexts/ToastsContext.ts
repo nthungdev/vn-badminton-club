@@ -4,13 +4,23 @@ import { createContext, useContext } from 'react'
 
 export type ToastType = 'info' | 'success' | 'error'
 
-export interface ToastOptions {
+export interface ToastData {
+  id: string
   message: string
   type: ToastType
 }
 
+export interface ToastOptions {
+  message: string
+  type: ToastType
+  /** default is true */
+  autoDismiss?: boolean
+  /** default is 5s */
+  duration?: number
+}
+
 export interface ToastsContext {
-  toasts: ToastOptions[]
+  toasts: ToastData[]
   addToast: (options: ToastOptions) => void
   clear: () => void
 }
