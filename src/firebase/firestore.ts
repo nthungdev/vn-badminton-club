@@ -7,7 +7,6 @@ import {
   EventParticipant,
   FirestoreEvent,
   FirestoreEventGuest,
-  HomeViewEvent,
   UpdateEvent,
 } from './definitions/event'
 import { COLLECTION_EVENTS } from './firestore.constant'
@@ -275,46 +274,6 @@ export async function leaveEvent(uid: string, eventId: string) {
       throw error
     }
     throw new Error('Error leaving event')
-  }
-}
-
-export async function kick(
-  eventId: string,
-  uid: string,
-  {
-    gotEventCallback,
-  }: { gotEventCallback?: (event: HomeViewEvent) => void } = {}
-) {
-  const eventRef = firestore
-    .collection(COLLECTION_EVENTS)
-    .withConverter(eventReadConverter)
-    .doc(eventId)
-
-  try {
-    const error = await firestore.runTransaction(async (transaction) => {
-      const doc = await transaction.get(eventRef)
-      const event = doc.data()
-      if (!doc.exists || event === undefined) {
-        return 'Event not found'
-      }
-
-      gotEventCallback?.(event)
-
-      transaction.update(eventRef, {
-        participantIds: FieldValue.arrayRemove(uid),
-      })
-    })
-
-    if (error) {
-      throw new AppError(error)
-    }
-
-    cache.del(EventsCacheKey.NewEvents)
-  } catch (error) {
-    if (error instanceof AppError) {
-      throw error
-    }
-    throw new Error('Error kicking user from event')
   }
 }
 
