@@ -1,12 +1,13 @@
-import { createErrorResponse } from '@/lib/apiResponse'
-import {
-  deleteEvent,
-  getEventById,
-  updateEvent,
-} from '@/firebase/firestore'
+import { NextRequest } from 'next/server'
+import { createErrorResponse, createSuccessResponse } from '@/lib/apiResponse'
+import { deleteEvent, getEventById, updateEvent } from '@/firebase/firestore'
 import { verifySession } from '@/lib/session'
 import { isRoleMod } from '@/lib/utils/auth'
-import { NextRequest } from 'next/server'
+import {
+  EVENT_NOT_FOUND_ERROR,
+  MISSING_REQUIRED_FIELDS,
+  UNAUTHORIZED_ERROR,
+} from '@/constants/errorMessages'
 
 export async function GET(
   request: NextRequest,
@@ -15,7 +16,7 @@ export async function GET(
   try {
     const event = await getEventById(params.id)
     if (!event) {
-      return createErrorResponse('Event not found', 404)
+      return createErrorResponse(EVENT_NOT_FOUND_ERROR, 404)
     }
 
     return Response.json({ event })
@@ -30,7 +31,7 @@ export async function DELETE(
 ) {
   const { decodedIdToken } = await verifySession()
   if (!decodedIdToken) {
-    return createErrorResponse('Unauthorized', 401)
+    return createErrorResponse(UNAUTHORIZED_ERROR, 401)
   }
 
   const { id } = params
@@ -38,19 +39,19 @@ export async function DELETE(
   try {
     const event = await getEventById(id)
     if (!event) {
-      return createErrorResponse('Event not found', 404)
+      return createErrorResponse(EVENT_NOT_FOUND_ERROR, 404)
     }
 
     if (
       event.organizer.uid !== decodedIdToken.uid &&
       !(await isRoleMod(decodedIdToken.uid))
     ) {
-      return createErrorResponse('Unauthorized', 401)
+      return createErrorResponse(UNAUTHORIZED_ERROR, 401)
     }
 
     await deleteEvent(id)
-    console.log('Event deleted:', id)
-    return Response.json({ success: true })
+    console.info('Event deleted:', id)
+    return createSuccessResponse()
   } catch (error) {
     console.error('Error leaving event:', error)
     return createErrorResponse(error, 500)
@@ -68,34 +69,31 @@ interface EventUpdateRequest {
 export async function PATCH(request: NextRequest) {
   const { decodedIdToken } = await verifySession()
   if (!decodedIdToken) {
-    return createErrorResponse('Unauthorized', 401)
+    return createErrorResponse(UNAUTHORIZED_ERROR, 401)
   }
 
   const data: EventUpdateRequest = await request.json()
 
-  if (!data.eventId) {
-    return createErrorResponse('Missing eventId', 400)
-  }
-
   if (
+    !data.eventId ||
     !data.title ||
     !data.startTimestamp ||
     !data.endTimestamp ||
     !data.slots
   ) {
-    return createErrorResponse('Missing required fields', 400)
+    return createErrorResponse(MISSING_REQUIRED_FIELDS, 400)
   }
 
   try {
     const event = await getEventById(data.eventId)
     if (!event) {
-      return createErrorResponse('Event not found', 404)
+      return createErrorResponse(EVENT_NOT_FOUND_ERROR, 404)
     }
     if (
       event.organizer.uid !== decodedIdToken.uid &&
       !(await isRoleMod(decodedIdToken.uid))
     ) {
-      return createErrorResponse('Unauthorized', 401)
+      return createErrorResponse(UNAUTHORIZED_ERROR, 401)
     }
 
     const updatedEvent = {
@@ -107,8 +105,8 @@ export async function PATCH(request: NextRequest) {
 
     await updateEvent(data.eventId, updatedEvent)
 
-    console.log('Event updated:', data.eventId)
-    return Response.json({ success: true })
+    console.info('Event updated:', data.eventId)
+    return createSuccessResponse()
   } catch (error) {
     console.error('Error updating event:', error)
     return createErrorResponse(error, 500)

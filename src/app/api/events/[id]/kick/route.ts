@@ -7,6 +7,7 @@ import { eventReadConverter } from '@/firebase/utils'
 import { FieldValue } from 'firebase-admin/firestore'
 import { Role } from '@/firebase/definitions'
 import { isPast } from '@/lib/utils/events'
+import { EVENT_NOT_FOUND_ERROR, EVENT_STARTED_ERROR } from '@/constants/errorMessages'
 
 interface EventParticipantKickRequest {
   uid?: string
@@ -39,7 +40,7 @@ export async function PATCH(
         const doc = await transaction.get(eventRef)
         const event = doc.data()
         if (!doc.exists || event === undefined) {
-          return { errorMessage: 'Event not found.', status: 404 }
+          return { errorMessage: EVENT_NOT_FOUND_ERROR, status: 404 }
         }
 
         switch (decodedIdToken.role) {
@@ -50,8 +51,7 @@ export async function PATCH(
               const hasStarted = isPast(event.startTimestamp)
               if (hasStarted) {
                 return {
-                  errorMessage:
-                    'Kicking is not allowed once the event has started.',
+                  errorMessage: EVENT_STARTED_ERROR,
                   status: 403,
                 }
               }
