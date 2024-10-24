@@ -1,14 +1,14 @@
 'server-only'
 
-import { FieldValue, QueryDocumentSnapshot } from 'firebase-admin/firestore'
+import { FieldValue } from 'firebase-admin/firestore'
 import {
   CreatedEvent,
   CreateEvent,
   EventParticipant,
   FirestoreEvent,
   FirestoreEventGuest,
+  HomeViewEvent,
   UpdateEvent,
-  WriteEvent,
 } from './definitions/event'
 import { COLLECTION_EVENTS } from './firestore.constant'
 import { firestore } from './serverApp'
@@ -22,54 +22,11 @@ import {
 import { EventsCacheKey, getNodeCache } from '@/lib/cache'
 import { getUserById } from '@/lib/authUtils'
 import { DEFAULT_EVENT_CUTOFF } from '@/lib/utils/events'
+import { eventReadConverter, eventWriteConverter, isEventFull } from './utils'
 
 const cache = getNodeCache('eventsCache')
 
 const eventCollection = firestore.collection(COLLECTION_EVENTS)
-
-function isEventFull(event: CreatedEvent | WriteEvent) {
-  return event.participantIds.length + event.guests.length >= event.slots
-}
-
-const eventReadConverter = {
-  toFirestore: (data: CreatedEvent) => {
-    return { ...data }
-  },
-  fromFirestore: (snapshot: QueryDocumentSnapshot<FirestoreEvent>) => {
-    const data = snapshot.data()
-    return {
-      id: snapshot.id,
-      title: data.title,
-      byMod: data.byMod,
-      createdBy: data.createdBy,
-      slots: data.slots,
-      startTimestamp: data.startTimestamp.toDate(),
-      endTimestamp: data.endTimestamp.toDate(),
-      participantIds: data.participantIds || [],
-      guests: data.guests || [],
-    }
-  },
-}
-
-const eventWriteConverter = {
-  toFirestore: (data: WriteEvent) => {
-    return { ...data }
-  },
-  fromFirestore: (snapshot: QueryDocumentSnapshot<FirestoreEvent>) => {
-    const data = snapshot.data()
-    return {
-      id: snapshot.id,
-      title: data.title,
-      byMod: data.byMod,
-      createdBy: data.createdBy,
-      slots: data.slots,
-      startTimestamp: data.startTimestamp.toDate(),
-      endTimestamp: data.endTimestamp.toDate(),
-      participantIds: data.participantIds || [],
-      guests: data.guests || [],
-    }
-  },
-}
 
 async function getEventParticipantFromUid(uid: string) {
   const user = await getUserById(uid)
@@ -321,15 +278,27 @@ export async function leaveEvent(uid: string, eventId: string) {
   }
 }
 
-export async function kick(eventId: string, uid: string) {
-  const eventRef = firestore.collection(COLLECTION_EVENTS).doc(eventId)
+export async function kick(
+  eventId: string,
+  uid: string,
+  {
+    gotEventCallback,
+  }: { gotEventCallback?: (event: HomeViewEvent) => void } = {}
+) {
+  const eventRef = firestore
+    .collection(COLLECTION_EVENTS)
+    .withConverter(eventReadConverter)
+    .doc(eventId)
 
   try {
     const error = await firestore.runTransaction(async (transaction) => {
       const doc = await transaction.get(eventRef)
-      if (!doc.exists) {
+      const event = doc.data()
+      if (!doc.exists || event === undefined) {
         return 'Event not found'
       }
+
+      gotEventCallback?.(event)
 
       transaction.update(eventRef, {
         participantIds: FieldValue.arrayRemove(uid),

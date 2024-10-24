@@ -41,14 +41,11 @@ export type EventParticipant = {
 }
 
 export type CreatedEvent = HomeViewEvent & {
-  id: string
   organizer: EventParticipant
-  participantIds: string[]
   participants: EventParticipant[]
 }
 
 export type WriteEvent = CreateEvent & {
-  // id: string
   participantIds: string[]
   guests: FirestoreEventGuest[]
 }
