@@ -11,10 +11,9 @@ import {
   CreateEventFormState,
   UpdateEventFormSchema,
   UpdateEventFormState,
-} from './event.definitions'
+} from '@/lib/validation/events'
 import {
   createEvent as _createEvent,
-  updateEvent as _updateEvent,
   getEventById as _getEventById,
 } from '@/firebase/firestore'
 import { menuHref } from '@/lib/menu'
@@ -22,7 +21,9 @@ import { Role } from '@/firebase/definitions'
 import { CreateEvent, UpdateEvent } from '@/firebase/definitions/event'
 import { isRedirectError } from 'next/dist/client/components/redirect'
 import { fieldsToDate } from '@/lib/format'
-import { INTERNAL_ERROR } from '@/constants/errorMessages'
+import { INTERNAL_ERROR, UNAUTHORIZED_ERROR } from '@/constants/errorMessages'
+import { verifySession } from '@/lib/session'
+import { editEvent } from '@/lib/events'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -98,6 +99,11 @@ async function updateEvent(
   prevState: UpdateEventFormState,
   formData: FormData
 ) {
+  const { decodedIdToken, isAuth } = await verifySession()
+  if (!isAuth) {
+    return { submitError: UNAUTHORIZED_ERROR }
+  }
+
   // Validate form fields
   const validatedFields = UpdateEventFormSchema.safeParse({
     id: formData.get('id'),
@@ -122,12 +128,6 @@ async function updateEvent(
   }
 
   try {
-    // TODO get user from session or client Firebase instead of fetching
-    const me = await getMe()
-    if (!me) {
-      throw new Error('User not found')
-    }
-
     const offsetHours = validatedFields.data.timezoneOffset / 60
 
     const [startYear, startMonth, startDate] =
@@ -155,14 +155,19 @@ async function updateEvent(
       .set('second', 0)
     const endTimestamp = eventEnd.toDate()
 
-    const event: UpdateEvent = {
+    const updateEvent: UpdateEvent = {
       title: validatedFields.data.title,
       startTimestamp,
       endTimestamp,
       slots: validatedFields.data.slots,
     }
 
-    await _updateEvent(validatedFields.data.id, event)
+    await editEvent(
+      validatedFields.data.id,
+      updateEvent,
+      decodedIdToken.uid,
+      decodedIdToken.role
+    )
     redirect(`${menuHref.event}?e=${validatedFields.data.id}`)
   } catch (error) {
     if (isRedirectError(error)) {
@@ -170,7 +175,7 @@ async function updateEvent(
     }
 
     // TODO handle error
-    console.log('create event error', { error })
+    console.error('create event error', { error })
     return { submitError: INTERNAL_ERROR }
   }
 }

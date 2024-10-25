@@ -1,6 +1,6 @@
 import { EventsGetResponse } from '@/app/api/events/types'
 import AppError from '@/lib/AppError'
-import { HomeViewEvent } from '@/firebase/definitions/event'
+import { HomeViewEvent, UpdateEvent } from '@/firebase/definitions/event'
 import { UNKNOWN_ERROR } from '@/constants/errorMessages'
 import { EventsAddGuestResponse } from '@/app/api/events/[id]/addGuest/type'
 import { EventsKickGuestResponse } from '@/app/api/events/[id]/kickGuest/type'
@@ -160,10 +160,7 @@ export async function addGuest(eventId: string, displayName: string) {
   }
 }
 
-export async function kickGuest(
-  eventId: string,
-  guestId: string
-) {
+export async function kickGuest(eventId: string, guestId: string) {
   const url = `/api/events/${eventId}/kickGuest`
 
   try {
