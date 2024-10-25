@@ -7,7 +7,6 @@ import {
   EventParticipant,
   FirestoreEvent,
   FirestoreEventGuest,
-  UpdateEvent,
 } from './definitions/event'
 import { COLLECTION_EVENTS } from './firestore.constant'
 import { firestore } from './serverApp'
@@ -174,16 +173,6 @@ export async function createEvent(event: CreateEvent) {
   } catch (error) {
     console.error('Error creating event:', error)
     throw new Error('Error creating event')
-  }
-}
-
-export async function updateEvent(eventId: string, event: UpdateEvent) {
-  try {
-    await eventCollection.doc(eventId).update({ ...event })
-    cache.del(EventsCacheKey.NewEvents)
-  } catch (error) {
-    console.error('Error updating event:', error)
-    throw new Error('Error updating event')
   }
 }
 

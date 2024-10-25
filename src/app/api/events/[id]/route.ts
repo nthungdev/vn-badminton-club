@@ -1,13 +1,18 @@
 import { NextRequest } from 'next/server'
 import { createErrorResponse, createSuccessResponse } from '@/lib/apiResponse'
-import { deleteEvent, getEventById, updateEvent } from '@/firebase/firestore'
+import { deleteEvent, getEventById } from '@/firebase/firestore'
 import { verifySession } from '@/lib/session'
 import { isRoleMod } from '@/lib/utils/auth'
 import {
   EVENT_NOT_FOUND_ERROR,
+  EVENT_STARTED_ERROR,
   MISSING_REQUIRED_FIELDS,
   UNAUTHORIZED_ERROR,
+  UNKNOWN_ERROR,
 } from '@/constants/errorMessages'
+import { editEvent } from '@/lib/events'
+import AppError from '@/lib/AppError'
+import { UpdateEvent } from '@/firebase/definitions/event'
 
 export async function GET(
   request: NextRequest,
@@ -66,48 +71,56 @@ interface EventUpdateRequest {
   slots?: number
 }
 
-export async function PATCH(request: NextRequest) {
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   const { decodedIdToken } = await verifySession()
   if (!decodedIdToken) {
     return createErrorResponse(UNAUTHORIZED_ERROR, 401)
   }
 
-  const data: EventUpdateRequest = await request.json()
+  const { id: eventId } = params
+  const { title, startTimestamp, endTimestamp, slots }: EventUpdateRequest =
+    await request.json()
 
-  if (
-    !data.eventId ||
-    !data.title ||
-    !data.startTimestamp ||
-    !data.endTimestamp ||
-    !data.slots
-  ) {
+  if (!eventId || !title || !startTimestamp || !endTimestamp || !slots) {
     return createErrorResponse(MISSING_REQUIRED_FIELDS, 400)
   }
 
+  const updateEvent: UpdateEvent = {
+    title,
+    startTimestamp: new Date(startTimestamp),
+    endTimestamp: new Date(endTimestamp),
+    slots,
+  }
+
   try {
-    const event = await getEventById(data.eventId)
-    if (!event) {
-      return createErrorResponse(EVENT_NOT_FOUND_ERROR, 404)
-    }
-    if (
-      event.organizer.uid !== decodedIdToken.uid &&
-      !(await isRoleMod(decodedIdToken.uid))
-    ) {
-      return createErrorResponse(UNAUTHORIZED_ERROR, 401)
-    }
-
-    const updatedEvent = {
-      title: data.title,
-      startTimestamp: new Date(data.startTimestamp),
-      endTimestamp: new Date(data.endTimestamp),
-      slots: data.slots,
-    }
-
-    await updateEvent(data.eventId, updatedEvent)
-
-    console.info('Event updated:', data.eventId)
+    await editEvent(
+      eventId,
+      updateEvent,
+      decodedIdToken.uid,
+      decodedIdToken.role
+    )
+    console.info('Event updated:', eventId)
     return createSuccessResponse()
   } catch (error) {
+    if (error instanceof AppError) {
+      let statusCode = 400
+      switch (error.message) {
+        case EVENT_NOT_FOUND_ERROR:
+          statusCode = 404
+          break
+        case EVENT_STARTED_ERROR:
+        case UNAUTHORIZED_ERROR:
+          statusCode = 403
+          break
+        case UNKNOWN_ERROR:
+        default:
+          statusCode = 400
+      }
+      return createErrorResponse(error.message, statusCode)
+    }
     console.error('Error updating event:', error)
     return createErrorResponse(error, 500)
   }
