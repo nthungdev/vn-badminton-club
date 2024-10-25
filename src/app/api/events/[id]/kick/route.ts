@@ -7,7 +7,11 @@ import { eventReadConverter } from '@/firebase/utils'
 import { FieldValue } from 'firebase-admin/firestore'
 import { Role } from '@/firebase/definitions'
 import { isPast } from '@/lib/utils/events'
-import { EVENT_NOT_FOUND_ERROR, EVENT_STARTED_ERROR } from '@/constants/errorMessages'
+import {
+  EVENT_NOT_FOUND_ERROR,
+  EVENT_STARTED_ERROR,
+  UNAUTHORIZED_ERROR,
+} from '@/constants/errorMessages'
 
 interface EventParticipantKickRequest {
   uid?: string
@@ -58,7 +62,7 @@ export async function PATCH(
               break
             }
           default:
-            return { errorMessage: 'Unauthorized.', status: 403 }
+            return { errorMessage: UNAUTHORIZED_ERROR, status: 403 }
         }
 
         if (!event.participantIds.includes(uid)) {
