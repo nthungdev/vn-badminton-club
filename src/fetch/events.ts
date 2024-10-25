@@ -1,6 +1,6 @@
 import { EventsGetResponse } from '@/app/api/events/types'
 import AppError from '@/lib/AppError'
-import { HomeViewEvent, UpdateEvent } from '@/firebase/definitions/event'
+import { HomeViewEvent } from '@/firebase/definitions/event'
 import { UNKNOWN_ERROR } from '@/constants/errorMessages'
 import { EventsAddGuestResponse } from '@/app/api/events/[id]/addGuest/type'
 import { EventsKickGuestResponse } from '@/app/api/events/[id]/kickGuest/type'

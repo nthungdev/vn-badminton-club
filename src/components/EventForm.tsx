@@ -41,7 +41,11 @@ export default function EventForm(props: EventFormProps) {
         <div className="space-y-4">
           <div className="hidden">
             <input type="text" name="id" defaultValue={props.event?.id} />
-            <input type="text" name="timezoneOffset" defaultValue={(new Date()).getTimezoneOffset()} />
+            <input
+              type="text"
+              name="timezoneOffset"
+              defaultValue={new Date().getTimezoneOffset()}
+            />
           </div>
 
           <div>
