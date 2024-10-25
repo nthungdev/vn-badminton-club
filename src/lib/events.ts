@@ -7,7 +7,7 @@ import {
   UNKNOWN_ERROR,
 } from '@/constants/errorMessages'
 import { Role } from '@/firebase/definitions'
-import { UpdateEvent } from '@/firebase/definitions/event'
+import { EditEventParams } from '@/firebase/definitions/event'
 import { COLLECTION_EVENTS } from '@/firebase/firestore.constant'
 import { firestore } from '@/firebase/serverApp'
 import { eventReadConverter } from '@/firebase/utils'
@@ -26,7 +26,7 @@ const eventCollection = firestore.collection(COLLECTION_EVENTS)
  */
 export async function editEvent(
   eventId: string,
-  update: UpdateEvent,
+  params: EditEventParams,
   uid: string,
   role: Role
 ) {
@@ -59,10 +59,10 @@ export async function editEvent(
         }
 
         const updatedEvent = {
-          title: update.title,
-          startTimestamp: new Date(update.startTimestamp),
-          endTimestamp: new Date(update.endTimestamp),
-          slots: update.slots,
+          title: params.title,
+          startTimestamp: new Date(params.startTimestamp),
+          endTimestamp: new Date(params.endTimestamp),
+          slots: params.slots,
         }
 
         transaction.update(eventCollection.doc(eventId), updatedEvent)

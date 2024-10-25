@@ -28,7 +28,7 @@ export interface CreateEvent {
   byMod: boolean
 }
 
-export interface UpdateEvent {
+export interface EditEventParams {
   title: string
   startTimestamp: Date
   endTimestamp: Date

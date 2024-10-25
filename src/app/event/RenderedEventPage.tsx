@@ -32,7 +32,7 @@ import {
   BUTTON_ADD_GUEST,
   BUTTON_CONFIRM_ADD_GUEST_PAST_EVENT_CUTOFF,
   BUTTON_KICK_PAST_EVENT_CUTOFF,
-  BUTTON_UPDATE,
+  BUTTON_EDIT,
 } from '@/lib/constants/events'
 
 interface RenderedEventPageProps {
@@ -330,7 +330,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
                   )}
                   onClick={handleUpdateEventToggle}
                 >
-                  {BUTTON_UPDATE}
+                  {BUTTON_EDIT}
                 </Link>
               </div>
             )}

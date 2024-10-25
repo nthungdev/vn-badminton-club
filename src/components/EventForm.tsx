@@ -3,24 +3,26 @@
 import { useFormState, useFormStatus } from 'react-dom'
 import DateInput from './DateInput'
 import TimeInput from './TimeInput'
-import { createEvent, updateEvent } from '@/actions/events'
+import { createEvent, editEvent } from '@/actions/events'
 import { CreatedEvent } from '@/firebase/definitions/event'
 import dayjs from 'dayjs'
 import LoadingSpinner from './LoadingSpinner'
+import { BUTTON_CREATE, BUTTON_EDIT, FORM_CREATE_EVENT_TITLE, FORM_EDIT_EVENT_TITLE } from '@/lib/constants/events'
 
 interface EventFormProps {
-  /** if undefined, this form is used for creating event */
+  /** if undefined, this form is in create event mode */
   event?: CreatedEvent
 }
 
 export default function EventForm(props: EventFormProps) {
-  const isUpdate = !!props.event
+  const isEditing = !!props.event
   const [state, action] = useFormState(
-    isUpdate ? updateEvent : createEvent,
+    isEditing ? editEvent : createEvent,
     undefined
   )
 
-  const formHeading = isUpdate ? 'Update Event' : 'Create Event'
+  const formHeading = isEditing ? FORM_EDIT_EVENT_TITLE : FORM_CREATE_EVENT_TITLE
+  const submitButtonText = isEditing ? BUTTON_EDIT : BUTTON_CREATE
 
   const defaultDate = props.event
     ? dayjs(props.event.startTimestamp).format('YYYY-MM-DD')
@@ -32,7 +34,6 @@ export default function EventForm(props: EventFormProps) {
     ? dayjs(props.event.endTimestamp).format('HH:mm')
     : ''
 
-  const submitButtonText = isUpdate ? 'Update' : 'Create'
 
   return (
     <div className="max-w-sm space-y-4 py-4 mx-auto">

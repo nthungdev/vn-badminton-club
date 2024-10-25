@@ -12,7 +12,7 @@ import {
 } from '@/constants/errorMessages'
 import { editEvent } from '@/lib/events'
 import AppError from '@/lib/AppError'
-import { UpdateEvent } from '@/firebase/definitions/event'
+import { EditEventParams } from '@/firebase/definitions/event'
 
 export async function GET(
   request: NextRequest,
@@ -63,8 +63,7 @@ export async function DELETE(
   }
 }
 
-interface EventUpdateRequest {
-  eventId?: string
+interface EventEditRequest {
   title?: string
   startTimestamp?: number
   endTimestamp?: number
@@ -81,14 +80,14 @@ export async function PATCH(
   }
 
   const { id: eventId } = params
-  const { title, startTimestamp, endTimestamp, slots }: EventUpdateRequest =
+  const { title, startTimestamp, endTimestamp, slots }: EventEditRequest =
     await request.json()
 
   if (!eventId || !title || !startTimestamp || !endTimestamp || !slots) {
     return createErrorResponse(MISSING_REQUIRED_FIELDS, 400)
   }
 
-  const updateEvent: UpdateEvent = {
+  const updateEvent: EditEventParams = {
     title,
     startTimestamp: new Date(startTimestamp),
     endTimestamp: new Date(endTimestamp),
@@ -102,7 +101,7 @@ export async function PATCH(
       decodedIdToken.uid,
       decodedIdToken.role
     )
-    console.info('Event updated:', eventId)
+    console.info('Event edited:', eventId)
     return createSuccessResponse()
   } catch (error) {
     if (error instanceof AppError) {

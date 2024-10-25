@@ -98,7 +98,7 @@ export const CreateEventFormSchema = z
     }
   )
 
-export const UpdateEventFormSchema = CreateEventFormSchema.and(
+export const EditEventFormSchema = CreateEventFormSchema.and(
   z.object({ id: z.string() })
 )
 
@@ -116,4 +116,4 @@ export type CreateEventFormState =
     }
   | undefined
 
-export type UpdateEventFormState = CreateEventFormState
+export type EditEventFormState = CreateEventFormState
