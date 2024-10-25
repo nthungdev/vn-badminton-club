@@ -18,7 +18,7 @@ import {
 } from '@/firebase/firestore'
 import { menuHref } from '@/lib/menu'
 import { Role } from '@/firebase/definitions'
-import { CreateEvent, EditEventParams } from '@/firebase/definitions/event'
+import { CreateEventParams, EditEventParams } from '@/firebase/definitions/event'
 import { isRedirectError } from 'next/dist/client/components/redirect'
 import { fieldsToDate } from '@/lib/format'
 import { INTERNAL_ERROR, UNAUTHORIZED_ERROR } from '@/constants/errorMessages'
@@ -73,7 +73,7 @@ export async function createEvent(
       validatedFields.data.timezoneOffset
     )
 
-    const event: CreateEvent = {
+    const event: CreateEventParams = {
       title: validatedFields.data.title,
       startTimestamp,
       endTimestamp,

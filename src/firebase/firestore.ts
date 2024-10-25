@@ -3,7 +3,7 @@
 import { FieldValue } from 'firebase-admin/firestore'
 import {
   CreatedEvent,
-  CreateEvent,
+  CreateEventParams,
   EventParticipant,
   FirestoreEvent,
   FirestoreEventGuest,
@@ -161,7 +161,7 @@ export async function getEventById(eventId: string) {
   }
 }
 
-export async function createEvent(event: CreateEvent) {
+export async function createEvent(event: CreateEventParams) {
   try {
     const doc = await eventCollection.add({
       ...event,
