@@ -34,12 +34,10 @@ import {
   BUTTON_KICK_PAST_EVENT_CUTOFF,
   BUTTON_EDIT,
 } from '@/lib/constants/events'
+import { Role } from '@/firebase/definitions'
 
 interface RenderedEventPageProps {
   event: CreatedEvent
-  showJoinButton: boolean
-  showCancelButton: boolean
-  showUpdateButton: boolean
 }
 
 export default function RenderedEventPage(props: RenderedEventPageProps) {
@@ -53,6 +51,8 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
   const [kickMode, setKickMode] = useState(false)
   const [updateMode, setUpdateMode] = useState(false)
 
+  const isMod = user?.role === Role.Mod
+  const isOrganizer = user?.uid === event.organizer.uid
   const isEventFull = participants.length >= event.slots
   const isPastEvent = dayjs().isAfter(dayjs(event.startTimestamp))
   const time = eventTime(event.startTimestamp, event.endTimestamp)
@@ -61,21 +61,24 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
   const isOnlySelfParticipant =
     participants.length === 1 &&
     participants.some((p) => isEventParticipant(p) && p.uid === user!.uid)
-  const hasMyGuests = participants.some(
-    (p) => isFirestoreEventGuest(p) && p.addedBy === user!.uid
-  )
+  // const hasMyGuests = participants.some(
+  //   (p) => isFirestoreEventGuest(p) && p.addedBy === user!.uid
+  // )
   const showKickButton =
     !isPastEvent &&
     participants.length > 0 &&
     !isOnlySelfParticipant &&
-    (props.showUpdateButton || hasMyGuests)
+    (isMod || isOrganizer)
   const showAddGuestButton = !isPastEvent
+  const showEditButton = !isPastEvent && (isMod || isOrganizer)
+  const showCancelButton = !isPastEvent && (isMod || isOrganizer)
+  const showJoinButton = !isPastEvent
   const kickableParticipants = participants.filter((p) => {
     if (isEventParticipant(p) && p.uid === user!.uid) {
       return false
     }
 
-    if (props.showUpdateButton) {
+    if (isMod || isOrganizer) {
       // Mod and organizer can kick anyone
       return true
     } else {
@@ -150,7 +153,10 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
 
   async function handleAddGuest() {
     try {
-      if (isPastEventCutoff && !window.confirm(BUTTON_CONFIRM_ADD_GUEST_PAST_EVENT_CUTOFF)) {
+      if (
+        isPastEventCutoff &&
+        !window.confirm(BUTTON_CONFIRM_ADD_GUEST_PAST_EVENT_CUTOFF)
+      ) {
         return
       }
 
@@ -320,7 +326,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
               </div>
             </div>
 
-            {props.showUpdateButton && (
+            {showEditButton && (
               <div>
                 <Link
                   href={`${menuHref.updateEvent}?e=${event.id}`}
@@ -335,7 +341,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
               </div>
             )}
 
-            {props.showCancelButton && (
+            {showCancelButton && (
               <div>
                 <CancelEventButton
                   disabled={pending}
@@ -349,7 +355,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
         </div>
       </div>
 
-      {props.showJoinButton && (
+      {showJoinButton && (
         <div className="p-4 shadow-inner">
           <JoinLeaveEventButton
             event={event}
