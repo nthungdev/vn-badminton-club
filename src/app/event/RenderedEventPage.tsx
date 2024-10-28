@@ -23,6 +23,7 @@ import ParticipantActionButton from './ParticipantActionButton'
 import GroupedParticipantList from './GroupedParticipantList'
 import {
   DEFAULT_EVENT_LEAVE_CUTOFF,
+  DEFAULT_EVENT_JOIN_CUTOFF,
   isEventParticipant,
   isFirestoreEventGuest,
   hasPassed,
@@ -31,9 +32,11 @@ import { useAuth } from '@/contexts/AuthContext'
 import {
   BUTTON_ADD_GUEST,
   BUTTON_CONFIRM_ADD_GUEST_PAST_EVENT_LEAVE_CUTOFF,
-  BUTTON_KICK_PAST_EVENT_CUTOFF,
+  BUTTON_KICK_PASSED_LEAVE_CUTOFF_TOOLTIP,
   BUTTON_EDIT,
   EVENT_ADD_GUEST_PROMPT,
+  BUTTON_KICK,
+  BUTTON_ADD_GUEST_PASSED_JOIN_CUTOFF_TOOLTIP,
 } from '@/lib/constants/events'
 import { Role } from '@/firebase/definitions'
 import { EVENT_ADD_GUEST_NO_NAME_ERROR } from '@/constants/errorMessages'
@@ -58,7 +61,14 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
   const isEventFull = participants.length >= event.slots
   const isPastEvent = dayjs().isAfter(dayjs(event.startTimestamp))
   const time = eventTime(event.startTimestamp, event.endTimestamp)
-  const hasPassedEventCutoff = hasPassed(event.startTimestamp, DEFAULT_EVENT_LEAVE_CUTOFF)
+  const hasPassedLeaveCutoff = hasPassed(
+    event.startTimestamp,
+    DEFAULT_EVENT_LEAVE_CUTOFF
+  )
+  const hasPassedJoinCutoff = hasPassed(
+    event.startTimestamp,
+    DEFAULT_EVENT_JOIN_CUTOFF
+  )
 
   const isOnlySelfParticipant =
     participants.length === 1 &&
@@ -67,18 +77,25 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
     (p) => isFirestoreEventGuest(p) && p.addedBy === user!.uid
   )
   const showKickButton =
-    (isMod || !isPastEvent) &&
     participants.length > 0 &&
     !isOnlySelfParticipant &&
+    (isMod || !isPastEvent) &&
     (isMod || isOrganizer || hasMyGuests)
-  const showAddGuestButton = !isPastEvent
+  const showAddGuestButton = isMod || !isPastEvent
   const showEditButton = (isMod || !isPastEvent) && (isMod || isOrganizer)
   const showCancelButton = !isPastEvent && (isMod || isOrganizer)
   const showJoinButton = !isPastEvent
-  const showKickButtonTooltip = hasPassedEventCutoff && !isMod
-  const disableKickButton = kickMode || (hasPassedEventCutoff && !isMod)
+
+  const showKickButtonTooltip = !isMod && hasPassedLeaveCutoff
+  const showAddGuestButtonTooltip = !isMod && hasPassedJoinCutoff
+
+  const disableJoinButton = pending || undefined
+  const disableKickButton =
+    pending || kickMode || (!isMod && hasPassedLeaveCutoff)
   const disableCancelButton = pending || isPastEvent
-  const disableAddGuestButton = isEventFull || kickMode || isPastEvent
+  const disableAddGuestButton =
+    pending || isEventFull || kickMode || (!isMod && hasPassedJoinCutoff)
+
   const kickableParticipants = participants.filter((p) => {
     if (isEventParticipant(p) && p.uid === user!.uid) {
       return false
@@ -160,7 +177,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
   async function handleAddGuest() {
     try {
       if (
-        hasPassedEventCutoff &&
+        hasPassedLeaveCutoff &&
         !window.confirm(BUTTON_CONFIRM_ADD_GUEST_PAST_EVENT_LEAVE_CUTOFF)
       ) {
         return
@@ -231,7 +248,18 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
         onClick={handleKickParticipantToggle}
         disabled={disableKickButton}
       >
-        Kick Participant
+        {BUTTON_KICK}
+      </ParticipantActionButton>
+    )
+  }
+
+  function renderAddGuestButton() {
+    return (
+      <ParticipantActionButton
+        onClick={handleAddGuest}
+        disabled={disableAddGuestButton}
+      >
+        {BUTTON_ADD_GUEST}
       </ParticipantActionButton>
     )
   }
@@ -315,24 +343,27 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
               <div className="flex flex-row justify-end space-x-2">
                 {showKickButton &&
                   (showKickButtonTooltip ? (
-                    <Tooltip content={BUTTON_KICK_PAST_EVENT_CUTOFF}>
+                    <Tooltip content={BUTTON_KICK_PASSED_LEAVE_CUTOFF_TOOLTIP}>
                       {renderKickParticipantButton()}
                     </Tooltip>
                   ) : (
                     renderKickParticipantButton()
                   ))}
-                {showAddGuestButton && (
-                  <ParticipantActionButton
-                    onClick={handleAddGuest}
-                    disabled={disableAddGuestButton}
-                  >
-                    {BUTTON_ADD_GUEST}
-                  </ParticipantActionButton>
-                )}
+
+                {showAddGuestButton &&
+                  (showAddGuestButtonTooltip ? (
+                    <Tooltip
+                      content={BUTTON_ADD_GUEST_PASSED_JOIN_CUTOFF_TOOLTIP}
+                    >
+                      renderAddGuestButton()
+                    </Tooltip>
+                  ) : (
+                    renderAddGuestButton()
+                  ))}
               </div>
             </div>
 
-            <div className='space-y-2'>
+            <div className="space-y-2">
               {showEditButton && (
                 <Link
                   href={`${menuHref.updateEvent}?e=${event.id}`}
@@ -363,7 +394,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
         <div className="p-4 shadow-inner">
           <JoinLeaveEventButton
             event={event}
-            disabled={pending || undefined}
+            disabled={disableJoinButton}
             participants={participants}
             onPending={setPending}
             onJoined={handleJoinedEvent}
