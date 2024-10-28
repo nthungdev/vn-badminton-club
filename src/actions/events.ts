@@ -23,7 +23,7 @@ import { isRedirectError } from 'next/dist/client/components/redirect'
 import { fieldsToDate } from '@/lib/format'
 import { INTERNAL_ERROR, UNAUTHORIZED_ERROR } from '@/constants/errorMessages'
 import { verifySession } from '@/lib/session'
-import { editEvent as _editEvent } from '@/lib/events'
+import { editEvent as _editEvent } from '@/lib/db/events'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)

@@ -12,8 +12,8 @@ import { EditEventParams } from '@/firebase/definitions/event'
 import { COLLECTION_EVENTS } from '@/firebase/firestore.constant'
 import { firestore } from '@/firebase/serverApp'
 import { eventReadConverter, eventWriteConverter } from '@/firebase/utils'
-import { isPast } from './utils/events'
-import AppError from './AppError'
+import { isPast } from '../utils/events'
+import AppError from '../AppError'
 
 const eventCollection = firestore.collection(COLLECTION_EVENTS)
 

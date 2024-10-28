@@ -9,7 +9,7 @@ import {
   UNAUTHORIZED_ERROR,
   UNKNOWN_ERROR,
 } from '@/constants/errorMessages'
-import { kickGuest } from '@/lib/events'
+import { kickGuest } from '@/lib/db/events'
 import AppError from '@/lib/AppError'
 
 interface EventGuestKickRequest {
