@@ -24,6 +24,13 @@ import { FieldValue } from 'firebase-admin/firestore'
 
 const eventCollection = firestore.collection(COLLECTION_EVENTS)
 
+/**
+ * @throws {AppError} with message either
+ * - EVENT_NOT_FOUND_ERROR
+ * - EVENT_FULL_ERROR
+ * - EVENT_LATE_JOIN_ERROR
+ * - UNKNOWN_ERROR
+ */
 export async function joinEvent(uid: string, eventId: string) {
   const eventReadRef = eventCollection
     .withConverter(eventReadConverter)
@@ -66,7 +73,7 @@ export async function joinEvent(uid: string, eventId: string) {
     if (error instanceof AppError) {
       throw error
     }
-    throw new Error('Error joining event')
+    throw new AppError(UNKNOWN_ERROR, error)
   }
 }
 
@@ -129,6 +136,9 @@ export async function editEvent(
       return new AppError(errorMessage)
     }
   } catch (error) {
+    if (error instanceof AppError) {
+      throw error
+    }
     return new AppError(UNKNOWN_ERROR, error)
   }
 }
@@ -194,8 +204,6 @@ export async function kickGuest(
     if (errorMessage !== undefined) {
       throw new AppError(errorMessage)
     }
-
-    console.info(`Guest ${guestId} was kicked from event ${eventId}`)
   } catch (error) {
     if (error instanceof AppError) {
       throw error

@@ -44,6 +44,8 @@ export async function PATCH(
       decodedIdToken.uid,
       decodedIdToken.role
     )
+
+    console.info(`Guest ${data.guestId} was kicked from event ${eventId}`)
     return createSuccessResponse()
   } catch (error) {
     if (error instanceof AppError) {
