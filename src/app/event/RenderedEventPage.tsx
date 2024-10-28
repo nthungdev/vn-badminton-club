@@ -56,7 +56,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
   const isEventFull = participants.length >= event.slots
   const isPastEvent = dayjs().isAfter(dayjs(event.startTimestamp))
   const time = eventTime(event.startTimestamp, event.endTimestamp)
-  const hasPassedEventCutoff = isPast(event.endTimestamp, DEFAULT_EVENT_CUTOFF)
+  const hasPassedEventCutoff = isPast(event.startTimestamp, DEFAULT_EVENT_CUTOFF)
 
   const isOnlySelfParticipant =
     participants.length === 1 &&
