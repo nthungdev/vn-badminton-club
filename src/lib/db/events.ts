@@ -1,7 +1,9 @@
 'server-only'
 
 import {
+  EVENT_FULL_ERROR,
   EVENT_GUEST_NOT_FOUND_ERROR,
+  EVENT_LATE_JOIN_ERROR,
   EVENT_NOT_FOUND_ERROR,
   EVENT_STARTED_ERROR,
   UNAUTHORIZED_ERROR,
@@ -11,11 +13,69 @@ import { Role } from '@/firebase/definitions'
 import { EditEventParams } from '@/firebase/definitions/event'
 import { COLLECTION_EVENTS } from '@/firebase/firestore.constant'
 import { firestore } from '@/firebase/serverApp'
-import { eventReadConverter, eventWriteConverter } from '@/firebase/utils'
-import { isPast } from './utils/events'
-import AppError from './AppError'
+import {
+  eventReadConverter,
+  eventWriteConverter,
+  isEventFull,
+} from '@/firebase/utils'
+import { DEFAULT_EVENT_JOIN_CUTOFF, hasPassed } from '../utils/events'
+import AppError from '../AppError'
+import { FieldValue } from 'firebase-admin/firestore'
 
 const eventCollection = firestore.collection(COLLECTION_EVENTS)
+
+/**
+ * @throws {AppError} with message either
+ * - EVENT_NOT_FOUND_ERROR
+ * - EVENT_FULL_ERROR
+ * - EVENT_LATE_JOIN_ERROR
+ * - UNKNOWN_ERROR
+ */
+export async function joinEvent(uid: string, eventId: string) {
+  const eventReadRef = eventCollection
+    .withConverter(eventReadConverter)
+    .doc(eventId)
+  const eventWriteRef = eventCollection
+    .withConverter(eventWriteConverter)
+    .doc(eventId)
+
+  try {
+    const { errorMessage } = await firestore.runTransaction(
+      async (transaction) => {
+        const doc = await transaction.get(eventReadRef)
+        const event = doc.data()
+        if (!doc.exists || event === undefined) {
+          return { errorMessage: EVENT_NOT_FOUND_ERROR }
+        }
+
+        if (isEventFull(event)) {
+          return { errorMessage: EVENT_FULL_ERROR }
+        }
+
+        const afterJoinCutoff = hasPassed(event.startTimestamp, DEFAULT_EVENT_JOIN_CUTOFF)
+        if (afterJoinCutoff) {
+          return { errorMessage: EVENT_LATE_JOIN_ERROR }
+        }
+
+        transaction.update(eventWriteRef, {
+          participantIds: FieldValue.arrayUnion(uid),
+        })
+        return {}
+      }
+    )
+
+    if (errorMessage !== undefined) {
+      throw new AppError(errorMessage)
+    }
+
+    console.info(`User ${uid} joined event ${eventId}`)
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error
+    }
+    throw new AppError(UNKNOWN_ERROR, error)
+  }
+}
 
 /**
  * @throws {AppError} with message either
@@ -47,7 +107,7 @@ export async function editEvent(
             break
           case Role.Member:
             if (event.createdBy === uid) {
-              const hasStarted = isPast(event.startTimestamp)
+              const hasStarted = hasPassed(event.startTimestamp)
               if (hasStarted) {
                 return {
                   errorMessage: EVENT_STARTED_ERROR,
@@ -76,6 +136,9 @@ export async function editEvent(
       return new AppError(errorMessage)
     }
   } catch (error) {
+    if (error instanceof AppError) {
+      throw error
+    }
     return new AppError(UNKNOWN_ERROR, error)
   }
 }
@@ -116,7 +179,7 @@ export async function kickGuest(
         case Role.Mod:
           break
         case Role.Member:
-          const hasStarted = isPast(event.startTimestamp)
+          const hasStarted = hasPassed(event.startTimestamp)
           if (hasStarted) {
             return EVENT_STARTED_ERROR
           }
@@ -141,8 +204,6 @@ export async function kickGuest(
     if (errorMessage !== undefined) {
       throw new AppError(errorMessage)
     }
-
-    console.info(`Guest ${guestId} was kicked from event ${eventId}`)
   } catch (error) {
     if (error instanceof AppError) {
       throw error

@@ -6,7 +6,7 @@ import { COLLECTION_EVENTS } from '@/firebase/firestore.constant'
 import { eventReadConverter } from '@/firebase/utils'
 import { FieldValue } from 'firebase-admin/firestore'
 import { Role } from '@/firebase/definitions'
-import { isPast } from '@/lib/utils/events'
+import { hasPassed } from '@/lib/utils/events'
 import {
   EVENT_NOT_FOUND_ERROR,
   EVENT_STARTED_ERROR,
@@ -52,7 +52,7 @@ export async function PATCH(
             break
           case Role.Member:
             if (event.createdBy === decodedIdToken.uid) {
-              const hasStarted = isPast(event.startTimestamp)
+              const hasStarted = hasPassed(event.startTimestamp)
               if (hasStarted) {
                 return {
                   errorMessage: EVENT_STARTED_ERROR,

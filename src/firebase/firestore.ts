@@ -19,7 +19,7 @@ import {
 } from '@/constants/errorMessages'
 import { EventsCacheKey, getNodeCache } from '@/lib/cache'
 import { getUserById } from '@/lib/authUtils'
-import { DEFAULT_EVENT_CUTOFF } from '@/lib/utils/events'
+import { DEFAULT_EVENT_LEAVE_CUTOFF } from '@/lib/utils/events'
 import { eventReadConverter, eventWriteConverter, isEventFull } from './utils'
 
 const cache = getNodeCache('eventsCache')
@@ -242,7 +242,7 @@ export async function leaveEvent(uid: string, eventId: string) {
       const data = doc.data() as FirestoreEvent
 
       if (
-        new Date(data.startTimestamp.seconds * 1000 - DEFAULT_EVENT_CUTOFF) <
+        new Date(data.startTimestamp.seconds * 1000 - DEFAULT_EVENT_LEAVE_CUTOFF) <
         new Date()
       ) {
         return 'Cannot leave event at this time'

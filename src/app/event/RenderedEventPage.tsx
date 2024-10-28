@@ -22,19 +22,21 @@ import CancelEventButton from './CancelEventButton'
 import ParticipantActionButton from './ParticipantActionButton'
 import GroupedParticipantList from './GroupedParticipantList'
 import {
-  DEFAULT_EVENT_CUTOFF,
+  DEFAULT_EVENT_LEAVE_CUTOFF,
   isEventParticipant,
   isFirestoreEventGuest,
-  isPast,
+  hasPassed,
 } from '@/lib/utils/events'
 import { useAuth } from '@/contexts/AuthContext'
 import {
   BUTTON_ADD_GUEST,
-  BUTTON_CONFIRM_ADD_GUEST_PAST_EVENT_CUTOFF,
+  BUTTON_CONFIRM_ADD_GUEST_PAST_EVENT_LEAVE_CUTOFF,
   BUTTON_KICK_PAST_EVENT_CUTOFF,
   BUTTON_EDIT,
+  EVENT_ADD_GUEST_PROMPT,
 } from '@/lib/constants/events'
 import { Role } from '@/firebase/definitions'
+import { EVENT_ADD_GUEST_NO_NAME_ERROR } from '@/constants/errorMessages'
 
 interface RenderedEventPageProps {
   event: CreatedEvent
@@ -56,7 +58,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
   const isEventFull = participants.length >= event.slots
   const isPastEvent = dayjs().isAfter(dayjs(event.startTimestamp))
   const time = eventTime(event.startTimestamp, event.endTimestamp)
-  const hasPassedEventCutoff = isPast(event.startTimestamp, DEFAULT_EVENT_CUTOFF)
+  const hasPassedEventCutoff = hasPassed(event.startTimestamp, DEFAULT_EVENT_LEAVE_CUTOFF)
 
   const isOnlySelfParticipant =
     participants.length === 1 &&
@@ -159,17 +161,17 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
     try {
       if (
         hasPassedEventCutoff &&
-        !window.confirm(BUTTON_CONFIRM_ADD_GUEST_PAST_EVENT_CUTOFF)
+        !window.confirm(BUTTON_CONFIRM_ADD_GUEST_PAST_EVENT_LEAVE_CUTOFF)
       ) {
         return
       }
 
-      const name = window.prompt('Enter the name of the guest you want to add:')
+      const name = window.prompt(EVENT_ADD_GUEST_PROMPT)
       if (name === null) {
         return
       }
       if (name === '') {
-        throw new AppError('No name entered')
+        throw new AppError(EVENT_ADD_GUEST_NO_NAME_ERROR)
       }
 
       const guest = await addGuest(event.id, name)

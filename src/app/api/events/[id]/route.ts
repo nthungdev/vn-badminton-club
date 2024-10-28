@@ -10,7 +10,7 @@ import {
   UNAUTHORIZED_ERROR,
   UNKNOWN_ERROR,
 } from '@/constants/errorMessages'
-import { editEvent } from '@/lib/events'
+import { editEvent } from '@/lib/db/events'
 import AppError from '@/lib/AppError'
 import { EditEventParams } from '@/firebase/definitions/event'
 

@@ -9,7 +9,7 @@ import {
   UNAUTHORIZED_ERROR,
   UNKNOWN_ERROR,
 } from '@/constants/errorMessages'
-import { kickGuest } from '@/lib/events'
+import { kickGuest } from '@/lib/db/events'
 import AppError from '@/lib/AppError'
 
 interface EventGuestKickRequest {
@@ -44,6 +44,8 @@ export async function PATCH(
       decodedIdToken.uid,
       decodedIdToken.role
     )
+
+    console.info(`Guest ${data.guestId} was kicked from event ${eventId}`)
     return createSuccessResponse()
   } catch (error) {
     if (error instanceof AppError) {
