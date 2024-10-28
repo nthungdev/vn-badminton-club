@@ -17,3 +17,5 @@ export const BUTTON_CANCEL = 'Cancel Event'
 
 export const FORM_CREATE_EVENT_TITLE = 'Create Event'
 export const FORM_EDIT_EVENT_TITLE = 'Edit Event'
+
+export const KICK_MODAL_EMPTY = 'There are no one else to kick.'
