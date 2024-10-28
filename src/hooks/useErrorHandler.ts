@@ -4,6 +4,9 @@ import { UNKNOWN_ERROR } from '@/constants/errorMessages'
 import { useToastsContext } from '@/contexts/ToastsContext'
 import AppError from '@/lib/AppError'
 
+/**
+ * @returns handleError function that takes an error and displays a toast
+ */
 export default function useErrorHandler() {
   const { addToast } = useToastsContext()
 
