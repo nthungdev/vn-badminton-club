@@ -18,7 +18,7 @@ import {
   eventWriteConverter,
   isEventFull,
 } from '@/firebase/utils'
-import { DEFAULT_EVENT_JOIN_CUTOFF, isPast } from '../utils/events'
+import { DEFAULT_EVENT_JOIN_CUTOFF, hasPassed } from '../utils/events'
 import AppError from '../AppError'
 import { FieldValue } from 'firebase-admin/firestore'
 
@@ -45,7 +45,7 @@ export async function joinEvent(uid: string, eventId: string) {
           return { errorMessage: EVENT_FULL_ERROR }
         }
 
-        const afterJoinCutoff = isPast(event.startTimestamp, DEFAULT_EVENT_JOIN_CUTOFF)
+        const afterJoinCutoff = hasPassed(event.startTimestamp, DEFAULT_EVENT_JOIN_CUTOFF)
         if (afterJoinCutoff) {
           return { errorMessage: EVENT_LATE_JOIN_ERROR }
         }
@@ -100,7 +100,7 @@ export async function editEvent(
             break
           case Role.Member:
             if (event.createdBy === uid) {
-              const hasStarted = isPast(event.startTimestamp)
+              const hasStarted = hasPassed(event.startTimestamp)
               if (hasStarted) {
                 return {
                   errorMessage: EVENT_STARTED_ERROR,
@@ -169,7 +169,7 @@ export async function kickGuest(
         case Role.Mod:
           break
         case Role.Member:
-          const hasStarted = isPast(event.startTimestamp)
+          const hasStarted = hasPassed(event.startTimestamp)
           if (hasStarted) {
             return EVENT_STARTED_ERROR
           }

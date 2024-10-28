@@ -25,7 +25,7 @@ import {
   DEFAULT_EVENT_LEAVE_CUTOFF,
   isEventParticipant,
   isFirestoreEventGuest,
-  isPast,
+  hasPassed,
 } from '@/lib/utils/events'
 import { useAuth } from '@/contexts/AuthContext'
 import {
@@ -56,7 +56,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
   const isEventFull = participants.length >= event.slots
   const isPastEvent = dayjs().isAfter(dayjs(event.startTimestamp))
   const time = eventTime(event.startTimestamp, event.endTimestamp)
-  const hasPassedEventCutoff = isPast(event.startTimestamp, DEFAULT_EVENT_LEAVE_CUTOFF)
+  const hasPassedEventCutoff = hasPassed(event.startTimestamp, DEFAULT_EVENT_LEAVE_CUTOFF)
 
   const isOnlySelfParticipant =
     participants.length === 1 &&

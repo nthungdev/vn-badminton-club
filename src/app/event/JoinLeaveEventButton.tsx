@@ -17,7 +17,7 @@ import {
 import {
   DEFAULT_EVENT_LEAVE_CUTOFF,
   isEventParticipant,
-  isPast,
+  hasPassed,
 } from '@/lib/utils/events'
 import classNames from 'classnames'
 import { Tooltip } from 'flowbite-react'
@@ -35,7 +35,7 @@ export default function JoinLeaveEventButton(props: JoinLeaveEventButtonProps) {
   const handleError = useErrorHandler()
   const { user } = useAuth()
 
-  const isPastLeaveTime = isPast(props.event.endTimestamp, DEFAULT_EVENT_LEAVE_CUTOFF)
+  const isPastLeaveTime = hasPassed(props.event.endTimestamp, DEFAULT_EVENT_LEAVE_CUTOFF)
   const meJoined = props.participants.some(
     (p) => isEventParticipant(p) && p.uid === user?.uid
   )
