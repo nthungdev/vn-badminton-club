@@ -10,7 +10,10 @@ import {
   UNKNOWN_ERROR,
 } from '@/constants/errorMessages'
 import { Role } from '@/firebase/definitions'
-import { EditEventParams } from '@/firebase/definitions/event'
+import {
+  EditEventParams,
+  FirestoreEventGuest,
+} from '@/firebase/definitions/event'
 import { COLLECTION_EVENTS } from '@/firebase/firestore.constant'
 import { firestore } from '@/firebase/serverApp'
 import {
@@ -52,7 +55,10 @@ export async function joinEvent(uid: string, eventId: string) {
           return { errorMessage: EVENT_FULL_ERROR }
         }
 
-        const afterJoinCutoff = hasPassed(event.startTimestamp, DEFAULT_EVENT_JOIN_CUTOFF)
+        const afterJoinCutoff = hasPassed(
+          event.startTimestamp,
+          DEFAULT_EVENT_JOIN_CUTOFF
+        )
         if (afterJoinCutoff) {
           return { errorMessage: EVENT_LATE_JOIN_ERROR }
         }
@@ -139,7 +145,7 @@ export async function editEvent(
     if (error instanceof AppError) {
       throw error
     }
-    return new AppError(UNKNOWN_ERROR, error)
+    throw new AppError(UNKNOWN_ERROR, error)
   }
 }
 
@@ -208,6 +214,77 @@ export async function kickGuest(
     if (error instanceof AppError) {
       throw error
     }
-    return new AppError(UNKNOWN_ERROR, error)
+    throw new AppError(UNKNOWN_ERROR, error)
+  }
+}
+
+/**
+ * @throws {AppError} with message either
+ * - EVENT_NOT_FOUND_ERROR
+ * - EVENT_FULL_ERROR
+ * - EVENT_LATE_JOIN_ERROR
+ * - UNKNOWN_ERROR
+ */
+export async function addGuest(
+  eventId: string,
+  uid: string,
+  userDisplayName: string,
+  displayName: string,
+  role: Role
+) {
+  const eventRef = eventCollection
+    .withConverter(eventWriteConverter)
+    .doc(eventId)
+
+  try {
+    const { errorMessage, guest } = await firestore.runTransaction(
+      async (transaction) => {
+        const doc = await transaction.get(eventRef)
+        const event = doc.data()
+        if (!doc.exists || !event) {
+          return { errorMessage: EVENT_NOT_FOUND_ERROR }
+        }
+
+        if (isEventFull(event)) {
+          return { errorMessage: EVENT_FULL_ERROR }
+        }
+
+        // If not mod, can only add guests before the join cutoff
+        if (role !== Role.Mod) {
+          const afterJoinCutoff = hasPassed(
+            event.startTimestamp,
+            DEFAULT_EVENT_JOIN_CUTOFF
+          )
+          if (afterJoinCutoff) {
+            return { errorMessage: EVENT_LATE_JOIN_ERROR }
+          }
+        }
+
+        const guest: FirestoreEventGuest = {
+          addedBy: uid,
+          userDisplayName,
+          guestId: new Date().getTime().toString(),
+          displayName,
+        }
+
+        transaction.update(eventRef, {
+          guests: FieldValue.arrayUnion(guest),
+        })
+
+        return { guest }
+      }
+    )
+
+    if (errorMessage !== undefined) {
+      throw new AppError(errorMessage)
+    }
+
+    console.info(`User ${uid} added guest ${displayName} to event ${eventId}`)
+    return guest
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error
+    }
+    throw new AppError(UNKNOWN_ERROR, error)
   }
 }
