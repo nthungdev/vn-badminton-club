@@ -2,6 +2,7 @@ import {
   EVENT_FULL_ERROR,
   EVENT_LATE_JOIN_ERROR,
   EVENT_NOT_FOUND_ERROR,
+  EVENT_STARTED_ERROR,
   UNKNOWN_ERROR,
 } from '@/constants/errorMessages'
 import { createErrorResponse, createSuccessResponse } from '@/lib/apiResponse'
@@ -52,6 +53,7 @@ export async function PATCH(
           statusCode = 404
           break
         case EVENT_FULL_ERROR:
+        case EVENT_STARTED_ERROR:
         case EVENT_LATE_JOIN_ERROR:
           statusCode = 403
           break
