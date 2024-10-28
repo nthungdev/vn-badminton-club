@@ -41,7 +41,7 @@ export default function JoinLeaveEventButton(props: JoinLeaveEventButtonProps) {
   )
   const buttonText = meJoined ? BUTTON_LEAVE : BUTTON_JOIN
   const isEventFull = props.participants.length >= props.event.slots
-  const shouldDisable = props.disabled || isEventFull || isPastLeaveTime
+  const shouldDisable = props.disabled || (!meJoined && isEventFull) || isPastLeaveTime
 
   const handleClick = async () => {
     try {
