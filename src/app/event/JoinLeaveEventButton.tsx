@@ -9,15 +9,16 @@ import {
 } from '@/firebase/definitions/event'
 import useErrorHandler from '@/hooks/useErrorHandler'
 import {
-  BUTTON_CONFIRM_JOIN_PAST_EVENT_CUTOFF,
+  BUTTON_CONFIRM_JOIN_PASSED_EVENT_LEAVE_CUTOFF,
   BUTTON_JOIN,
   BUTTON_LEAVE,
   BUTTON_LEAVE_EVENT_CONFIRM,
 } from '@/lib/constants/events'
 import {
-  DEFAULT_EVENT_LEAVE_CUTOFF,
   isEventParticipant,
   hasPassed,
+  DEFAULT_EVENT_JOIN_CUTOFF,
+  DEFAULT_EVENT_LEAVE_CUTOFF,
 } from '@/lib/utils/events'
 import classNames from 'classnames'
 import { Tooltip } from 'flowbite-react'
@@ -35,13 +36,21 @@ export default function JoinLeaveEventButton(props: JoinLeaveEventButtonProps) {
   const handleError = useErrorHandler()
   const { user } = useAuth()
 
-  const isPastLeaveTime = hasPassed(props.event.endTimestamp, DEFAULT_EVENT_LEAVE_CUTOFF)
+  const hasPassedLeaveTime = hasPassed(
+    props.event.startTimestamp,
+    DEFAULT_EVENT_LEAVE_CUTOFF
+  )
+  const hasPassedJoinTime = hasPassed(
+    props.event.startTimestamp,
+    DEFAULT_EVENT_JOIN_CUTOFF
+  )
   const meJoined = props.participants.some(
     (p) => isEventParticipant(p) && p.uid === user?.uid
   )
   const buttonText = meJoined ? BUTTON_LEAVE : BUTTON_JOIN
   const isEventFull = props.participants.length >= props.event.slots
-  const shouldDisable = props.disabled || (!meJoined && isEventFull) || isPastLeaveTime
+  const shouldDisable =
+    props.disabled || (!meJoined && isEventFull) || hasPassedJoinTime
 
   const handleClick = async () => {
     try {
@@ -56,8 +65,8 @@ export default function JoinLeaveEventButton(props: JoinLeaveEventButtonProps) {
         props.onLeft()
       } else {
         if (
-          isPastLeaveTime &&
-          !window.confirm(BUTTON_CONFIRM_JOIN_PAST_EVENT_CUTOFF)
+          hasPassedLeaveTime &&
+          !window.confirm(BUTTON_CONFIRM_JOIN_PASSED_EVENT_LEAVE_CUTOFF)
         ) {
           return
         }
@@ -91,10 +100,23 @@ export default function JoinLeaveEventButton(props: JoinLeaveEventButtonProps) {
     )
   }
 
-  if (meJoined && isPastLeaveTime) {
+  if (meJoined && hasPassedLeaveTime) {
     return (
       <Tooltip
         content="Because it's close to the event's start time, you cannot leave this event."
+        theme={{
+          target: 'w-full max-w-lg mx-auto',
+        }}
+      >
+        {renderButton()}
+      </Tooltip>
+    )
+  }
+
+  if (!meJoined && hasPassedJoinTime) {
+    return (
+      <Tooltip
+        content="Because it's close to the event's start time, you cannot join this event."
         theme={{
           target: 'w-full max-w-lg mx-auto',
         }}

@@ -5,7 +5,7 @@ export const BUTTON_KICK_PAST_EVENT_CUTOFF = `Because it's close to the event's 
 export const BUTTON_CANCEL_EVENT_CONFIRM = 'Are you sure you want to cancel this event?'
 export const BUTTON_LEAVE_EVENT_CONFIRM = 'Are you sure you want to leave this event?'
 export const BUTTON_CONFIRM_CANCEL_EVENT_CONFIRM_HAS_PARTICIPANTS = 'Are you sure you want to cancel this event? There are participants signed up for this event.'
-export const BUTTON_CONFIRM_JOIN_PAST_EVENT_CUTOFF = `Because it's close to the event's start time, you cannot leave this event after joining it. Are you sure you want to join this event?`
+export const BUTTON_CONFIRM_JOIN_PASSED_EVENT_LEAVE_CUTOFF = `Because it's close to the event's start time, you cannot leave this event after joining it. Are you sure you want to join this event?`
 export const BUTTON_CONFIRM_ADD_GUEST_PAST_EVENT_CUTOFF = `Because it's close to the event's start time, you cannot remove the guest after adding them. Are you sure you want to add a guest to this event?`
 
 export const BUTTON_CREATE = 'Create Event'
