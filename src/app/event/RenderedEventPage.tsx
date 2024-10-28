@@ -75,6 +75,8 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
   const showJoinButton = !isPastEvent
   const showKickButtonTooltip = hasPassedEventCutoff && !isMod
   const disableKickButton = kickMode || (hasPassedEventCutoff && !isMod)
+  const disableCancelButton = pending || isPastEvent
+  const disableAddGuestButton = isEventFull || kickMode || isPastEvent
   const kickableParticipants = participants.filter((p) => {
     if (isEventParticipant(p) && p.uid === user!.uid) {
       return false
@@ -320,7 +322,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
                 {showAddGuestButton && (
                   <ParticipantActionButton
                     onClick={handleAddGuest}
-                    disabled={isEventFull || kickMode}
+                    disabled={disableAddGuestButton}
                   >
                     {BUTTON_ADD_GUEST}
                   </ParticipantActionButton>
@@ -328,8 +330,8 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
               </div>
             </div>
 
-            {showEditButton && (
-              <div>
+            <div className='space-y-2'>
+              {showEditButton && (
                 <Link
                   href={`${menuHref.updateEvent}?e=${event.id}`}
                   type="button"
@@ -340,19 +342,17 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
                 >
                   {BUTTON_EDIT}
                 </Link>
-              </div>
-            )}
+              )}
 
-            {showCancelButton && (
-              <div>
+              {showCancelButton && (
                 <CancelEventButton
-                  disabled={pending}
+                  disabled={disableCancelButton}
                   event={event}
                   participants={participants}
                   onPending={setPending}
                 />
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>
