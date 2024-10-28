@@ -61,14 +61,14 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
   const isOnlySelfParticipant =
     participants.length === 1 &&
     participants.some((p) => isEventParticipant(p) && p.uid === user!.uid)
-  // const hasMyGuests = participants.some(
-  //   (p) => isFirestoreEventGuest(p) && p.addedBy === user!.uid
-  // )
+  const hasMyGuests = participants.some(
+    (p) => isFirestoreEventGuest(p) && p.addedBy === user!.uid
+  )
   const showKickButton =
     (isMod || !isPastEvent) &&
     participants.length > 0 &&
     !isOnlySelfParticipant &&
-    (isMod || isOrganizer)
+    (isMod || isOrganizer || hasMyGuests)
   const showAddGuestButton = !isPastEvent
   const showEditButton = (isMod || !isPastEvent) && (isMod || isOrganizer)
   const showCancelButton = !isPastEvent && (isMod || isOrganizer)
@@ -206,6 +206,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
           const updated = participants.filter((p) =>
             isFirestoreEventGuest(p) ? p.guestId !== participant.guestId : true
           )
+          console.log({updated})
           if (updated.length === 0) {
             setKickMode(false)
           }
