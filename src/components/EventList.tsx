@@ -4,12 +4,14 @@ import { useEffect, useState } from 'react'
 import classNames from 'classnames'
 import { HomeViewEvent } from '@/firebase/definitions/event'
 import LoadingSpinner from '@/components/LoadingSpinner'
-import AppError from '@/lib/AppError'
 import { getJoinedEvents, getNewEvents, getPastEvents } from '@/fetch/events'
 import { useAuth } from '@/contexts/AuthContext'
 import EventCard from '@/components/EventCard'
+import useErrorHandler from '@/hooks/useErrorHandler'
 
 export default function EventList() {
+  const handleError = useErrorHandler()
+
   const [upcomingEvents, setUpcomingEvents] = useState<HomeViewEvent[]>([])
   const [pastEvents, setPastEvents] = useState<HomeViewEvent[]>([])
   const [joinedEvents, setJoinedEvents] = useState<HomeViewEvent[]>([])
@@ -37,15 +39,14 @@ export default function EventList() {
 
   useEffect(() => {
     const fetchUpcomingEvents = async () => {
-      setLoading(true)
       try {
+        setLoading(true)
         await getNewEvents().then(setUpcomingEvents)
       } catch (error) {
-        if (error instanceof AppError) {
-          // TODO show error
-        }
+        handleError(error)
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
 
     fetchUpcomingEvents()
@@ -59,19 +60,13 @@ export default function EventList() {
       try {
         await getPastEvents().then(setPastEvents)
       } catch (error) {
-        if (error instanceof AppError) {
-          // TODO show error ?
-        }
-        console.log({ error })
+        handleError(error)
       }
     } else if (tab === 'joined' && joinedEvents.length === 0) {
       try {
         await getJoinedEvents().then(setJoinedEvents)
       } catch (error) {
-        if (error instanceof AppError) {
-          // TODO show error ?
-        }
-        console.log({ error })
+        handleError(error)
       }
     }
     setLoading(false)
@@ -118,7 +113,7 @@ export default function EventList() {
               <div className="text-xl text-secondary font-semibold ml-1">
                 Upcoming
               </div>
-              <div className='space-y-4'>
+              <div className="space-y-4">
                 {sortedFutureEvents.map((event) => (
                   <EventCard key={event.id} {...event} />
                 ))}
@@ -131,7 +126,7 @@ export default function EventList() {
               <div className="text-xl text-secondary font-semibold ml-1">
                 Past
               </div>
-              <div className='space-y-4'>
+              <div className="space-y-4">
                 {sortedPastEvents.map((event) => (
                   <EventCard key={event.id} {...event} />
                 ))}

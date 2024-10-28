@@ -38,11 +38,12 @@ import {
 import { Role } from '@/firebase/definitions'
 import { EVENT_ADD_GUEST_NO_NAME_ERROR } from '@/constants/errorMessages'
 
-interface RenderedEventPageProps {
+interface ClientEventPageProps {
+  eventId: string
   event: CreatedEvent
 }
 
-export default function RenderedEventPage(props: RenderedEventPageProps) {
+export default function ClientEventPage(props: ClientEventPageProps) {
   const { event } = props
   const { user } = useAuth()
   const handleError = useErrorHandler()
