@@ -65,12 +65,12 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
   //   (p) => isFirestoreEventGuest(p) && p.addedBy === user!.uid
   // )
   const showKickButton =
-    !isPastEvent &&
+    (isMod || !isPastEvent) &&
     participants.length > 0 &&
     !isOnlySelfParticipant &&
     (isMod || isOrganizer)
   const showAddGuestButton = !isPastEvent
-  const showEditButton = !isPastEvent && (isMod || isOrganizer)
+  const showEditButton = (isMod || !isPastEvent) && (isMod || isOrganizer)
   const showCancelButton = !isPastEvent && (isMod || isOrganizer)
   const showJoinButton = !isPastEvent
   const kickableParticipants = participants.filter((p) => {
