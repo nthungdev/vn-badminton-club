@@ -2,7 +2,7 @@
 
 import { getEventById } from '@/actions/events'
 import { redirect } from 'next/navigation'
-import RenderedEventPage from './RenderedEventPage'
+import ClientEventPage from './ClientEventPage'
 import { getAuthUser } from '@/lib/authUtils'
 
 export default async function EventPage({
@@ -26,5 +26,5 @@ export default async function EventPage({
     throw new Error('User information not found')
   }
 
-  return <RenderedEventPage event={event} />
+  return <ClientEventPage eventId={eventId} event={event} />
 }
