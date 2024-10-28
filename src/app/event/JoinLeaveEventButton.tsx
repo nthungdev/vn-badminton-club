@@ -15,7 +15,7 @@ import {
   BUTTON_LEAVE_EVENT_CONFIRM,
 } from '@/lib/constants/events'
 import {
-  DEFAULT_EVENT_CUTOFF,
+  DEFAULT_EVENT_LEAVE_CUTOFF,
   isEventParticipant,
   isPast,
 } from '@/lib/utils/events'
@@ -35,7 +35,7 @@ export default function JoinLeaveEventButton(props: JoinLeaveEventButtonProps) {
   const handleError = useErrorHandler()
   const { user } = useAuth()
 
-  const isPastLeaveTime = isPast(props.event.endTimestamp, DEFAULT_EVENT_CUTOFF)
+  const isPastLeaveTime = isPast(props.event.endTimestamp, DEFAULT_EVENT_LEAVE_CUTOFF)
   const meJoined = props.participants.some(
     (p) => isEventParticipant(p) && p.uid === user?.uid
   )
