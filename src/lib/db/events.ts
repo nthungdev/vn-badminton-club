@@ -4,6 +4,7 @@ import {
   EVENT_FULL_ERROR,
   EVENT_GUEST_NOT_FOUND_ERROR,
   EVENT_LATE_JOIN_ERROR,
+  EVENT_LATE_LEAVE_ERROR,
   EVENT_NOT_FOUND_ERROR,
   EVENT_STARTED_ERROR,
   UNAUTHORIZED_ERROR,
@@ -21,7 +22,11 @@ import {
   eventWriteConverter,
   isEventFull,
 } from '@/firebase/utils'
-import { DEFAULT_EVENT_JOIN_CUTOFF, hasPassed } from '../utils/events'
+import {
+  DEFAULT_EVENT_JOIN_CUTOFF,
+  DEFAULT_EVENT_LEAVE_CUTOFF,
+  hasPassed,
+} from '../utils/events'
 import AppError from '../AppError'
 import { FieldValue } from 'firebase-admin/firestore'
 
@@ -222,6 +227,7 @@ export async function kickGuest(
  * @throws {AppError} with message either
  * - EVENT_NOT_FOUND_ERROR
  * - EVENT_FULL_ERROR
+ * - EVENT_STARTED_ERROR
  * - EVENT_LATE_JOIN_ERROR
  * - UNKNOWN_ERROR
  */
@@ -251,11 +257,13 @@ export async function addGuest(
 
         // If not mod, can only add guests before the join cutoff
         if (role !== Role.Mod) {
-          const afterJoinCutoff = hasPassed(
+          if (hasPassed(event.startTimestamp)) {
+            return { errorMessage: EVENT_STARTED_ERROR }
+          }
+          else if (hasPassed(
             event.startTimestamp,
             DEFAULT_EVENT_JOIN_CUTOFF
-          )
-          if (afterJoinCutoff) {
+          )) {
             return { errorMessage: EVENT_LATE_JOIN_ERROR }
           }
         }
@@ -279,8 +287,54 @@ export async function addGuest(
       throw new AppError(errorMessage)
     }
 
-    console.info(`User ${uid} added guest ${displayName} to event ${eventId}`)
     return guest
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error
+    }
+    throw new AppError(UNKNOWN_ERROR, error)
+  }
+}
+
+/**
+ * @throws {AppError} with message either
+ * - EVENT_NOT_FOUND_ERROR
+ * - EVENT_STARTED_ERROR
+ * - EVENT_LATE_LEAVE_ERROR
+ * - UNKNOWN_ERROR
+ */
+export async function leaveEvent(uid: string, eventId: string, role: Role) {
+  const eventRef = firestore.collection(COLLECTION_EVENTS).doc(eventId)
+
+  try {
+    const { errorMessage } = await firestore.runTransaction(
+      async (transaction) => {
+        const doc = await transaction.get(eventRef)
+        const event = doc.data()
+        if (!doc.exists || !event) {
+          return { errorMessage: EVENT_NOT_FOUND_ERROR }
+        }
+
+        if (role !== Role.Mod) {
+          if (hasPassed(event.startTimestamp)) {
+            return { errorMessage: EVENT_STARTED_ERROR }
+          }
+          else if (hasPassed(event.startTimestamp, DEFAULT_EVENT_LEAVE_CUTOFF)) {
+            return { errorMessage: EVENT_LATE_LEAVE_ERROR }
+          }
+        }
+
+        transaction.update(eventRef, {
+          participantIds: FieldValue.arrayRemove(uid),
+        })
+
+        return {}
+      }
+    )
+
+    if (errorMessage) {
+      throw new AppError(errorMessage)
+    }
   } catch (error) {
     if (error instanceof AppError) {
       throw error
