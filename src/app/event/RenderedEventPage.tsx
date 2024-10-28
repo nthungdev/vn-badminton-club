@@ -206,7 +206,6 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
           const updated = participants.filter((p) =>
             isFirestoreEventGuest(p) ? p.guestId !== participant.guestId : true
           )
-          console.log({updated})
           if (updated.length === 0) {
             setKickMode(false)
           }
