@@ -56,7 +56,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
   const isEventFull = participants.length >= event.slots
   const isPastEvent = dayjs().isAfter(dayjs(event.startTimestamp))
   const time = eventTime(event.startTimestamp, event.endTimestamp)
-  const isPastEventCutoff = isPast(event.endTimestamp, DEFAULT_EVENT_CUTOFF)
+  const hasPassedEventCutoff = isPast(event.endTimestamp, DEFAULT_EVENT_CUTOFF)
 
   const isOnlySelfParticipant =
     participants.length === 1 &&
@@ -73,6 +73,8 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
   const showEditButton = (isMod || !isPastEvent) && (isMod || isOrganizer)
   const showCancelButton = !isPastEvent && (isMod || isOrganizer)
   const showJoinButton = !isPastEvent
+  const showKickButtonTooltip = hasPassedEventCutoff && !isMod
+  const disableKickButton = kickMode || (hasPassedEventCutoff && !isMod)
   const kickableParticipants = participants.filter((p) => {
     if (isEventParticipant(p) && p.uid === user!.uid) {
       return false
@@ -154,7 +156,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
   async function handleAddGuest() {
     try {
       if (
-        isPastEventCutoff &&
+        hasPassedEventCutoff &&
         !window.confirm(BUTTON_CONFIRM_ADD_GUEST_PAST_EVENT_CUTOFF)
       ) {
         return
@@ -223,7 +225,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
     return (
       <ParticipantActionButton
         onClick={handleKickParticipantToggle}
-        disabled={kickMode || isPastEventCutoff}
+        disabled={disableKickButton}
       >
         Kick Participant
       </ParticipantActionButton>
@@ -308,7 +310,7 @@ export default function RenderedEventPage(props: RenderedEventPageProps) {
               </div>
               <div className="flex flex-row justify-end space-x-2">
                 {showKickButton &&
-                  (isPastEventCutoff ? (
+                  (showKickButtonTooltip ? (
                     <Tooltip content={BUTTON_KICK_PAST_EVENT_CUTOFF}>
                       {renderKickParticipantButton()}
                     </Tooltip>
