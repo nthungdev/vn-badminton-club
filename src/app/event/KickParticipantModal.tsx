@@ -88,27 +88,29 @@ export default function KickParticipantModal({
             </div>
           )}
 
-          <div className="divide-y-2">
-            {Object.entries(participantsGrouped.userGuests).map(
-              ([userId, guestData]) => (
-                <div key={userId} className="space-y-1 py-3">
-                  <div className="text-lg">
-                    <span className="font-bold">
-                      {userId === user!.uid
-                        ? 'My'
-                        : `${guestData.userDisplayName}'s`}
-                    </span>{' '}
-                    Guests
+          {Object.entries(participantsGrouped.userGuests).length > 0 && (
+            <div className="divide-y-2">
+              {Object.entries(participantsGrouped.userGuests).map(
+                ([userId, guestData]) => (
+                  <div key={userId} className="space-y-1 py-3">
+                    <div className="text-lg">
+                      <span className="font-bold">
+                        {userId === user!.uid
+                          ? 'My'
+                          : `${guestData.userDisplayName}'s`}
+                      </span>{' '}
+                      Guests
+                    </div>
+                    <KickList
+                      participants={guestData.guests}
+                      onKick={onKick}
+                      disabled={disabled}
+                    />
                   </div>
-                  <KickList
-                    participants={guestData.guests}
-                    onKick={onKick}
-                    disabled={disabled}
-                  />
-                </div>
-              )
-            )}
-          </div>
+                )
+              )}
+            </div>
+          )}
         </div>
       </Modal.Body>
     </Modal>
