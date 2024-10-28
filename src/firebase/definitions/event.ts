@@ -18,7 +18,7 @@ export interface FirestoreEvent {
   guests: FirestoreEventGuest[]
 }
 
-export interface CreateEvent {
+export interface CreateEventParams {
   title: string
   startTimestamp: Date
   endTimestamp: Date
@@ -28,7 +28,7 @@ export interface CreateEvent {
   byMod: boolean
 }
 
-export interface UpdateEvent {
+export interface EditEventParams {
   title: string
   startTimestamp: Date
   endTimestamp: Date
@@ -41,19 +41,16 @@ export type EventParticipant = {
 }
 
 export type CreatedEvent = HomeViewEvent & {
-  id: string
   organizer: EventParticipant
-  participantIds: string[]
   participants: EventParticipant[]
 }
 
-export type WriteEvent = CreateEvent & {
-  // id: string
+export type WriteEvent = CreateEventParams & {
   participantIds: string[]
   guests: FirestoreEventGuest[]
 }
 
-export type HomeViewEvent = CreateEvent & {
+export type HomeViewEvent = CreateEventParams & {
   id: string
   participantIds: string[]
   guests: FirestoreEventGuest[]

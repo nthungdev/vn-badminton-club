@@ -31,7 +31,7 @@ function createErrorResponse(error: Error | unknown, status: number) {
     name = error.name
     message = error.message
   } else if (typeof error === 'string') {
-    name = 'UnknownError'
+    name = 'Error'
     message = error
   } else {
     name = 'UnknownError'

@@ -34,15 +34,15 @@ export default async function EventUpdatePage({
 
   return (
     <BasePage>
-      <div className="mx-auto max-w-sm">
+      <div className="mx-auto max-w-sm px-4">
         <Link
           className="font-medium text-primary-600 hover:underline"
           href={`${menuHref.event}?e=${event.id}`}
         >
-          Back to Event Details
+          Go to Event Details
         </Link>
+        <EventForm event={event} />
       </div>
-      <EventForm event={event} />
     </BasePage>
   )
 }

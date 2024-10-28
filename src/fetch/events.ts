@@ -160,10 +160,7 @@ export async function addGuest(eventId: string, displayName: string) {
   }
 }
 
-export async function kickGuest(
-  eventId: string,
-  guestId: string
-) {
+export async function kickGuest(eventId: string, guestId: string) {
   const url = `/api/events/${eventId}/kickGuest`
 
   try {

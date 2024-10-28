@@ -7,6 +7,7 @@ import {
 import { GroupedParticipants } from './types'
 import { Modal } from 'flowbite-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { KICK_MODAL_EMPTY } from '@/lib/constants/events'
 
 interface KickListProps {
   disabled?: boolean
@@ -70,6 +71,8 @@ export default function KickParticipantModal({
 }) {
   const { user } = useAuth()
 
+  const isEmpty = participantsGrouped.users.length === 0 && Object.keys(participantsGrouped.userGuests).length === 0
+
   return (
     <Modal show={show} onClose={onClose}>
       <Modal.Header>
@@ -77,6 +80,12 @@ export default function KickParticipantModal({
       </Modal.Header>
       <Modal.Body className="py-2">
         <div className="divide-y-2">
+          {isEmpty && (
+            <div className='py-2 text-center'>
+              {KICK_MODAL_EMPTY}
+            </div>
+          )}
+
           {participantsGrouped.users.length > 0 && (
             <div className="space-y-1 py-3">
               <div className="text-xl font-bold">Users</div>
@@ -88,27 +97,29 @@ export default function KickParticipantModal({
             </div>
           )}
 
-          <div className="divide-y-2">
-            {Object.entries(participantsGrouped.userGuests).map(
-              ([userId, guestData]) => (
-                <div key={userId} className="space-y-1 py-3">
-                  <div className="text-lg">
-                    <span className="font-bold">
-                      {userId === user!.uid
-                        ? 'My'
-                        : `${guestData.userDisplayName}'s`}
-                    </span>{' '}
-                    Guests
+          {Object.entries(participantsGrouped.userGuests).length > 0 && (
+            <div className="divide-y-2">
+              {Object.entries(participantsGrouped.userGuests).map(
+                ([userId, guestData]) => (
+                  <div key={userId} className="space-y-1 py-3">
+                    <div className="text-lg">
+                      <span className="font-bold">
+                        {userId === user!.uid
+                          ? 'My'
+                          : `${guestData.userDisplayName}'s`}
+                      </span>{' '}
+                      Guests
+                    </div>
+                    <KickList
+                      participants={guestData.guests}
+                      onKick={onKick}
+                      disabled={disabled}
+                    />
                   </div>
-                  <KickList
-                    participants={guestData.guests}
-                    onKick={onKick}
-                    disabled={disabled}
-                  />
-                </div>
-              )
-            )}
-          </div>
+                )
+              )}
+            </div>
+          )}
         </div>
       </Modal.Body>
     </Modal>

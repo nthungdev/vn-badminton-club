@@ -9,25 +9,26 @@ import { getMe } from './auth'
 import {
   CreateEventFormSchema,
   CreateEventFormState,
-  UpdateEventFormSchema,
-  UpdateEventFormState,
-} from './event.definitions'
+  EditEventFormSchema,
+  EditEventFormState,
+} from '@/lib/validation/events'
 import {
   createEvent as _createEvent,
-  updateEvent as _updateEvent,
   getEventById as _getEventById,
 } from '@/firebase/firestore'
 import { menuHref } from '@/lib/menu'
 import { Role } from '@/firebase/definitions'
-import { CreateEvent, UpdateEvent } from '@/firebase/definitions/event'
+import { CreateEventParams, EditEventParams } from '@/firebase/definitions/event'
 import { isRedirectError } from 'next/dist/client/components/redirect'
 import { fieldsToDate } from '@/lib/format'
-import { INTERNAL_ERROR } from '@/constants/errorMessages'
+import { INTERNAL_ERROR, UNAUTHORIZED_ERROR } from '@/constants/errorMessages'
+import { verifySession } from '@/lib/session'
+import { editEvent as _editEvent } from '@/lib/events'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
 
-async function createEvent(
+export async function createEvent(
   prevState: CreateEventFormState,
   formData: FormData
 ) {
@@ -72,7 +73,7 @@ async function createEvent(
       validatedFields.data.timezoneOffset
     )
 
-    const event: CreateEvent = {
+    const event: CreateEventParams = {
       title: validatedFields.data.title,
       startTimestamp,
       endTimestamp,
@@ -94,12 +95,17 @@ async function createEvent(
   }
 }
 
-async function updateEvent(
-  prevState: UpdateEventFormState,
+export async function editEvent(
+  prevState: EditEventFormState,
   formData: FormData
 ) {
+  const { decodedIdToken, isAuth } = await verifySession()
+  if (!isAuth) {
+    return { submitError: UNAUTHORIZED_ERROR }
+  }
+
   // Validate form fields
-  const validatedFields = UpdateEventFormSchema.safeParse({
+  const validatedFields = EditEventFormSchema.safeParse({
     id: formData.get('id'),
     timezoneOffset: formData.get('timezoneOffset')
       ? parseInt(formData.get('timezoneOffset') as string)
@@ -122,12 +128,6 @@ async function updateEvent(
   }
 
   try {
-    // TODO get user from session or client Firebase instead of fetching
-    const me = await getMe()
-    if (!me) {
-      throw new Error('User not found')
-    }
-
     const offsetHours = validatedFields.data.timezoneOffset / 60
 
     const [startYear, startMonth, startDate] =
@@ -155,14 +155,19 @@ async function updateEvent(
       .set('second', 0)
     const endTimestamp = eventEnd.toDate()
 
-    const event: UpdateEvent = {
+    const updateEvent: EditEventParams = {
       title: validatedFields.data.title,
       startTimestamp,
       endTimestamp,
       slots: validatedFields.data.slots,
     }
 
-    await _updateEvent(validatedFields.data.id, event)
+    await _editEvent(
+      validatedFields.data.id,
+      updateEvent,
+      decodedIdToken.uid,
+      decodedIdToken.role
+    )
     redirect(`${menuHref.event}?e=${validatedFields.data.id}`)
   } catch (error) {
     if (isRedirectError(error)) {
@@ -170,12 +175,12 @@ async function updateEvent(
     }
 
     // TODO handle error
-    console.log('create event error', { error })
+    console.error('create event error', { error })
     return { submitError: INTERNAL_ERROR }
   }
 }
 
-async function getEventById(eventId: string) {
+export async function getEventById(eventId: string) {
   try {
     const event = await _getEventById(eventId)
     return event
@@ -185,5 +190,3 @@ async function getEventById(eventId: string) {
     throw new Error('Error getting event')
   }
 }
-
-export { createEvent, updateEvent, getEventById }

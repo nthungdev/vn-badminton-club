@@ -2,9 +2,7 @@
 
 import { getEventById } from '@/actions/events'
 import { redirect } from 'next/navigation'
-import dayjs from 'dayjs'
 import RenderedEventPage from './RenderedEventPage'
-import { Role } from '@/firebase/definitions'
 import { getAuthUser } from '@/lib/authUtils'
 
 export default async function EventPage({
@@ -28,16 +26,5 @@ export default async function EventPage({
     throw new Error('User information not found')
   }
 
-  const isPastEvent = dayjs().isAfter(dayjs(event.startTimestamp))
-  const isMeOrganizer = me.uid === event.organizer.uid
-  const isMeMod = me?.role === Role.Mod
-
-  return (
-    <RenderedEventPage
-      event={event}
-      showJoinButton={!isPastEvent}
-      showCancelButton={(isMeOrganizer || isMeMod) && !isPastEvent}
-      showUpdateButton={(isMeOrganizer || isMeMod) && !isPastEvent}
-    />
-  )
+  return <RenderedEventPage event={event} />
 }
