@@ -173,14 +173,3 @@ export async function createEvent(event: CreateEventParams) {
     throw new Error('Error creating event')
   }
 }
-
-export async function deleteEvent(eventId: string) {
-  try {
-    await eventCollection.doc(eventId).delete()
-    cache.del(EventsCacheKey.NewEvents)
-    cache.del(EventsCacheKey.PastEvents)
-  } catch (error) {
-    console.error('Error deleting event:', error)
-    throw new AppError(UNKNOWN_ERROR)
-  }
-}

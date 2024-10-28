@@ -259,11 +259,9 @@ export async function addGuest(
         if (role !== Role.Mod) {
           if (hasPassed(event.startTimestamp)) {
             return { errorMessage: EVENT_STARTED_ERROR }
-          }
-          else if (hasPassed(
-            event.startTimestamp,
-            DEFAULT_EVENT_JOIN_CUTOFF
-          )) {
+          } else if (
+            hasPassed(event.startTimestamp, DEFAULT_EVENT_JOIN_CUTOFF)
+          ) {
             return { errorMessage: EVENT_LATE_JOIN_ERROR }
           }
         }
@@ -304,9 +302,10 @@ export async function addGuest(
  * - UNKNOWN_ERROR
  */
 export async function leaveEvent(uid: string, eventId: string, role: Role) {
-  const eventRef = firestore.collection(COLLECTION_EVENTS).doc(eventId)
-
   try {
+    const eventRef = eventCollection
+      .doc(eventId)
+      .withConverter(eventReadConverter)
     const { errorMessage } = await firestore.runTransaction(
       async (transaction) => {
         const doc = await transaction.get(eventRef)
@@ -318,8 +317,9 @@ export async function leaveEvent(uid: string, eventId: string, role: Role) {
         if (role !== Role.Mod) {
           if (hasPassed(event.startTimestamp)) {
             return { errorMessage: EVENT_STARTED_ERROR }
-          }
-          else if (hasPassed(event.startTimestamp, DEFAULT_EVENT_LEAVE_CUTOFF)) {
+          } else if (
+            hasPassed(event.startTimestamp, DEFAULT_EVENT_LEAVE_CUTOFF)
+          ) {
             return { errorMessage: EVENT_LATE_LEAVE_ERROR }
           }
         }
@@ -340,5 +340,50 @@ export async function leaveEvent(uid: string, eventId: string, role: Role) {
       throw error
     }
     throw new AppError(UNKNOWN_ERROR, error)
+  }
+}
+
+/**
+ * @throws {AppError} with message either
+ * - EVENT_NOT_FOUND_ERROR
+ * - EVENT_STARTED_ERROR
+ * - UNAUTHORIZED_ERROR
+ * - UNKNOWN_ERROR
+ */
+export async function deleteEvent(eventId: string, uid: string, role: Role) {
+  try {
+    const eventRef = eventCollection
+      .doc(eventId)
+      .withConverter(eventReadConverter)
+    const { errorMessage } = await firestore.runTransaction(
+      async (transaction) => {
+        const doc = await transaction.get(eventRef)
+        const event = doc.data()
+        if (!doc.exists || !event) {
+          return { errorMessage: EVENT_NOT_FOUND_ERROR }
+        }
+
+        if (role !== Role.Mod) {
+          if (event.createdBy === uid) {
+            if (hasPassed(event.startTimestamp)) {
+              return { errorMessage: EVENT_STARTED_ERROR }
+            }
+          } else {
+            return { errorMessage: UNAUTHORIZED_ERROR }
+          }
+        }
+
+        transaction.delete(eventRef)
+        return {}
+      }
+    )
+    if (errorMessage) {
+      throw new AppError(errorMessage)
+    }
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error
+    }
+    throw new AppError(UNKNOWN_ERROR)
   }
 }

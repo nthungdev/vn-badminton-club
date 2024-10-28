@@ -1,8 +1,7 @@
 import { NextRequest } from 'next/server'
 import { createErrorResponse, createSuccessResponse } from '@/lib/apiResponse'
-import { deleteEvent, getEventById } from '@/firebase/firestore'
+import { getEventById } from '@/firebase/firestore'
 import { verifySession } from '@/lib/session'
-import { isRoleMod } from '@/lib/utils/auth'
 import {
   EVENT_NOT_FOUND_ERROR,
   EVENT_STARTED_ERROR,
@@ -10,9 +9,10 @@ import {
   UNAUTHORIZED_ERROR,
   UNKNOWN_ERROR,
 } from '@/constants/errorMessages'
-import { editEvent } from '@/lib/db/events'
+import { deleteEvent, editEvent } from '@/lib/db/events'
 import AppError from '@/lib/AppError'
 import { EditEventParams } from '@/firebase/definitions/event'
+import { EventEditRequest } from './types'
 
 export async function GET(
   request: NextRequest,
@@ -39,35 +39,31 @@ export async function DELETE(
     return createErrorResponse(UNAUTHORIZED_ERROR, 401)
   }
 
-  const { id } = params
+  const { id: eventId } = params
 
   try {
-    const event = await getEventById(id)
-    if (!event) {
-      return createErrorResponse(EVENT_NOT_FOUND_ERROR, 404)
-    }
-
-    if (
-      event.organizer.uid !== decodedIdToken.uid &&
-      !(await isRoleMod(decodedIdToken.uid))
-    ) {
-      return createErrorResponse(UNAUTHORIZED_ERROR, 401)
-    }
-
-    await deleteEvent(id)
-    console.info('Event deleted:', id)
+    await deleteEvent(eventId, decodedIdToken.uid, decodedIdToken.role)
+    console.info('Event deleted:', eventId)
     return createSuccessResponse()
   } catch (error) {
-    console.error('Error leaving event:', error)
+    if (error instanceof AppError) {
+      let statusCode: number
+      switch (error.message) {
+        case EVENT_NOT_FOUND_ERROR:
+          statusCode = 404
+          break
+        case EVENT_STARTED_ERROR:
+        case UNAUTHORIZED_ERROR:
+          statusCode = 403
+          break
+        case UNKNOWN_ERROR:
+        default:
+          statusCode = 400
+      }
+      return createErrorResponse(error.message, statusCode)
+    }
     return createErrorResponse(error, 500)
   }
-}
-
-interface EventEditRequest {
-  title?: string
-  startTimestamp?: number
-  endTimestamp?: number
-  slots?: number
 }
 
 export async function PATCH(
