@@ -5,8 +5,7 @@ import { joinEvent, leaveEvent } from '@/fetch/events'
 import { Role } from '@/firebase/definitions'
 import {
   CreatedEvent,
-  EventParticipant,
-  FirestoreEventGuest,
+  FirestoreEventParticipant,
 } from '@/firebase/definitions/event'
 import useErrorHandler from '@/hooks/useErrorHandler'
 import {
@@ -18,7 +17,6 @@ import {
   BUTTON_LEAVE_PASSED_LEAVE_CUTOFF_TOOLTIP,
 } from '@/lib/constants/events'
 import {
-  isEventParticipant,
   hasPassed,
   DEFAULT_EVENT_JOIN_CUTOFF,
   DEFAULT_EVENT_LEAVE_CUTOFF,
@@ -29,7 +27,7 @@ import { ComponentProps } from 'react'
 
 interface JoinLeaveEventButtonContainerProps extends ComponentProps<'button'> {
   event: CreatedEvent
-  participants: (EventParticipant | FirestoreEventGuest)[]
+  participants: FirestoreEventParticipant[]
   pending?: boolean
   onPending: (pending: boolean) => void
   onJoined: () => void
@@ -51,9 +49,7 @@ export default function JoinLeaveEventButtonContainer(
     props.event.startTimestamp,
     DEFAULT_EVENT_JOIN_CUTOFF
   )
-  const meJoined = props.participants.some(
-    (p) => isEventParticipant(p) && p.uid === user?.uid
-  )
+  const meJoined = props.participants.some((p) => p.uid === user?.uid)
   const isMod = user?.role === Role.Mod
   const buttonText = meJoined ? BUTTON_LEAVE : BUTTON_JOIN
   const isEventFull = props.participants.length >= props.event.slots

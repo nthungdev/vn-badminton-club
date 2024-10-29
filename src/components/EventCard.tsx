@@ -1,7 +1,7 @@
 import { eventTime, nowToTimestamp } from '@/lib/format'
 import Link from 'next/link'
 import EventCardModBadge from './EventCardModBadge'
-import { FirestoreEventGuest } from '@/firebase/definitions/event'
+import { FirestoreEventParticipant } from '@/firebase/definitions/event'
 
 interface EventCardProps {
   id: string
@@ -10,12 +10,11 @@ interface EventCardProps {
   startTimestamp: Date
   endTimestamp: Date
   slots: number
-  participantIds: string[]
-  guests: FirestoreEventGuest[]
+  participants: FirestoreEventParticipant[]
 }
 
 export default function EventCard(props: EventCardProps) {
-  const participantCount = props.participantIds.length + props.guests.length
+  const participantCount = props.participants.length
 
   return (
     <div

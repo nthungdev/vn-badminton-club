@@ -4,6 +4,7 @@ import {
   CreatedEvent,
   CreateEventParams,
   EventParticipant,
+  EventParticipantUser,
 } from './definitions/event'
 import { COLLECTION_EVENTS } from './firestore.constant'
 import { firestore } from './serverApp'
@@ -11,6 +12,7 @@ import AppError from '../lib/AppError'
 import {
   EVENT_NOT_FOUND_ERROR,
   EVENT_ORGANIZER_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from '@/constants/errorMessages'
 import { EventsCacheKey, getNodeCache } from '@/lib/cache'
 import { getUserById } from '@/lib/authUtils'
@@ -23,9 +25,10 @@ const eventCollection = firestore.collection(COLLECTION_EVENTS)
 async function getEventParticipantFromUid(uid: string) {
   const user = await getUserById(uid)
   if (!user) {
-    throw new AppError('User not found')
+    throw new AppError(USER_NOT_FOUND_ERROR)
   }
-  const eventParticipant: EventParticipant = {
+  const eventParticipant: EventParticipantUser = {
+    type: 'user',
     uid: user.uid,
     displayName: user.displayName!,
   }
@@ -109,21 +112,30 @@ export async function getEventById(eventId: string) {
         }
 
         const participants: EventParticipant[] = []
-        for (const uid of data.participantIds) {
+        for (const participant of data.participants) {
+          if (participant.type === 'guest') {
+            participants.push(participant)
+            continue
+          }
+
           try {
-            const eventParticipant = await getEventParticipantFromUid(uid)
+            const eventParticipant = await getEventParticipantFromUid(
+              participant.uid
+            )
             participants.push(eventParticipant)
           } catch (error) {
             console.error(
-              `Cannot get event participant ${uid} in event ${eventId}`,
+              `Cannot get event participant ${participant.uid} in event ${eventId}`,
               { error }
             )
             continue
           }
         }
 
-        const organizer =
-          participants.find((p) => p.uid === data.createdBy) ||
+        const organizer: EventParticipantUser | null =
+          (participants.find(
+            (p) => p.type === 'user' && p.uid === data.createdBy
+          ) as EventParticipantUser) ||
           (await getEventParticipantFromUid(data.createdBy).catch(() => null))
         if (!organizer) {
           console.error(
@@ -159,8 +171,9 @@ export async function createEvent(event: CreateEventParams) {
   try {
     const doc = await eventCollection.add({
       ...event,
-      participantIds: [],
-      guests: [],
+      // participantIds: [],
+      // guests: [],
+      participants: [],
     })
     cache.del(EventsCacheKey.NewEvents)
     return doc.id

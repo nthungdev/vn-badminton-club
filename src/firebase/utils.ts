@@ -29,8 +29,8 @@ export async function setUserRole(uid: string, role: string) {
   }
 }
 
-export function isEventFull(event: CreatedEvent | WriteEvent) {
-  return event.participantIds.length + event.guests.length >= event.slots
+export function isEventFull(event: CreatedEvent | WriteEvent | HomeViewEvent) {
+  return event.participants.length >= event.slots
 }
 
 export const eventReadConverter = {
@@ -44,8 +44,7 @@ export const eventReadConverter = {
       id: snapshot.id,
       startTimestamp: data.startTimestamp.toDate(),
       endTimestamp: data.endTimestamp.toDate(),
-      participantIds: data.participantIds || [],
-      guests: data.guests || [],
+      participants: data.participants || [],
     }
     return event
   },
@@ -65,8 +64,7 @@ export const eventWriteConverter = {
       slots: data.slots,
       startTimestamp: data.startTimestamp.toDate(),
       endTimestamp: data.endTimestamp.toDate(),
-      participantIds: data.participantIds || [],
-      guests: data.guests || [],
+      participants: data.participants || [],
     }
   },
 }

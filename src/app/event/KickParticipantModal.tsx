@@ -1,9 +1,6 @@
 'use client'
 
-import {
-  EventParticipant,
-  FirestoreEventGuest,
-} from '@/firebase/definitions/event'
+import { EventParticipant } from '@/firebase/definitions/event'
 import { GroupedParticipants } from './types'
 import { Modal } from 'flowbite-react'
 import { useAuth } from '@/contexts/AuthContext'
@@ -11,8 +8,8 @@ import { KICK_MODAL_EMPTY } from '@/lib/constants/events'
 
 interface KickListProps {
   disabled?: boolean
-  participants: (EventParticipant | FirestoreEventGuest)[]
-  onKick: (participant: EventParticipant | FirestoreEventGuest) => void
+  participants: EventParticipant[]
+  onKick: (participant: EventParticipant) => void
 }
 
 function KickList(props: KickListProps) {
@@ -67,11 +64,13 @@ export default function KickParticipantModal({
   participantsGrouped: GroupedParticipants
   disabled?: boolean
   onClose: () => void
-  onKick: (participant: EventParticipant | FirestoreEventGuest) => void
+  onKick: (participant: EventParticipant) => void
 }) {
   const { user } = useAuth()
 
-  const isEmpty = participantsGrouped.users.length === 0 && Object.keys(participantsGrouped.userGuests).length === 0
+  const isEmpty =
+    participantsGrouped.users.length === 0 &&
+    Object.keys(participantsGrouped.userGuests).length === 0
 
   return (
     <Modal show={show} onClose={onClose}>
@@ -81,9 +80,7 @@ export default function KickParticipantModal({
       <Modal.Body className="py-2">
         <div className="divide-y-2">
           {isEmpty && (
-            <div className='py-2 text-center'>
-              {KICK_MODAL_EMPTY}
-            </div>
+            <div className="py-2 text-center">{KICK_MODAL_EMPTY}</div>
           )}
 
           {participantsGrouped.users.length > 0 && (
@@ -106,7 +103,7 @@ export default function KickParticipantModal({
                       <span className="font-bold">
                         {userId === user!.uid
                           ? 'My'
-                          : `${guestData.userDisplayName}'s`}
+                          : `${guestData.displayName}'s`}
                       </span>{' '}
                       Guests
                     </div>

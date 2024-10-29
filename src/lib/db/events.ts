@@ -13,19 +13,17 @@ import {
 import { Role } from '@/firebase/definitions'
 import {
   EditEventParams,
-  FirestoreEventGuest,
+  FirestoreEventParticipantGuest,
+  FirestoreEventParticipantUser,
 } from '@/firebase/definitions/event'
 import { COLLECTION_EVENTS } from '@/firebase/firestore.constant'
 import { firestore } from '@/firebase/serverApp'
-import {
-  eventReadConverter,
-  eventWriteConverter,
-  isEventFull,
-} from '@/firebase/utils'
+import { eventReadConverter, eventWriteConverter } from '@/firebase/utils'
 import {
   DEFAULT_EVENT_JOIN_CUTOFF,
   DEFAULT_EVENT_LEAVE_CUTOFF,
   hasPassed,
+  isEventFull,
 } from '../utils/events'
 import AppError from '../AppError'
 import { FieldValue } from 'firebase-admin/firestore'
@@ -68,8 +66,12 @@ export async function joinEvent(uid: string, eventId: string) {
           return { errorMessage: EVENT_LATE_JOIN_ERROR }
         }
 
+        const p: FirestoreEventParticipantUser = {
+          type: 'user',
+          uid,
+        }
         transaction.update(eventWriteRef, {
-          participantIds: FieldValue.arrayUnion(uid),
+          participants: FieldValue.arrayUnion(p),
         })
         return {}
       }
@@ -180,7 +182,9 @@ export async function kickGuest(
         return EVENT_NOT_FOUND_ERROR
       }
 
-      const guest = event.guests.find((guest) => guest.guestId === guestId)
+      const guest = event.participants.find(
+        (p) => p.guestId === guestId
+      ) as FirestoreEventParticipantGuest
       if (!guest) {
         // Might happen when rare race condition: the guest was already kicked by someone else
         return EVENT_GUEST_NOT_FOUND_ERROR
@@ -199,7 +203,7 @@ export async function kickGuest(
             break
           } else {
             // make sure the guest is added by the user
-            if (guest.addedBy === uid) {
+            if (guest.addedByUid === uid) {
               break
             }
           }
@@ -208,7 +212,7 @@ export async function kickGuest(
       }
 
       transaction.update(eventRef, {
-        guests: event.guests.filter((guest) => guest.guestId !== guestId),
+        participants: event.participants.filter((p) => p.guestId !== guestId),
       })
     })
 
@@ -266,15 +270,16 @@ export async function addGuest(
           }
         }
 
-        const guest: FirestoreEventGuest = {
-          addedBy: uid,
-          userDisplayName,
+        const guest: FirestoreEventParticipantGuest = {
+          type: 'guest',
           guestId: new Date().getTime().toString(),
-          displayName,
+          addedByUid: uid,
+          addedByDisplayName: userDisplayName,
+          displayName: displayName,
         }
 
         transaction.update(eventRef, {
-          guests: FieldValue.arrayUnion(guest),
+          participants: FieldValue.arrayUnion(guest),
         })
 
         return { guest }
@@ -325,7 +330,10 @@ export async function leaveEvent(uid: string, eventId: string, role: Role) {
         }
 
         transaction.update(eventRef, {
-          participantIds: FieldValue.arrayRemove(uid),
+          participants: FieldValue.arrayRemove({
+            type: 'user',
+            uid,
+          } as FirestoreEventParticipantUser),
         })
 
         return {}

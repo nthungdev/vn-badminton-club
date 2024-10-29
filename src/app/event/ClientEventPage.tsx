@@ -7,7 +7,7 @@ import classNames from 'classnames'
 import {
   CreatedEvent,
   EventParticipant,
-  FirestoreEventGuest,
+  FirestoreEventParticipantGuest,
 } from '@/firebase/definitions/event'
 import { eventTime } from '@/lib/format'
 import { menuHref } from '@/lib/menu'
@@ -15,11 +15,7 @@ import { GroupedParticipants } from './types'
 import JoinLeaveEventButtonContainer from './JoinLeaveEventButtonContainer'
 import CancelEventButton from './CancelEventButton'
 import GroupedParticipantList from './GroupedParticipantList'
-import {
-  isEventParticipant,
-  isFirestoreEventGuest,
-  hasPassed,
-} from '@/lib/utils/events'
+import { hasPassed } from '@/lib/utils/events'
 import { useAuth } from '@/contexts/AuthContext'
 import { BUTTON_EDIT } from '@/lib/constants/events'
 import { Role } from '@/firebase/definitions'
@@ -35,9 +31,9 @@ export default function ClientEventPage(props: ClientEventPageProps) {
   const { event } = props
   const { user } = useAuth()
 
-  const [participants, setParticipants] = useState<
-    (EventParticipant | FirestoreEventGuest)[]
-  >([...event.participants, ...event.guests])
+  const [participants, setParticipants] = useState<EventParticipant[]>(
+    [...event.participants]
+  )
   const [pending, setPending] = useState(false)
 
   const isMod = user?.role === Role.Mod
@@ -49,20 +45,20 @@ export default function ClientEventPage(props: ClientEventPageProps) {
 
   const participantsGrouped = participants.reduce(
     (prev, curr) => {
-      if (isEventParticipant(curr)) {
-        return { ...prev, users: [...prev.users, curr] }
-      } else if (isFirestoreEventGuest(curr)) {
+      if (curr.type === 'user') {
+        return { ...prev, users: [...prev.users, curr] } as GroupedParticipants
+      } else if (curr.type === 'guest') {
         return {
           ...prev,
           userGuests: {
             ...prev.userGuests,
-            [curr.addedBy]: {
-              ...prev.userGuests[curr.addedBy],
-              userDisplayName: curr.userDisplayName,
-              guests: [...(prev.userGuests[curr.addedBy]?.guests || []), curr],
+            [curr.addedByUid]: {
+              ...prev.userGuests[curr.addedByUid],
+              displayName: curr.addedByDisplayName,
+              guests: [...(prev.userGuests[curr.addedByUid]?.guests || []), curr],
             },
           },
-        }
+        } as GroupedParticipants
       }
       return prev
     },
@@ -76,6 +72,7 @@ export default function ClientEventPage(props: ClientEventPageProps) {
     setParticipants([
       ...participants,
       {
+        type: 'user',
         uid: user!.uid,
         displayName: user!.displayName || '',
       },
@@ -83,18 +80,14 @@ export default function ClientEventPage(props: ClientEventPageProps) {
   }
 
   const handleLeftEvent = () => {
-    setParticipants(
-      participants.filter((p) => isEventParticipant(p) && p.uid !== user!.uid)
-    )
+    setParticipants(participants.filter((p) => p.uid !== user!.uid))
   }
 
-  function handleGuestAdded(guest: FirestoreEventGuest) {
+  function handleGuestAdded(guest: FirestoreEventParticipantGuest) {
     setParticipants([...participants, guest])
   }
 
-  function handleKicked(
-    participants: (EventParticipant | FirestoreEventGuest)[]
-  ) {
+  function handleKicked(participants: EventParticipant[]) {
     setParticipants(participants)
   }
 

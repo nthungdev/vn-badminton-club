@@ -1,12 +1,5 @@
 import { Timestamp } from 'firebase-admin/firestore'
 
-export interface FirestoreEventGuest {
-  displayName: string
-  addedBy: string
-  userDisplayName: string
-  guestId: string
-}
-
 export interface FirestoreEvent {
   title: string
   startTimestamp: Timestamp
@@ -14,9 +7,43 @@ export interface FirestoreEvent {
   slots: number
   createdBy: string
   byMod: boolean
-  participantIds: string[]
-  guests: FirestoreEventGuest[]
+  participants: FirestoreEventParticipant[]
 }
+
+export interface FirestoreEventParticipantGuest {
+  type: 'guest'
+  uid?: string
+  guestId: string
+  displayName: string
+  addedByUid: string
+  addedByDisplayName: string
+}
+
+export interface FirestoreEventParticipantUser {
+  type: 'user'
+  uid: string
+  guestId?: string
+  displayName?: string
+  addedByUid?: string
+  addedByDisplayName?: string
+}
+
+export interface EventParticipantUser {
+  type: 'user'
+  uid: string
+  guestId?: string
+  displayName: string
+  addedByUid?: string
+  addedByDisplayName?: string
+}
+
+export type FirestoreEventParticipant =
+  | FirestoreEventParticipantGuest
+  | FirestoreEventParticipantUser
+
+export type EventParticipant =
+  | EventParticipantUser
+  | FirestoreEventParticipantGuest
 
 export interface CreateEventParams {
   title: string
@@ -35,24 +62,16 @@ export interface EditEventParams {
   slots: number
 }
 
-export type EventParticipant = {
-  uid: string
-  displayName: string
-}
-
 export type CreatedEvent = HomeViewEvent & {
-  organizer: EventParticipant
+  organizer: EventParticipantUser
   participants: EventParticipant[]
 }
 
 export type WriteEvent = CreateEventParams & {
-  participantIds: string[]
-  guests: FirestoreEventGuest[]
+  participants: FirestoreEventParticipant[]
 }
 
 export type HomeViewEvent = CreateEventParams & {
   id: string
-  participantIds: string[]
-  guests: FirestoreEventGuest[]
+  participants: FirestoreEventParticipant[]
 }
-

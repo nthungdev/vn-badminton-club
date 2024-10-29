@@ -6,8 +6,7 @@ import AppError from '@/lib/AppError'
 import { menuHref } from '@/lib/menu'
 import {
   CreatedEvent,
-  EventParticipant,
-  FirestoreEventGuest,
+  FirestoreEventParticipant,
 } from '@/firebase/definitions/event'
 import {
   BUTTON_CANCEL,
@@ -21,7 +20,7 @@ import { Role } from '@/firebase/definitions'
 interface CancelEventButtonProps extends ComponentProps<'button'> {
   pending?: boolean
   event: CreatedEvent
-  participants: (EventParticipant | FirestoreEventGuest)[]
+  participants: FirestoreEventParticipant[]
   onPending: (pending: boolean) => void
 }
 
