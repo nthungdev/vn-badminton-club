@@ -4,8 +4,6 @@ import { useState } from 'react'
 import { Tooltip } from 'flowbite-react'
 import Link from 'next/link'
 import classNames from 'classnames'
-import dayjs from 'dayjs'
-import { addGuest, kick, kickGuest } from '@/fetch/events'
 import {
   CreatedEvent,
   EventParticipant,
@@ -13,34 +11,20 @@ import {
 } from '@/firebase/definitions/event'
 import { eventTime } from '@/lib/format'
 import { menuHref } from '@/lib/menu'
-import AppError from '@/lib/AppError'
-import useErrorHandler from '@/hooks/useErrorHandler'
 import { GroupedParticipants } from './types'
 import JoinLeaveEventButton from './JoinLeaveEventButton'
-import KickParticipantModal from './KickParticipantModal'
 import CancelEventButton from './CancelEventButton'
-import ParticipantActionButton from './ParticipantActionButton'
 import GroupedParticipantList from './GroupedParticipantList'
 import {
-  DEFAULT_EVENT_LEAVE_CUTOFF,
-  DEFAULT_EVENT_JOIN_CUTOFF,
   isEventParticipant,
   isFirestoreEventGuest,
   hasPassed,
 } from '@/lib/utils/events'
 import { useAuth } from '@/contexts/AuthContext'
-import {
-  BUTTON_ADD_GUEST,
-  BUTTON_CONFIRM_ADD_GUEST_PAST_EVENT_LEAVE_CUTOFF,
-  BUTTON_KICK_PASSED_LEAVE_CUTOFF_TOOLTIP,
-  BUTTON_EDIT,
-  EVENT_ADD_GUEST_PROMPT,
-  BUTTON_KICK,
-  BUTTON_ADD_GUEST_PASSED_JOIN_CUTOFF_TOOLTIP,
-} from '@/lib/constants/events'
+import { BUTTON_EDIT } from '@/lib/constants/events'
 import { Role } from '@/firebase/definitions'
-import { EVENT_ADD_GUEST_NO_NAME_ERROR } from '@/constants/errorMessages'
 import KickParticipantButton from './KickParticipantButton'
+import AddGuestButton from './AddGuestButton'
 
 interface ClientEventPageProps {
   eventId: string
@@ -50,81 +34,28 @@ interface ClientEventPageProps {
 export default function ClientEventPage(props: ClientEventPageProps) {
   const { event } = props
   const { user } = useAuth()
-  const handleError = useErrorHandler()
+
   const [participants, setParticipants] = useState<
     (EventParticipant | FirestoreEventGuest)[]
   >([...event.participants, ...event.guests])
   const [pending, setPending] = useState(false)
-  const [kickMode, setKickMode] = useState(false)
-  const [updateMode, setUpdateMode] = useState(false)
 
   const isMod = user?.role === Role.Mod
   const isOrganizer = user?.uid === event.organizer.uid
-  const isEventFull = participants.length >= event.slots
-  const isPastEvent = dayjs().isAfter(dayjs(event.startTimestamp))
+  const isPastEvent = hasPassed(event.startTimestamp)
   const time = eventTime(event.startTimestamp, event.endTimestamp)
-  const hasPassedLeaveCutoff = hasPassed(
-    event.startTimestamp,
-    DEFAULT_EVENT_LEAVE_CUTOFF
-  )
-  const hasPassedJoinCutoff = hasPassed(
-    event.startTimestamp,
-    DEFAULT_EVENT_JOIN_CUTOFF
-  )
 
   const meJoined = participants.some(
     (p) => isEventParticipant(p) && p.uid === user?.uid
   )
 
-  const showAddGuestButton = isMod || !isPastEvent
   const showEditButton = (isMod || !isPastEvent) && (isMod || isOrganizer)
   const showJoinLeaveButton =
     (!meJoined && !isPastEvent) || (meJoined && (isMod || !isPastEvent))
 
-  const showAddGuestButtonTooltip = !isMod && hasPassedJoinCutoff
-
   const disableJoinLeaveButton = pending || undefined
-  const disableAddGuestButton =
-    pending || isEventFull || kickMode || (!isMod && hasPassedJoinCutoff)
 
-  const kickableParticipants = participants.filter((p) => {
-    if (isEventParticipant(p) && p.uid === user!.uid) {
-      return false
-    }
-
-    if (isMod || isOrganizer) {
-      // Mod and organizer can kick anyone
-      return true
-    } else {
-      // Only show guests added by the current user
-      return isFirestoreEventGuest(p) && p.addedBy === user!.uid
-    }
-  })
   const participantsGrouped = participants.reduce(
-    (prev, curr) => {
-      if (isEventParticipant(curr)) {
-        return { ...prev, users: [...prev.users, curr] }
-      } else if (isFirestoreEventGuest(curr)) {
-        return {
-          ...prev,
-          userGuests: {
-            ...prev.userGuests,
-            [curr.addedBy]: {
-              ...prev.userGuests[curr.addedBy],
-              userDisplayName: curr.userDisplayName,
-              guests: [...(prev.userGuests[curr.addedBy]?.guests || []), curr],
-            },
-          },
-        }
-      }
-      return prev
-    },
-    {
-      users: [],
-      userGuests: {},
-    } as GroupedParticipants
-  )
-  const kickableParticipantsGrouped = kickableParticipants.reduce(
     (prev, curr) => {
       if (isEventParticipant(curr)) {
         return { ...prev, users: [...prev.users, curr] }
@@ -165,51 +96,14 @@ export default function ClientEventPage(props: ClientEventPageProps) {
     )
   }
 
-  async function handleAddGuest() {
-    try {
-      if (
-        !isMod &&
-        hasPassedLeaveCutoff &&
-        !window.confirm(BUTTON_CONFIRM_ADD_GUEST_PAST_EVENT_LEAVE_CUTOFF)
-      ) {
-        return
-      }
-
-      const name = window.prompt(EVENT_ADD_GUEST_PROMPT)
-      if (name === null) {
-        return
-      }
-      if (name === '') {
-        throw new AppError(EVENT_ADD_GUEST_NO_NAME_ERROR)
-      }
-
-      const guest = await addGuest(event.id, name)
-
-      setParticipants([...participants, guest])
-    } catch (error) {
-      handleError(error)
-    }
+  function handleGuestAdded(guest: FirestoreEventGuest) {
+    setParticipants([...participants, guest])
   }
 
   function handleKicked(
     participants: (EventParticipant | FirestoreEventGuest)[]
   ) {
     setParticipants(participants)
-  }
-
-  const handleUpdateEventToggle = () => {
-    setUpdateMode(!updateMode)
-  }
-
-  function renderAddGuestButton() {
-    return (
-      <ParticipantActionButton
-        onClick={handleAddGuest}
-        disabled={disableAddGuestButton}
-      >
-        {BUTTON_ADD_GUEST}
-      </ParticipantActionButton>
-    )
   }
 
   return (
@@ -296,16 +190,13 @@ export default function ClientEventPage(props: ClientEventPageProps) {
                   onKicked={handleKicked}
                 />
 
-                {showAddGuestButton &&
-                  (showAddGuestButtonTooltip ? (
-                    <Tooltip
-                      content={BUTTON_ADD_GUEST_PASSED_JOIN_CUTOFF_TOOLTIP}
-                    >
-                      renderAddGuestButton()
-                    </Tooltip>
-                  ) : (
-                    renderAddGuestButton()
-                  ))}
+                <AddGuestButton
+                  event={event}
+                  onGuestAdded={handleGuestAdded}
+                  participants={participants}
+                  setPending={setPending}
+                  pending={pending}
+                />
               </div>
             </div>
 
@@ -317,7 +208,6 @@ export default function ClientEventPage(props: ClientEventPageProps) {
                   className={classNames(
                     'w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border text-secondary-700 focus:outline-none disabled:opacity-50 disabled:pointer-events-none bg-white hover:text-white hover:bg-secondary-700 focus:ring transition-colors'
                   )}
-                  onClick={handleUpdateEventToggle}
                 >
                   {BUTTON_EDIT}
                 </Link>
