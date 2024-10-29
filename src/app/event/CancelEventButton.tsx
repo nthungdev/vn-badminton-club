@@ -14,8 +14,12 @@ import {
   BUTTON_CANCEL_EVENT_CONFIRM,
   BUTTON_CONFIRM_CANCEL_EVENT_CONFIRM_HAS_PARTICIPANTS,
 } from '@/lib/constants/events'
+import { hasPassed } from '@/lib/utils/events'
+import { useAuth } from '@/contexts/AuthContext'
+import { Role } from '@/firebase/definitions'
 
 interface CancelEventButtonProps extends ComponentProps<'button'> {
+  pending?: boolean
   event: CreatedEvent
   participants: (EventParticipant | FirestoreEventGuest)[]
   onPending: (pending: boolean) => void
@@ -25,8 +29,14 @@ export default function CancelEventButton(props: CancelEventButtonProps) {
   const { onPending, event, ...restProps } = props
   const router = useRouter()
   const handleError = useErrorHandler()
+  const { user } = useAuth()
 
+  const isMod = user?.role === Role.Mod
+  const isOrganizer = user?.uid === event.organizer.uid
+  const isPastEvent = hasPassed(event.startTimestamp)
   const hasParticipants = props.participants.length > 0
+  const showCancelButton = !isPastEvent && (isMod || isOrganizer)
+  const disableCancelButton = props.pending || isPastEvent
 
   const handleCancelEvent = async () => {
     const confirmed = window.confirm(
@@ -55,6 +65,10 @@ export default function CancelEventButton(props: CancelEventButtonProps) {
     }
   }
 
+  if (!showCancelButton) {
+    return null
+  }
+
   return (
     <button
       {...restProps}
@@ -63,6 +77,7 @@ export default function CancelEventButton(props: CancelEventButtonProps) {
         'w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border text-red-700 focus:outline-none disabled:opacity-50 disabled:pointer-events-none bg-white hover:text-white hover:bg-red-700 transition-colors focus:ring ring-red-400'
       )}
       onClick={handleCancelEvent}
+      disabled={disableCancelButton}
     >
       {BUTTON_CANCEL}
     </button>
