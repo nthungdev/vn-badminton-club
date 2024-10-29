@@ -183,6 +183,7 @@ export default function ClientEventPage(props: ClientEventPageProps) {
   async function handleAddGuest() {
     try {
       if (
+        !isMod &&
         hasPassedLeaveCutoff &&
         !window.confirm(BUTTON_CONFIRM_ADD_GUEST_PAST_EVENT_LEAVE_CUTOFF)
       ) {
