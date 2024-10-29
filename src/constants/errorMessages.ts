@@ -12,3 +12,5 @@ export const EVENT_LATE_JOIN_ERROR = 'It is too close to start time to join.'
 export const EVENT_LATE_LEAVE_ERROR = 'Cannot leave the event at this time.'
 export const EVENT_GUEST_NOT_FOUND_ERROR = 'Guest not found.'
 export const EVENT_ADD_GUEST_NO_NAME_ERROR = 'No name entered.'
+
+export const USER_NOT_FOUND_ERROR = 'User not found.'
