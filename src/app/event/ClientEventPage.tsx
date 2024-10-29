@@ -77,6 +77,10 @@ export default function ClientEventPage(props: ClientEventPageProps) {
   const hasMyGuests = participants.some(
     (p) => isFirestoreEventGuest(p) && p.addedBy === user!.uid
   )
+  const meJoined = participants.some(
+    (p) => isEventParticipant(p) && p.uid === user?.uid
+  )
+
   const showKickButton =
     participants.length > 0 &&
     !isOnlySelfParticipant &&
@@ -85,12 +89,13 @@ export default function ClientEventPage(props: ClientEventPageProps) {
   const showAddGuestButton = isMod || !isPastEvent
   const showEditButton = (isMod || !isPastEvent) && (isMod || isOrganizer)
   const showCancelButton = !isPastEvent && (isMod || isOrganizer)
-  const showJoinButton = !isPastEvent
+  const showJoinLeaveButton =
+    (!meJoined && !isPastEvent) || (meJoined && (isMod || !isPastEvent))
 
   const showKickButtonTooltip = !isMod && hasPassedLeaveCutoff
   const showAddGuestButtonTooltip = !isMod && hasPassedJoinCutoff
 
-  const disableJoinButton = pending || undefined
+  const disableJoinLeaveButton = pending || undefined
   const disableKickButton =
     pending || kickMode || (!isMod && hasPassedLeaveCutoff)
   const disableCancelButton = pending || isPastEvent
@@ -391,11 +396,11 @@ export default function ClientEventPage(props: ClientEventPageProps) {
         </div>
       </div>
 
-      {showJoinButton && (
+      {showJoinLeaveButton && (
         <div className="p-4 shadow-inner">
           <JoinLeaveEventButton
             event={event}
-            disabled={disableJoinButton}
+            disabled={disableJoinLeaveButton}
             participants={participants}
             onPending={setPending}
             onJoined={handleJoinedEvent}
