@@ -36,9 +36,6 @@ interface KickParticipantButtonProps extends ComponentProps<'button'> {
 export default function KickParticipantButton(
   props: KickParticipantButtonProps
 ) {
-  const { event, pending, participants, onKicked, setPending, ...otherProps } =
-    props
-
   const { user } = useAuth()
   const handleError = useErrorHandler()
   const [kickMode, setKickMode] = useState(false)
@@ -138,7 +135,6 @@ export default function KickParticipantButton(
   function renderKickParticipantButton() {
     return (
       <ParticipantActionButton
-        {...otherProps}
         disabled={disableKickButton}
         onClick={() => setKickMode(!kickMode)}
       >

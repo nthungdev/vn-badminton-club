@@ -50,6 +50,7 @@ export default function EventList() {
     }
 
     fetchUpcomingEvents()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleTabChange = async (tab: string) => {

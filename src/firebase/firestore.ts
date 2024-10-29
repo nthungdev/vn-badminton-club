@@ -1,11 +1,9 @@
 'server-only'
 
-import { FieldValue } from 'firebase-admin/firestore'
 import {
   CreatedEvent,
   CreateEventParams,
   EventParticipant,
-  FirestoreEvent,
 } from './definitions/event'
 import { COLLECTION_EVENTS } from './firestore.constant'
 import { firestore } from './serverApp'
@@ -13,11 +11,9 @@ import AppError from '../lib/AppError'
 import {
   EVENT_NOT_FOUND_ERROR,
   EVENT_ORGANIZER_NOT_FOUND_ERROR,
-  UNKNOWN_ERROR,
 } from '@/constants/errorMessages'
 import { EventsCacheKey, getNodeCache } from '@/lib/cache'
 import { getUserById } from '@/lib/authUtils'
-import { DEFAULT_EVENT_LEAVE_CUTOFF } from '@/lib/utils/events'
 import { eventReadConverter } from './utils'
 
 const cache = getNodeCache('eventsCache')
