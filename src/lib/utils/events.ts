@@ -19,9 +19,10 @@ export function isFirestoreEventGuest(
 }
 
 /**
- * @param startTimestamp
+ * Check whether the current time has passed specified timestamp (with cutoff)
+ * @param timestamp
  * @param cutoff in milliseconds
  */
-export function hasPassed(startTimestamp: Date, cutoff: number = 0) {
-  return new Date(startTimestamp.getTime() - cutoff) < new Date()
+export function hasPassed(timestamp: Date, cutoff: number = 0) {
+  return new Date(timestamp.getTime() - cutoff) < new Date()
 }

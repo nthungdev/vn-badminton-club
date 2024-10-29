@@ -32,7 +32,7 @@ export async function getJoinedEvents() {
       throw error
     }
     console.error('Error getting joined events:', error)
-    throw new AppError('Something went wrong')
+    throw new AppError(UNKNOWN_ERROR)
   }
 }
 
@@ -54,7 +54,7 @@ export async function getNewEvents() {
       throw error
     }
     console.error('Error getting new events:', error)
-    throw new AppError('Something went wrong')
+    throw new AppError(UNKNOWN_ERROR)
   }
 }
 
@@ -76,7 +76,7 @@ export async function getPastEvents() {
       throw error
     }
     console.error('Error getting past events:', error)
-    throw new AppError('Something went wrong')
+    throw new AppError(UNKNOWN_ERROR)
   }
 }
 
@@ -96,7 +96,7 @@ export async function joinEvent(eventId: string) {
       throw error
     }
     console.error('Error joining event:', error)
-    throw new AppError('Something went wrong')
+    throw new AppError(UNKNOWN_ERROR)
   }
 }
 
@@ -115,7 +115,7 @@ export async function leaveEvent(eventId: string) {
     if (error instanceof AppError) {
       throw error
     }
-    throw new AppError('Something went wrong', error)
+    throw new AppError(UNKNOWN_ERROR, error)
   }
 }
 
@@ -135,7 +135,7 @@ export async function kick(eventId: string, uid: string) {
     if (error instanceof AppError) {
       throw error
     }
-    throw new AppError('Something went wrong', error)
+    throw new AppError(UNKNOWN_ERROR, error)
   }
 }
 

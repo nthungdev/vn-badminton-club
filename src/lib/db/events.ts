@@ -4,13 +4,17 @@ import {
   EVENT_FULL_ERROR,
   EVENT_GUEST_NOT_FOUND_ERROR,
   EVENT_LATE_JOIN_ERROR,
+  EVENT_LATE_LEAVE_ERROR,
   EVENT_NOT_FOUND_ERROR,
   EVENT_STARTED_ERROR,
   UNAUTHORIZED_ERROR,
   UNKNOWN_ERROR,
 } from '@/constants/errorMessages'
 import { Role } from '@/firebase/definitions'
-import { EditEventParams } from '@/firebase/definitions/event'
+import {
+  EditEventParams,
+  FirestoreEventGuest,
+} from '@/firebase/definitions/event'
 import { COLLECTION_EVENTS } from '@/firebase/firestore.constant'
 import { firestore } from '@/firebase/serverApp'
 import {
@@ -18,7 +22,11 @@ import {
   eventWriteConverter,
   isEventFull,
 } from '@/firebase/utils'
-import { DEFAULT_EVENT_JOIN_CUTOFF, hasPassed } from '../utils/events'
+import {
+  DEFAULT_EVENT_JOIN_CUTOFF,
+  DEFAULT_EVENT_LEAVE_CUTOFF,
+  hasPassed,
+} from '../utils/events'
 import AppError from '../AppError'
 import { FieldValue } from 'firebase-admin/firestore'
 
@@ -52,7 +60,10 @@ export async function joinEvent(uid: string, eventId: string) {
           return { errorMessage: EVENT_FULL_ERROR }
         }
 
-        const afterJoinCutoff = hasPassed(event.startTimestamp, DEFAULT_EVENT_JOIN_CUTOFF)
+        const afterJoinCutoff = hasPassed(
+          event.startTimestamp,
+          DEFAULT_EVENT_JOIN_CUTOFF
+        )
         if (afterJoinCutoff) {
           return { errorMessage: EVENT_LATE_JOIN_ERROR }
         }
@@ -139,7 +150,7 @@ export async function editEvent(
     if (error instanceof AppError) {
       throw error
     }
-    return new AppError(UNKNOWN_ERROR, error)
+    throw new AppError(UNKNOWN_ERROR, error)
   }
 }
 
@@ -208,6 +219,171 @@ export async function kickGuest(
     if (error instanceof AppError) {
       throw error
     }
-    return new AppError(UNKNOWN_ERROR, error)
+    throw new AppError(UNKNOWN_ERROR, error)
+  }
+}
+
+/**
+ * @throws {AppError} with message either
+ * - EVENT_NOT_FOUND_ERROR
+ * - EVENT_FULL_ERROR
+ * - EVENT_STARTED_ERROR
+ * - EVENT_LATE_JOIN_ERROR
+ * - UNKNOWN_ERROR
+ */
+export async function addGuest(
+  eventId: string,
+  uid: string,
+  userDisplayName: string,
+  displayName: string,
+  role: Role
+) {
+  const eventRef = eventCollection
+    .withConverter(eventWriteConverter)
+    .doc(eventId)
+
+  try {
+    const { errorMessage, guest } = await firestore.runTransaction(
+      async (transaction) => {
+        const doc = await transaction.get(eventRef)
+        const event = doc.data()
+        if (!doc.exists || !event) {
+          return { errorMessage: EVENT_NOT_FOUND_ERROR }
+        }
+
+        if (isEventFull(event)) {
+          return { errorMessage: EVENT_FULL_ERROR }
+        }
+
+        // If not mod, can only add guests before the join cutoff
+        if (role !== Role.Mod) {
+          if (hasPassed(event.startTimestamp)) {
+            return { errorMessage: EVENT_STARTED_ERROR }
+          } else if (
+            hasPassed(event.startTimestamp, DEFAULT_EVENT_JOIN_CUTOFF)
+          ) {
+            return { errorMessage: EVENT_LATE_JOIN_ERROR }
+          }
+        }
+
+        const guest: FirestoreEventGuest = {
+          addedBy: uid,
+          userDisplayName,
+          guestId: new Date().getTime().toString(),
+          displayName,
+        }
+
+        transaction.update(eventRef, {
+          guests: FieldValue.arrayUnion(guest),
+        })
+
+        return { guest }
+      }
+    )
+
+    if (errorMessage !== undefined) {
+      throw new AppError(errorMessage)
+    }
+
+    return guest
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error
+    }
+    throw new AppError(UNKNOWN_ERROR, error)
+  }
+}
+
+/**
+ * @throws {AppError} with message either
+ * - EVENT_NOT_FOUND_ERROR
+ * - EVENT_STARTED_ERROR
+ * - EVENT_LATE_LEAVE_ERROR
+ * - UNKNOWN_ERROR
+ */
+export async function leaveEvent(uid: string, eventId: string, role: Role) {
+  try {
+    const eventRef = eventCollection
+      .doc(eventId)
+      .withConverter(eventReadConverter)
+    const { errorMessage } = await firestore.runTransaction(
+      async (transaction) => {
+        const doc = await transaction.get(eventRef)
+        const event = doc.data()
+        if (!doc.exists || !event) {
+          return { errorMessage: EVENT_NOT_FOUND_ERROR }
+        }
+
+        if (role !== Role.Mod) {
+          if (hasPassed(event.startTimestamp)) {
+            return { errorMessage: EVENT_STARTED_ERROR }
+          } else if (
+            hasPassed(event.startTimestamp, DEFAULT_EVENT_LEAVE_CUTOFF)
+          ) {
+            return { errorMessage: EVENT_LATE_LEAVE_ERROR }
+          }
+        }
+
+        transaction.update(eventRef, {
+          participantIds: FieldValue.arrayRemove(uid),
+        })
+
+        return {}
+      }
+    )
+
+    if (errorMessage) {
+      throw new AppError(errorMessage)
+    }
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error
+    }
+    throw new AppError(UNKNOWN_ERROR, error)
+  }
+}
+
+/**
+ * @throws {AppError} with message either
+ * - EVENT_NOT_FOUND_ERROR
+ * - EVENT_STARTED_ERROR
+ * - UNAUTHORIZED_ERROR
+ * - UNKNOWN_ERROR
+ */
+export async function deleteEvent(eventId: string, uid: string, role: Role) {
+  try {
+    const eventRef = eventCollection
+      .doc(eventId)
+      .withConverter(eventReadConverter)
+    const { errorMessage } = await firestore.runTransaction(
+      async (transaction) => {
+        const doc = await transaction.get(eventRef)
+        const event = doc.data()
+        if (!doc.exists || !event) {
+          return { errorMessage: EVENT_NOT_FOUND_ERROR }
+        }
+
+        if (role !== Role.Mod) {
+          if (event.createdBy === uid) {
+            if (hasPassed(event.startTimestamp)) {
+              return { errorMessage: EVENT_STARTED_ERROR }
+            }
+          } else {
+            return { errorMessage: UNAUTHORIZED_ERROR }
+          }
+        }
+
+        transaction.delete(eventRef)
+        return {}
+      }
+    )
+    if (errorMessage) {
+      throw new AppError(errorMessage)
+    }
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error
+    }
+    throw new AppError(UNKNOWN_ERROR)
   }
 }
