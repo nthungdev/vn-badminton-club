@@ -1,4 +1,5 @@
 import { ComponentProps } from 'react'
+import { Tooltip } from 'flowbite-react'
 import ParticipantActionButton from './ParticipantActionButton'
 import {
   CreatedEvent,
@@ -22,7 +23,6 @@ import { EVENT_ADD_GUEST_NO_NAME_ERROR, EVENT_FULL_ERROR } from '@/constants/err
 import AppError from '@/lib/AppError'
 import { addGuest } from '@/fetch/events'
 import useErrorHandler from '@/hooks/useErrorHandler'
-import { Tooltip } from 'flowbite-react'
 
 interface AddGuestButtonProps extends ComponentProps<'button'> {
   event: CreatedEvent

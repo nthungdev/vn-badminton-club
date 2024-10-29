@@ -27,15 +27,18 @@ import classNames from 'classnames'
 import { Tooltip } from 'flowbite-react'
 import { ComponentProps } from 'react'
 
-interface JoinLeaveEventButtonProps extends ComponentProps<'button'> {
+interface JoinLeaveEventButtonContainerProps extends ComponentProps<'button'> {
   event: CreatedEvent
   participants: (EventParticipant | FirestoreEventGuest)[]
+  pending?: boolean
   onPending: (pending: boolean) => void
   onJoined: () => void
   onLeft: () => void
 }
 
-export default function JoinLeaveEventButton(props: JoinLeaveEventButtonProps) {
+export default function JoinLeaveEventButtonContainer(
+  props: JoinLeaveEventButtonContainerProps
+) {
   const handleError = useErrorHandler()
   const { user } = useAuth()
 
@@ -54,8 +57,13 @@ export default function JoinLeaveEventButton(props: JoinLeaveEventButtonProps) {
   const isMod = user?.role === Role.Mod
   const buttonText = meJoined ? BUTTON_LEAVE : BUTTON_JOIN
   const isEventFull = props.participants.length >= props.event.slots
+  const showJoinLeaveButton =
+    (!meJoined && !isPastEvent) || (meJoined && (isMod || !isPastEvent))
   const shouldDisable =
-    props.disabled || (!meJoined && isEventFull) || hasPassedJoinTime
+    props.pending ||
+    props.disabled ||
+    (!meJoined && isEventFull) ||
+    hasPassedJoinTime
 
   const tooltipContent = (() => {
     if (isPastEvent) {
@@ -121,16 +129,20 @@ export default function JoinLeaveEventButton(props: JoinLeaveEventButtonProps) {
     )
   }
 
+  if (!showJoinLeaveButton) return null
+
   if (tooltipContent) {
     return (
-      <Tooltip
-        content={tooltipContent}
-        theme={{
-          target: 'w-full max-w-lg mx-auto',
-        }}
-      >
-        {renderButton()}
-      </Tooltip>
+      <div className="p-4 shadow-inner">
+        <Tooltip
+          content={tooltipContent}
+          theme={{
+            target: 'w-full max-w-lg mx-auto',
+          }}
+        >
+          {renderButton()}
+        </Tooltip>
+      </div>
     )
   }
 

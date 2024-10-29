@@ -12,7 +12,7 @@ import {
 import { eventTime } from '@/lib/format'
 import { menuHref } from '@/lib/menu'
 import { GroupedParticipants } from './types'
-import JoinLeaveEventButton from './JoinLeaveEventButton'
+import JoinLeaveEventButtonContainer from './JoinLeaveEventButtonContainer'
 import CancelEventButton from './CancelEventButton'
 import GroupedParticipantList from './GroupedParticipantList'
 import {
@@ -45,15 +45,7 @@ export default function ClientEventPage(props: ClientEventPageProps) {
   const isPastEvent = hasPassed(event.startTimestamp)
   const time = eventTime(event.startTimestamp, event.endTimestamp)
 
-  const meJoined = participants.some(
-    (p) => isEventParticipant(p) && p.uid === user?.uid
-  )
-
   const showEditButton = (isMod || !isPastEvent) && (isMod || isOrganizer)
-  const showJoinLeaveButton =
-    (!meJoined && !isPastEvent) || (meJoined && (isMod || !isPastEvent))
-
-  const disableJoinLeaveButton = pending || undefined
 
   const participantsGrouped = participants.reduce(
     (prev, curr) => {
@@ -224,18 +216,14 @@ export default function ClientEventPage(props: ClientEventPageProps) {
         </div>
       </div>
 
-      {showJoinLeaveButton && (
-        <div className="p-4 shadow-inner">
-          <JoinLeaveEventButton
-            event={event}
-            disabled={disableJoinLeaveButton}
-            participants={participants}
-            onPending={setPending}
-            onJoined={handleJoinedEvent}
-            onLeft={handleLeftEvent}
-          />
-        </div>
-      )}
+      <JoinLeaveEventButtonContainer
+        event={event}
+        pending={pending}
+        participants={participants}
+        onPending={setPending}
+        onJoined={handleJoinedEvent}
+        onLeft={handleLeftEvent}
+      />
     </div>
   )
 }

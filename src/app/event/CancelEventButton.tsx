@@ -26,7 +26,7 @@ interface CancelEventButtonProps extends ComponentProps<'button'> {
 }
 
 export default function CancelEventButton(props: CancelEventButtonProps) {
-  const { onPending, event, ...restProps } = props
+  const { pending, event, onPending, ...restProps } = props
   const router = useRouter()
   const handleError = useErrorHandler()
   const { user } = useAuth()
@@ -36,7 +36,7 @@ export default function CancelEventButton(props: CancelEventButtonProps) {
   const isPastEvent = hasPassed(event.startTimestamp)
   const hasParticipants = props.participants.length > 0
   const showCancelButton = !isPastEvent && (isMod || isOrganizer)
-  const disableCancelButton = props.pending || isPastEvent
+  const disableCancelButton = pending || isPastEvent
 
   const handleCancelEvent = async () => {
     const confirmed = window.confirm(
