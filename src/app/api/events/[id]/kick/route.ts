@@ -10,7 +10,9 @@ import { hasPassed } from '@/lib/utils/events'
 import {
   EVENT_NOT_FOUND_ERROR,
   EVENT_STARTED_ERROR,
+  MISSING_REQUIRED_FIELDS,
   UNAUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from '@/constants/errorMessages'
 
 interface EventParticipantKickRequest {
@@ -23,14 +25,14 @@ export async function PATCH(
 ) {
   const { decodedIdToken } = await verifySession()
   if (!decodedIdToken) {
-    return createErrorResponse('Unauthorized', 401)
+    return createErrorResponse(UNAUTHORIZED_ERROR, 401)
   }
 
   const { uid }: EventParticipantKickRequest = await request.json()
   const { id: eventId } = params
 
   if (uid === undefined) {
-    return createErrorResponse('Missing user uid', 400)
+    return createErrorResponse(MISSING_REQUIRED_FIELDS, 400)
   }
 
   try {
@@ -67,7 +69,7 @@ export async function PATCH(
 
         const participant = event.participants.find((p) => p.uid === uid)
         if (!participant) {
-          return { errorMessage: 'Invalid uid.', status: 400 }
+          return { errorMessage: USER_NOT_FOUND_ERROR, status: 400 }
         }
 
         transaction.update(eventRef, {
