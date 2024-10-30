@@ -49,7 +49,7 @@ export default function ParticipantList({
                 content={tooltipContent}
               >
                 <button
-                  className="shadow-lg rounded-md shrink grow-0 basis-0 self-end p-1 bg-white text-primary hover:bg-primary hover:text-white hover:shadow-md transition-all"
+                  className="shadow-lg rounded-md shrink grow-0 basis-0 self-end p-1 bg-white text-primary hover:bg-primary hover:text-white hover:shadow-md"
                   onClick={() => setGroupGuests(!groupGuests)}
                 >
                   <IconComponent className="size-6" />
