@@ -1,12 +1,15 @@
-import { EventParticipant, FirestoreEventGuest } from "@/firebase/definitions/event"
+import {
+  EventParticipantUser,
+  FirestoreEventParticipantGuest,
+} from '@/firebase/definitions/event'
 
 export interface GroupedParticipants {
-  users: EventParticipant[]
+  users: EventParticipantUser[]
   userGuests: Record<
     string,
     {
-      userDisplayName: string
-      guests: FirestoreEventGuest[]
+      displayName: string
+      guests: FirestoreEventParticipantGuest[]
     }
   >
 }

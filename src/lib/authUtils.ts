@@ -5,22 +5,37 @@ import { Role } from '../firebase/definitions'
 import { auth } from '../firebase/serverApp'
 import { AuthContextUser } from '@/contexts/AuthContext'
 import { verifySession } from './session'
+import { getNodeCache } from './cache'
+
+interface User {
+  uid: string
+  displayName: string
+}
 
 export function getUserRole(user: UserRecord) {
   return user.customClaims?.role as Role | undefined
 }
 
 export async function getUserById(userId: string) {
-  // TODO Fetch user from Auth
-  const user = await auth.getUser(userId)
-  if (!user) {
+  const cache = getNodeCache('usersCache')
+  const cachedUser: User | undefined = cache.get(userId)
+  if (cachedUser) {
+    return cachedUser
+  }
+
+  const userRecord = await auth.getUser(userId)
+  if (!userRecord) {
     return null
   }
 
-  return {
-    uid: user.uid,
-    displayName: user.displayName,
+  const user = {
+    uid: userRecord.uid,
+    displayName: userRecord.displayName!,
   }
+
+  cache.set(userId, user)
+
+  return user
 }
 
 export function toAuthUser(decodedIdToken: DecodedIdToken): AuthContextUser {

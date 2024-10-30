@@ -1,8 +1,7 @@
-import { getMe } from '@/actions/auth'
 import { getEventById } from '@/actions/events'
 import BasePage from '@/components/BasePage'
 import EventForm from '@/components/EventForm'
-import { getUserRole } from '@/lib/authUtils'
+import { getAuthUser } from '@/lib/authUtils'
 import { Role } from '@/firebase/definitions'
 import { menuHref } from '@/lib/menu'
 import Link from 'next/link'
@@ -23,12 +22,12 @@ export default async function EventUpdatePage({
     redirect('/404')
   }
 
-  const me = await getMe()
+  const me = await getAuthUser()
   if (!me) {
     throw new Error('Cannot find user')
   }
 
-  if (getUserRole(me) !== Role.Mod && me.uid !== event.organizer.uid) {
+  if (me.role !== Role.Mod && me.uid !== event.organizer.uid) {
     throw new Error('Unauthorized access')
   }
 

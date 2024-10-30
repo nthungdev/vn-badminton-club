@@ -1,6 +1,7 @@
 'use client'
 
 import { ComponentProps, useState } from 'react'
+import { Tooltip } from 'flowbite-react'
 import ParticipantActionButton from './ParticipantActionButton'
 import {
   BUTTON_KICK,
@@ -8,28 +9,18 @@ import {
 } from '@/lib/constants/events'
 import { Role } from '@/firebase/definitions'
 import { useAuth } from '@/contexts/AuthContext'
-import {
-  DEFAULT_EVENT_LEAVE_CUTOFF,
-  hasPassed,
-  isEventParticipant,
-  isFirestoreEventGuest,
-} from '@/lib/utils/events'
-import {
-  CreatedEvent,
-  EventParticipant,
-  FirestoreEventGuest,
-} from '@/firebase/definitions/event'
+import { DEFAULT_EVENT_LEAVE_CUTOFF, hasPassed } from '@/lib/utils/events'
+import { CreatedEvent, EventParticipant } from '@/firebase/definitions/event'
 import KickParticipantModal from './KickParticipantModal'
 import { kickGuest } from '@/fetch/events'
 import useErrorHandler from '@/hooks/useErrorHandler'
 import { GroupedParticipants } from './types'
-import { Tooltip } from 'flowbite-react'
 
 interface KickParticipantButtonProps extends ComponentProps<'button'> {
   event: CreatedEvent
   pending?: boolean
-  participants: (EventParticipant | FirestoreEventGuest)[]
-  onKicked: (participants: (EventParticipant | FirestoreEventGuest)[]) => void
+  participants: EventParticipant[]
+  onKicked: (participants: EventParticipant[]) => void
   setPending: (pending: boolean) => void
 }
 
@@ -44,9 +35,9 @@ export default function KickParticipantButton(
   const isOrganizer = user?.uid === props.event.organizer.uid
   const isOnlySelfParticipant =
     props.participants.length === 1 &&
-    props.participants.some((p) => isEventParticipant(p) && p.uid === user!.uid)
+    props.participants.some((p) => p.uid === user!.uid)
   const hasMyGuests = props.participants.some(
-    (p) => isFirestoreEventGuest(p) && p.addedBy === user!.uid
+    (p) => p.type === 'guest' && p.addedByUid === user!.uid
   )
   const isPastEvent = hasPassed(props.event.startTimestamp)
   const hasPassedLeaveCutoff = hasPassed(
@@ -64,7 +55,7 @@ export default function KickParticipantButton(
     props.pending || kickMode || (!isMod && hasPassedLeaveCutoff)
 
   const kickableParticipants = props.participants.filter((p) => {
-    if (isEventParticipant(p) && p.uid === user!.uid) {
+    if (p.type === 'user' && p.uid === user!.uid) {
       return false
     }
 
@@ -73,22 +64,25 @@ export default function KickParticipantButton(
       return true
     } else {
       // Only show guests added by the current user
-      return isFirestoreEventGuest(p) && p.addedBy === user!.uid
+      return p.type === 'guest' && p.addedByUid === user!.uid
     }
   })
   const kickableParticipantsGrouped = kickableParticipants.reduce(
     (prev, curr) => {
-      if (isEventParticipant(curr)) {
+      if (curr.type === 'user') {
         return { ...prev, users: [...prev.users, curr] }
-      } else if (isFirestoreEventGuest(curr)) {
+      } else if (curr.type === 'guest') {
         return {
           ...prev,
           userGuests: {
             ...prev.userGuests,
-            [curr.addedBy]: {
-              ...prev.userGuests[curr.addedBy],
-              userDisplayName: curr.userDisplayName,
-              guests: [...(prev.userGuests[curr.addedBy]?.guests || []), curr],
+            [curr.addedByUid]: {
+              ...prev.userGuests[curr.addedByUid],
+              displayName: curr.addedByDisplayName,
+              guests: [
+                ...(prev.userGuests[curr.addedByUid]?.guests || []),
+                curr,
+              ],
             },
           },
         }
@@ -101,24 +95,22 @@ export default function KickParticipantButton(
     } as GroupedParticipants
   )
 
-  const handleKick = async (
-    participant: EventParticipant | FirestoreEventGuest
-  ) => {
+  const handleKick = async (participant: EventParticipant) => {
     try {
       props.setPending(true)
-      if (isEventParticipant(participant)) {
+      if (participant.type === 'user') {
         await kickGuest(props.event.id, participant.uid)
-        const updated = props.participants.filter((p) =>
-          isEventParticipant(p) ? p.uid !== participant.uid : true
+        const updated = props.participants.filter(
+          (p) => p.uid !== participant.uid
         )
         if (updated.length === 0) {
           setKickMode(false)
         }
         props.onKicked(updated)
-      } else {
+      } else if (participant.type === 'guest') {
         await kickGuest(props.event.id, participant.guestId)
-        const updated = props.participants.filter((p) =>
-          isFirestoreEventGuest(p) ? p.guestId !== participant.guestId : true
+        const updated = props.participants.filter(
+          (p) => p.guestId !== participant.guestId
         )
         if (updated.length === 0) {
           setKickMode(false)

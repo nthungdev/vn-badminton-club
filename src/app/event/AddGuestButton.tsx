@@ -3,8 +3,8 @@ import { Tooltip } from 'flowbite-react'
 import ParticipantActionButton from './ParticipantActionButton'
 import {
   CreatedEvent,
-  EventParticipant,
-  FirestoreEventGuest,
+  FirestoreEventParticipant,
+  FirestoreEventParticipantGuest,
 } from '@/firebase/definitions/event'
 import {
   DEFAULT_EVENT_JOIN_CUTOFF,
@@ -19,17 +19,20 @@ import {
   BUTTON_CONFIRM_ADD_GUEST_PAST_EVENT_LEAVE_CUTOFF,
   EVENT_ADD_GUEST_PROMPT,
 } from '@/lib/constants/events'
-import { EVENT_ADD_GUEST_NO_NAME_ERROR, EVENT_FULL_ERROR } from '@/constants/errorMessages'
+import {
+  EVENT_ADD_GUEST_NO_NAME_ERROR,
+  EVENT_FULL_ERROR,
+} from '@/constants/errorMessages'
 import AppError from '@/lib/AppError'
 import { addGuest } from '@/fetch/events'
 import useErrorHandler from '@/hooks/useErrorHandler'
 
 interface AddGuestButtonProps extends ComponentProps<'button'> {
   event: CreatedEvent
-  participants: (EventParticipant | FirestoreEventGuest)[]
+  participants: FirestoreEventParticipant[]
   pending?: boolean
   setPending: (pending: boolean) => void
-  onGuestAdded: (guest: FirestoreEventGuest) => void
+  onGuestAdded: (guest: FirestoreEventParticipantGuest) => void
 }
 
 export default function AddGuestButton(props: AddGuestButtonProps) {
@@ -61,7 +64,6 @@ export default function AddGuestButton(props: AddGuestButtonProps) {
     if (!isMod && hasPassedJoinCutoff) {
       return BUTTON_ADD_GUEST_PASSED_JOIN_CUTOFF_TOOLTIP
     }
-
 
     return ''
   })()
@@ -109,11 +111,7 @@ export default function AddGuestButton(props: AddGuestButtonProps) {
   if (!showAddGuestButton) return null
 
   if (tooltipContent) {
-    return (
-      <Tooltip content={tooltipContent}>
-        {renderAddGuestButton()}
-      </Tooltip>
-    )
+    return <Tooltip content={tooltipContent}>{renderAddGuestButton()}</Tooltip>
   }
 
   return renderAddGuestButton()

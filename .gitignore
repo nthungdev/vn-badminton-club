@@ -42,3 +42,5 @@ firebase-service-account.json
 .env.*
 
 certificates
+
+src/tools
