@@ -12,7 +12,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { DEFAULT_EVENT_LEAVE_CUTOFF, hasPassed } from '@/lib/utils/events'
 import { CreatedEvent, EventParticipant } from '@/firebase/definitions/event'
 import KickParticipantModal from './KickParticipantModal'
-import { kickGuest } from '@/fetch/events'
+import { kick, kickGuest } from '@/fetch/events'
 import useErrorHandler from '@/hooks/useErrorHandler'
 import { GroupedParticipants } from './types'
 
@@ -99,7 +99,7 @@ export default function KickParticipantButton(
     try {
       props.setPending(true)
       if (participant.type === 'user') {
-        await kickGuest(props.event.id, participant.uid)
+        await kick(props.event.id, participant.uid)
         const updated = props.participants.filter(
           (p) => p.uid !== participant.uid
         )
