@@ -16,10 +16,10 @@ export default function ParticipantList({
   const [groupGuests, setGroupGuests] = useState<boolean>(false)
 
   const isEmpty = participants.length === 0
+  const tooltipContent = groupGuests ? 'Grouped guests' : 'Ordered by join time'
+  const hasGuests = participants.some((p) => p.type === 'guest')
 
   const IconComponent = groupGuests ? MdGroup : MdPerson
-
-  const tooltipContent = groupGuests ? 'Grouped guests' : 'Ordered by join time'
 
   return (
     <div
@@ -33,30 +33,32 @@ export default function ParticipantList({
         </div>
       ) : (
         <>
-          <div className="z-10 absolute top-2 right-2">
-            <Tooltip
-              className="text-center bg-primary-900 text-white"
-              theme={{
-                arrow: {
-                  style: {
-                    dark: 'bg-primary-900',
-                    light: 'bg-primary-900',
-                    auto: 'bg-primary-900',
+          {hasGuests && (
+            <div className="z-10 absolute top-2 right-2">
+              <Tooltip
+                className="text-center bg-primary-900 text-white"
+                theme={{
+                  arrow: {
+                    style: {
+                      dark: 'bg-primary-900',
+                      light: 'bg-primary-900',
+                      auto: 'bg-primary-900',
+                    },
                   },
-                },
-              }}
-              content={tooltipContent}
-            >
-              <button
-                className="shadow-md rounded-md shrink grow-0 basis-0 self-end p-1 bg-white text-primary"
-                onClick={() => setGroupGuests(!groupGuests)}
+                }}
+                content={tooltipContent}
               >
-                <IconComponent className="size-6" />
-              </button>
-            </Tooltip>
-          </div>
+                <button
+                  className="shadow-lg rounded-md shrink grow-0 basis-0 self-end p-1 bg-white text-primary hover:bg-primary hover:text-white hover:shadow-md transition-all"
+                  onClick={() => setGroupGuests(!groupGuests)}
+                >
+                  <IconComponent className="size-6" />
+                </button>
+              </Tooltip>
+            </div>
+          )}
 
-          <div className="px-2">
+          <div className="pl-2 pr-6">
             {groupGuests && (
               <GroupedParticipantList participants={participants} />
             )}

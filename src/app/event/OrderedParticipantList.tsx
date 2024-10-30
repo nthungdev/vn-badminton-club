@@ -18,6 +18,9 @@ export default function OrderedParticipantList({
           <span className="font-medium text-secondary-700">
             {participant.displayName}
           </span>
+          {participant.type === 'guest' && (
+            <span className='text-gray-600'>&nbsp;{`(${participant.addedByDisplayName}'s Guest)`}</span>
+          )}
         </li>
       ))}
     </ul>
