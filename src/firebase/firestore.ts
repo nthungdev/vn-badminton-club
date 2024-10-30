@@ -42,7 +42,10 @@ export async function getJoinedEvents(
   try {
     const snapshot = await eventCollection
       .withConverter(eventReadConverter)
-      .where('participantIds', 'array-contains', uid)
+      .where('participants', 'array-contains', {
+        type: 'user',
+        uid,
+      })
       .orderBy('startTimestamp')
       .limit(limit)
       .get()
