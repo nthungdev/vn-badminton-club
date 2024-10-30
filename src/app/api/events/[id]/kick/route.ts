@@ -65,12 +65,13 @@ export async function PATCH(
             return { errorMessage: UNAUTHORIZED_ERROR, status: 403 }
         }
 
-        if (!event.participants.find((p) => p.uid === uid)) {
+        const participant = event.participants.find((p) => p.uid === uid)
+        if (!participant) {
           return { errorMessage: 'Invalid uid.', status: 400 }
         }
 
         transaction.update(eventRef, {
-          participantIds: FieldValue.arrayRemove(uid),
+          participants: FieldValue.arrayRemove(participant),
         })
 
         return {}
