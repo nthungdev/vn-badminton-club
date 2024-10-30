@@ -11,16 +11,15 @@ import {
 } from '@/firebase/definitions/event'
 import { eventTime } from '@/lib/format'
 import { menuHref } from '@/lib/menu'
-import { GroupedParticipants } from './types'
 import JoinLeaveEventButtonContainer from './JoinLeaveEventButtonContainer'
 import CancelEventButton from './CancelEventButton'
-import GroupedParticipantList from './GroupedParticipantList'
 import { hasPassed } from '@/lib/utils/events'
 import { useAuth } from '@/contexts/AuthContext'
 import { BUTTON_EDIT } from '@/lib/constants/events'
 import { Role } from '@/firebase/definitions'
 import KickParticipantButton from './KickParticipantButton'
 import AddGuestButton from './AddGuestButton'
+import ParticipantList from './ParticipantList'
 
 interface ClientEventPageProps {
   eventId: string
@@ -31,9 +30,9 @@ export default function ClientEventPage(props: ClientEventPageProps) {
   const { event } = props
   const { user } = useAuth()
 
-  const [participants, setParticipants] = useState<EventParticipant[]>(
-    [...event.participants]
-  )
+  const [participants, setParticipants] = useState<EventParticipant[]>([
+    ...event.participants,
+  ])
   const [pending, setPending] = useState(false)
 
   const isMod = user?.role === Role.Mod
@@ -42,31 +41,6 @@ export default function ClientEventPage(props: ClientEventPageProps) {
   const time = eventTime(event.startTimestamp, event.endTimestamp)
 
   const showEditButton = (isMod || !isPastEvent) && (isMod || isOrganizer)
-
-  const participantsGrouped = participants.reduce(
-    (prev, curr) => {
-      if (curr.type === 'user') {
-        return { ...prev, users: [...prev.users, curr] } as GroupedParticipants
-      } else if (curr.type === 'guest') {
-        return {
-          ...prev,
-          userGuests: {
-            ...prev.userGuests,
-            [curr.addedByUid]: {
-              ...prev.userGuests[curr.addedByUid],
-              displayName: curr.addedByDisplayName,
-              guests: [...(prev.userGuests[curr.addedByUid]?.guests || []), curr],
-            },
-          },
-        } as GroupedParticipants
-      }
-      return prev
-    },
-    {
-      users: [],
-      userGuests: {},
-    } as GroupedParticipants
-  )
 
   const handleJoinedEvent = () => {
     setParticipants([
@@ -162,11 +136,9 @@ export default function ClientEventPage(props: ClientEventPageProps) {
                   {participants.length} / {event.slots}
                 </span>
               </div>
-              <div className="px-4 py-2 bg-white border shadow-sm rounded-xl divide-y-2">
-                <GroupedParticipantList
-                  participantsGrouped={participantsGrouped}
-                />
-              </div>
+
+              <ParticipantList participants={participants} />
+
               <div className="flex flex-row justify-end space-x-2">
                 <KickParticipantButton
                   event={event}

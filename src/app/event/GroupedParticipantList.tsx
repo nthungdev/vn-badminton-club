@@ -1,21 +1,46 @@
+import { EventParticipant } from '@/firebase/definitions/event'
 import { GroupedParticipants } from './types'
+import { ComponentProps } from 'react'
 
 export default function GroupedParticipantList({
-  participantsGrouped,
+  participants,
+  className,
 }: {
-  participantsGrouped: GroupedParticipants
+  participants: EventParticipant[]
+  className?: ComponentProps<'div'>['className']
 }) {
-  const isEmpty =
-    participantsGrouped.users.length === 0 &&
-    Object.values(participantsGrouped.userGuests).flat().length === 0
+  const participantsGrouped: GroupedParticipants = participants.reduce(
+    (prev, curr) => {
+      if (curr.type === 'user') {
+        return { ...prev, users: [...prev.users, curr] } as GroupedParticipants
+      } else if (curr.type === 'guest') {
+        return {
+          ...prev,
+          userGuests: {
+            ...prev.userGuests,
+            [curr.addedByUid]: {
+              ...prev.userGuests[curr.addedByUid],
+              displayName: curr.addedByDisplayName,
+              guests: [
+                ...(prev.userGuests[curr.addedByUid]?.guests || []),
+                curr,
+              ],
+            },
+          },
+        } as GroupedParticipants
+      }
+      return prev
+    },
+    {
+      users: [],
+      userGuests: {},
+    } as GroupedParticipants
+  )
+
+  if (participants.length === 0) return null
 
   return (
-    <div>
-      {isEmpty && (
-        <div className="text-center text-gray-600 py-2">
-          No one has joined this event.
-        </div>
-      )}
+    <div className={className}>
       {participantsGrouped.users.length > 0 && (
         <ul className="space-y-1 flex flex-col py-2">
           {participantsGrouped.users.map((participant, index) => (
