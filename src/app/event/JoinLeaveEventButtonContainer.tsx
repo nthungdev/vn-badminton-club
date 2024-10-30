@@ -127,9 +127,9 @@ export default function JoinLeaveEventButtonContainer(
 
   if (!showJoinLeaveButton) return null
 
-  if (tooltipContent) {
-    return (
-      <div className="p-4 shadow-inner">
+  return (
+    <div className="p-4 shadow-inner">
+      {tooltipContent ? (
         <Tooltip
           content={tooltipContent}
           theme={{
@@ -138,9 +138,9 @@ export default function JoinLeaveEventButtonContainer(
         >
           {renderButton()}
         </Tooltip>
-      </div>
-    )
-  }
-
-  return renderButton()
+      ) : (
+        renderButton()
+      )}
+    </div>
+  )
 }
