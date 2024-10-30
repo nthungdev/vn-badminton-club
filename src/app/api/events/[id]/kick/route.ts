@@ -65,7 +65,7 @@ export async function PATCH(
             return { errorMessage: UNAUTHORIZED_ERROR, status: 403 }
         }
 
-        if (!event.participantIds.includes(uid)) {
+        if (!event.participants.find((p) => p.uid === uid)) {
           return { errorMessage: 'Invalid uid.', status: 400 }
         }
 
