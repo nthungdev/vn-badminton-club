@@ -37,37 +37,53 @@ async function getEventParticipantFromUid(uid: string) {
 
 export async function getJoinedEvents(
   uid: string,
-  { limit }: { limit: number }
+  { limit, startAfter }: { limit: number; startAfter?: number }
 ) {
   try {
-    const snapshot = await eventCollection
+    let query = eventCollection
       .withConverter(eventReadConverter)
       .where('participants', 'array-contains', {
         type: 'user',
         uid,
       })
-      .orderBy('startTimestamp')
+      .orderBy('startTimestamp', 'desc')
       .limit(limit)
-      .get()
+
+    if (startAfter) {
+      query = query.startAfter(new Date(startAfter))
+    }
+
+    const snapshot = await query.get()
     return snapshot.docs.map((doc) => doc.data())
   } catch (error) {
     console.error('Error getting joined events:', error)
-    throw new Error('Error getting joined events')
+    throw new AppError('Error getting joined events', error)
   }
 }
 
-export async function getNewEvents({ limit }: { limit: number }) {
+export async function getNewEvents({
+  limit,
+  startAfter,
+}: {
+  limit: number
+  startAfter?: number
+}) {
   try {
     // if (cache.has(EventsCacheKey.NewEvents)) {
     //   return cache.get(EventsCacheKey.NewEvents) as HomeViewEvent[]
     // }
 
-    const snapshot = await eventCollection
+    let query = eventCollection
       .withConverter(eventReadConverter)
       .where('startTimestamp', '>=', new Date())
-      .orderBy('startTimestamp')
+      .orderBy('startTimestamp', 'asc')
       .limit(limit)
-      .get()
+
+    if (startAfter) {
+      query = query.startAfter(new Date(startAfter))
+    }
+
+    const snapshot = await query.get()
 
     const events = snapshot.docs.map((doc) => doc.data())
     cache.set(EventsCacheKey.NewEvents, events)
@@ -78,18 +94,29 @@ export async function getNewEvents({ limit }: { limit: number }) {
   }
 }
 
-export async function getPastEvents({ limit }: { limit: number }) {
+export async function getPastEvents({
+  limit,
+  startAfter,
+}: {
+  limit: number
+  startAfter?: number
+}) {
   try {
     // if (cache.has(EventsCacheKey.PastEvents)) {
     //   return cache.get(EventsCacheKey.PastEvents) as HomeViewEvent[]
     // }
 
-    const snapshot = await eventCollection
+    let query = eventCollection
       .withConverter(eventReadConverter)
       .where('startTimestamp', '<', new Date())
       .orderBy('startTimestamp', 'desc')
       .limit(limit)
-      .get()
+
+    if (startAfter) {
+      query = query.startAfter(new Date(startAfter))
+    }
+
+    const snapshot = await query.get()
 
     const events = snapshot.docs.map((doc) => doc.data())
     cache.set(EventsCacheKey.PastEvents, events)
