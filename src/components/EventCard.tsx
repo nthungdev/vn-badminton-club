@@ -1,5 +1,5 @@
-import { eventTime, nowToTimestamp } from '@/lib/format'
 import Link from 'next/link'
+import { eventTime, nowToTimestamp } from '@/lib/format'
 import EventCardModBadge from './EventCardModBadge'
 import { FirestoreEventParticipant } from '@/firebase/definitions/event'
 
@@ -17,9 +17,10 @@ export default function EventCard(props: EventCardProps) {
   const participantCount = props.participants.length
 
   return (
-    <div
+    <Link
       key={props.id}
-      className="flex flex-col bg-white border shadow-sm rounded-xl"
+      href={`/event?e=${props.id}`}
+      className="flex flex-col bg-white border shadow-sm rounded-xl hover:bg-secondary-50 hover:ring hover:cursor-pointer"
     >
       <div className="flex flex-row justify-between items-center border-b rounded-t-xl">
         <span className="py-3 px-4 md:px-5 text-lg font-bold text-gray-800">
@@ -35,21 +36,15 @@ export default function EventCard(props: EventCardProps) {
           {nowToTimestamp(props.startTimestamp)}
         </div>
         <div className="mt-2 w-full flex flex-row justify-between items-center">
-          <span className='bg-secondary-100 rounded-full py-1 px-3'>
+          <span className="bg-secondary-100 rounded-full py-1 px-3">
             <span className="font-semibold text-secondary">
               {participantCount} / {props.slots}
             </span>
             <span> </span>
-            <span className='text-secondary'>Participants</span>
+            <span className="text-secondary">Participants</span>
           </span>
-          <Link
-            href={`/event?e=${props.id}`}
-            className="self-end p-1 inline-flex text-sm font-semibold rounded-lg border border-transparent text-secondary decoration-2 hover:text-primary hover:underline focus:underline focus:outline-none focus:text-primary disabled:opacity-50 disabled:pointer-events-none"
-          >
-            View
-          </Link>
         </div>
       </div>
-    </div>
+    </Link>
   )
 }

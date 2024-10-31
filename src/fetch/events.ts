@@ -13,58 +13,29 @@ function formatHomeViewEvents(events: HomeViewEvent[]) {
   })) as HomeViewEvent[]
 }
 
-export async function getJoinedEvents() {
+export async function getEvents({
+  filter,
+  limit,
+  startAfter,
+}: {
+  filter: 'joined' | 'new' | 'past'
+  limit: number
+  /** unix timestamp */
+  startAfter?: number
+}) {
   try {
-    const response: EventsGetResponse = await fetch(
-      '/api/events?filter=joined',
-      {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      }
-    ).then((r) => r.json())
-    if (!response.success) {
-      throw new AppError('Error getting joined events')
-    }
+    const params = new URLSearchParams()
+    params.append('filter', filter)
+    params.append('limit', limit.toString())
+    if (startAfter) params.append('startAfter', startAfter?.toString() || '')
 
-    return formatHomeViewEvents(response.data.events)
-  } catch (error) {
-    if (error instanceof AppError) {
-      throw error
-    }
-    console.error('Error getting joined events:', error)
-    throw new AppError(UNKNOWN_ERROR)
-  }
-}
+    const url = new URL(`/api/events`, window.location.origin)
+    url.search = params.toString()
 
-export async function getNewEvents() {
-  try {
-    const response: EventsGetResponse = await fetch('/api/events?filter=new', {
+    const response: EventsGetResponse = await fetch(url, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }).then((r) => r.json())
-    if (!response.success) {
-      throw new AppError('Error getting new events')
-    }
-
-    return formatHomeViewEvents(response.data.events)
-  } catch (error) {
-    if (error instanceof AppError) {
-      throw error
-    }
-    console.error('Error getting new events:', error)
-    throw new AppError(UNKNOWN_ERROR)
-  }
-}
-
-export async function getPastEvents() {
-  try {
-    const response: EventsGetResponse = await fetch('/api/events?filter=past', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
+      cache: 'no-cache',
     }).then((r) => r.json())
     if (!response.success) {
       throw new AppError(response.error.message)
@@ -75,7 +46,7 @@ export async function getPastEvents() {
     if (error instanceof AppError) {
       throw error
     }
-    console.error('Error getting past events:', error)
+    console.error('Error getting events:', error)
     throw new AppError(UNKNOWN_ERROR)
   }
 }
