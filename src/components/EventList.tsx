@@ -12,6 +12,7 @@ import useErrorHandler from '@/hooks/useErrorHandler'
 type GetEventsFilter = 'new' | 'past' | 'joined'
 
 const GET_LIMIT = 5
+const GET_RETRY_LIMIT = 5
 
 export default function EventList() {
   const handleError = useErrorHandler()
@@ -24,6 +25,7 @@ export default function EventList() {
   const [loading, setLoading] = useState(true)
   const [selectedTab, setSelectedTab] = useState<GetEventsFilter>('new')
   const [loadedAll, setLoadedAll] = useState(false)
+  const [retry, setRetry] = useState(0)
   const observerRef = useRef<HTMLDivElement | null>(null)
 
   const isAuthenticated = user !== null
@@ -58,11 +60,12 @@ export default function EventList() {
   const handleTabChange = async (tab: 'new' | 'past' | 'joined') => {
     setSelectedTab(tab)
     setLoadedAll(false)
+    setRetry(0)
   }
 
   const getMoreEvents = useCallback(async () => {
-    setLoading(true)
     try {
+      setLoading(true)
       const moreEvents = await getEvents({
         filter: selectedTab,
         limit: GET_LIMIT,
@@ -75,14 +78,16 @@ export default function EventList() {
         return
       }
     } catch (error) {
-      handleError(error)
+      if (retry === 0) {
+        handleError(error)
+      }
+      setRetry((retry) => retry + 1)
     } finally {
       setLoading(false)
     }
-  }, [events, selectedTab, lastEvent?.startTimestamp, handleError, setEvents])
+  }, [events, selectedTab, lastEvent?.startTimestamp, retry, handleError, setEvents])
 
   useEffect(() => {
-    console.log('here')
     const initialGetEvents = getMoreEvents
     initialGetEvents()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -91,7 +96,12 @@ export default function EventList() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && !loading && !loadedAll) {
+        if (
+          entries[0].isIntersecting &&
+          !loading &&
+          !loadedAll &&
+          retry < GET_RETRY_LIMIT
+        ) {
           console.log('get more events')
           getMoreEvents()
         }
@@ -107,7 +117,7 @@ export default function EventList() {
     return () => {
       if (currentRef) observer.unobserve(currentRef)
     }
-  }, [loading, loadedAll, getMoreEvents])
+  }, [loading, loadedAll, retry, getMoreEvents])
 
   return (
     <div className="max-w-md space-y-4">

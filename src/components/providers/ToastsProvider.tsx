@@ -17,9 +17,8 @@ export default function ToastsProvider({
   const [toasts, setToasts] = useState<ToastData[]>([])
 
   function addToast(options: ToastOptions) {
-    console.log('add toast from provider')
-    const id = new Date().getTime().toString()
-    setToasts([
+    const id = new Date().getTime().toString() + Math.floor(Math.random() * 1000)
+    setToasts(toasts => [
       ...toasts,
       {
         ...options,
@@ -28,11 +27,12 @@ export default function ToastsProvider({
     ])
     if (options.autoDismiss || true) {
       setTimeout(() => {
-        const toastCloseButton = document.querySelector<HTMLElement>(`#toast-${id} [aria-label="Close"]`)
-        if (toastCloseButton) {
+        const toastCloseButtons = document.querySelectorAll<HTMLElement>(
+          `#toast-${id} [aria-label="Close"]`
+        )
+        toastCloseButtons.forEach((toastCloseButton) => {
           toastCloseButton.click()
-        }
-        // setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id))
+        })
       }, options.duration || DEFAULT_DISMISS_DURATION)
     }
   }

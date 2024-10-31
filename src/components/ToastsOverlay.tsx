@@ -12,8 +12,12 @@ export default function ToastsOverlay() {
       id="toasts-overlay"
       className="absolute max-h-full max-w-sm right-0 top-0 p-4 space-y-2 overflow-y-auto"
     >
-      {toasts.map((toast, index) => (
-        <Toast id={`toast-${toast.id}`} key={index} duration={300} >
+      {toasts.map((toast) => (
+        <Toast
+          id={`toast-${toast.id}`}
+          key={`toast-${toast.id}`}
+          duration={300}
+        >
           <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-orange-100 text-orange-500 dark:bg-orange-700 dark:text-orange-200">
             <HiExclamation className="h-5 w-5" />
           </div>
