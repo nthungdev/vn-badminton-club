@@ -25,7 +25,7 @@ export default function Nav(props: NavProps) {
       <div>
         {props.siteName && (
           <Link
-            className="flex-none font-semibold text-xl text-white focus:outline-none focus:opacity-80 py-2"
+            className="flex-none font-semibold text-xl text-white focus:outline-none focus:opacity-80 focus:ring-0 py-2"
             href={menuHref.home}
             aria-label="Brand"
           >
@@ -36,19 +36,19 @@ export default function Nav(props: NavProps) {
 
       <div className="flex flex-row items-center gap-y-1 sm:justify-end sm:mt-0 sm:ps-5">
         {menu.map((m, index) => (
-          <a
+          <Link
             key={index}
-            className="font-medium text-white focus:outline-none py-2 px-2"
+            className="font-medium text-white focus:outline-none py-2 px-2 focus:ring-0"
             href={m.href}
             aria-current={pathname === m.href ? 'page' : false}
           >
             {m.label}
-          </a>
+          </Link>
         ))}
 
         {isAuthenticated && (
           <a
-            className="font-medium text-white focus:outline-none py-2 px-2"
+            className="font-medium text-white focus:outline-none py-2 px-2 focus:ring-0"
             href="#"
             onClick={() => signOut()}
           >
