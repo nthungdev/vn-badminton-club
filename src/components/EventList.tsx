@@ -85,7 +85,14 @@ export default function EventList() {
     } finally {
       setLoading(false)
     }
-  }, [events, selectedTab, lastEvent?.startTimestamp, retry, handleError, setEvents])
+  }, [
+    events,
+    selectedTab,
+    lastEvent?.startTimestamp,
+    retry,
+    handleError,
+    setEvents,
+  ])
 
   useEffect(() => {
     const initialGetEvents = getMoreEvents
@@ -130,7 +137,7 @@ export default function EventList() {
               role="tab"
               aria-selected={selectedTab === tab}
               className={classNames(
-                'inline-block px-4 py-3 rounded-lg',
+                'inline-block px-4 py-3 rounded-lg ',
                 selectedTab === tab
                   ? 'active text-white bg-secondary font-semibold'
                   : 'hover:text-secondary hover:bg-secondary-200'

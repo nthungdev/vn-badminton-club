@@ -49,10 +49,10 @@ export default function ParticipantList({
                 content={tooltipContent}
               >
                 <button
-                  className="shadow-lg rounded-md shrink grow-0 basis-0 self-end p-1 bg-white text-primary hover:bg-primary hover:text-white hover:shadow-md"
+                  className="shadow-lg rounded-md shrink grow-0 basis-0 self-end p-1 bg-white text-primary hover:bg-primary hover:text-white hover:shadow-md transition-none"
                   onClick={() => setGroupGuests(!groupGuests)}
                 >
-                  <IconComponent className="size-6" />
+                  <IconComponent className="size-6 transition-none" />
                 </button>
               </Tooltip>
             </div>

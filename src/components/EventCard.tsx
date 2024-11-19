@@ -20,7 +20,7 @@ export default function EventCard(props: EventCardProps) {
     <Link
       key={props.id}
       href={`/event?e=${props.id}`}
-      className="flex flex-col bg-white border shadow-sm rounded-xl hover:bg-secondary-50 hover:ring hover:cursor-pointer"
+      className="flex flex-col bg-white border shadow-sm rounded-xl hover:bg-secondary-50 hover:ring hover:cursor-pointer focus:ring hover:scale-105 transition-all"
     >
       <div className="flex flex-row justify-between items-center border-b rounded-t-xl">
         <span className="py-3 px-4 md:px-5 text-lg font-bold text-gray-800">

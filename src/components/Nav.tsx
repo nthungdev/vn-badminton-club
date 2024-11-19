@@ -21,11 +21,11 @@ export default function Nav(props: NavProps) {
   const pathname = usePathname()
 
   return (
-    <nav className="max-w-[85rem] w-full mx-auto px-4 sm:flex sm:items-center sm:justify-between">
+    <nav className="max-w-[85rem] w-full mx-auto px-4 sm:flex sm:items-center sm:justify-between py-1">
       <div>
         {props.siteName && (
           <Link
-            className="flex-none font-semibold text-xl text-white focus:outline-none focus:opacity-80"
+            className="flex-none font-semibold text-xl text-white focus:outline-none focus:opacity-80 focus:ring-0 py-2"
             href={menuHref.home}
             aria-label="Brand"
           >
@@ -34,21 +34,21 @@ export default function Nav(props: NavProps) {
         )}
       </div>
 
-      <div className="flex flex-row items-center gap-5 mt-5 sm:justify-end sm:mt-0 sm:ps-5">
+      <div className="flex flex-row items-center gap-y-1 sm:justify-end sm:mt-0 sm:ps-5">
         {menu.map((m, index) => (
-          <a
+          <Link
             key={index}
-            className="font-medium text-white focus:outline-none"
+            className="font-medium text-white focus:outline-none py-2 px-2 focus:ring-0"
             href={m.href}
             aria-current={pathname === m.href ? 'page' : false}
           >
             {m.label}
-          </a>
+          </Link>
         ))}
 
         {isAuthenticated && (
           <a
-            className="font-medium text-white focus:outline-none"
+            className="font-medium text-white focus:outline-none py-2 px-2 focus:ring-0"
             href="#"
             onClick={() => signOut()}
           >
@@ -58,9 +58,15 @@ export default function Nav(props: NavProps) {
 
         {props.displayName && (
           <Tooltip
-            className="bg-primary-100 text-gray-800"
+            className="bg-primary-100 text-gray-800 "
             theme={{
-              arrow: { style: { dark: 'bg-primary-100', light: 'bg-primary-100', auto: 'bg-primary-100' } },
+              arrow: {
+                style: {
+                  dark: 'bg-primary-100',
+                  light: 'bg-primary-100',
+                  auto: 'bg-primary-100',
+                },
+              },
             }}
             content={
               <UserTooltipContent
@@ -71,7 +77,7 @@ export default function Nav(props: NavProps) {
           >
             <div
               data-tooltip-target="user-tooltip"
-              className="hover:cursor-pointer text-white font-semibold ml-auto"
+              className="hover:cursor-pointer text-white font-semibold ml-auto py-2 px-2"
             >
               {props.displayName}
             </div>
