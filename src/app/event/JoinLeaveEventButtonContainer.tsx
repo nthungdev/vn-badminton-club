@@ -1,5 +1,6 @@
 'use client'
 
+import { EVENT_FULL_ERROR } from '@/constants/errorMessages'
 import { useAuth } from '@/contexts/AuthContext'
 import { joinEvent, leaveEvent } from '@/fetch/events'
 import { Role } from '@/firebase/definitions'
@@ -72,6 +73,10 @@ export default function JoinLeaveEventButtonContainer(
 
     if (!meJoined && hasPassedJoinTime) {
       return BUTTON_JOIN_PASSED_JOIN_CUTOFF_TOOLTIP
+    }
+
+    if (isEventFull) {
+      return EVENT_FULL_ERROR
     }
 
     return ''

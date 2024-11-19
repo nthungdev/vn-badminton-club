@@ -12,10 +12,13 @@ import {
   BUTTON_CANCEL,
   BUTTON_CANCEL_EVENT_CONFIRM,
   BUTTON_CONFIRM_CANCEL_EVENT_CONFIRM_HAS_PARTICIPANTS,
+  BUTTON_DELETE,
+  CONFIRM_ONGOING_EVENT_CANCEL,
 } from '@/lib/constants/events'
 import { hasPassed } from '@/lib/utils/events'
 import { useAuth } from '@/contexts/AuthContext'
 import { Role } from '@/firebase/definitions'
+import { EVENT_CANCEL_ERROR } from '@/constants/errorMessages'
 
 interface CancelEventButtonProps extends ComponentProps<'button'> {
   pending?: boolean
@@ -32,12 +35,20 @@ export default function CancelEventButton(props: CancelEventButtonProps) {
 
   const isMod = user?.role === Role.Mod
   const isOrganizer = user?.uid === event.organizer.uid
-  const isPastEvent = hasPassed(event.startTimestamp)
+  const isOngoing =
+    hasPassed(event.startTimestamp) && !hasPassed(event.endTimestamp)
+  const hasEnded = hasPassed(event.endTimestamp)
+  const passedStartTime = hasPassed(event.startTimestamp)
   const hasParticipants = props.participants.length > 0
-  const showCancelButton = !isPastEvent && (isMod || isOrganizer)
-  const disableCancelButton = pending || isPastEvent
+  const showCancelButton = isMod || (!passedStartTime && isOrganizer)
+  const disableCancelButton = pending || (passedStartTime && !isMod)
+  const buttonLabel = hasEnded ? BUTTON_DELETE : BUTTON_CANCEL
 
   const handleCancelEvent = async () => {
+    if (isOngoing && !window.confirm(CONFIRM_ONGOING_EVENT_CANCEL)) {
+      return
+    }
+
     const confirmed = window.confirm(
       hasParticipants
         ? BUTTON_CONFIRM_CANCEL_EVENT_CONFIRM_HAS_PARTICIPANTS
@@ -54,7 +65,7 @@ export default function CancelEventButton(props: CancelEventButtonProps) {
         headers: { 'Content-Type': 'application/json' },
       }).then((r) => r.json())
       if (!success) {
-        throw new AppError('Failed to cancel event')
+        throw new AppError(EVENT_CANCEL_ERROR)
       }
       router.replace(menuHref.home)
     } catch (error) {
@@ -78,7 +89,7 @@ export default function CancelEventButton(props: CancelEventButtonProps) {
       onClick={handleCancelEvent}
       disabled={disableCancelButton}
     >
-      {BUTTON_CANCEL}
+      {buttonLabel}
     </button>
   )
 }
