@@ -34,11 +34,11 @@ export default function Nav(props: NavProps) {
         )}
       </div>
 
-      <div className="flex flex-row items-center gap-5 mt-5 sm:justify-end sm:mt-0 sm:ps-5">
+      <div className="flex flex-row items-center gap-y-1 sm:justify-end sm:mt-0 sm:ps-5">
         {menu.map((m, index) => (
           <a
             key={index}
-            className="font-medium text-white focus:outline-none py-2 "
+            className="font-medium text-white focus:outline-none py-2 px-2"
             href={m.href}
             aria-current={pathname === m.href ? 'page' : false}
           >
@@ -48,7 +48,7 @@ export default function Nav(props: NavProps) {
 
         {isAuthenticated && (
           <a
-            className="font-medium text-white focus:outline-none py-2"
+            className="font-medium text-white focus:outline-none py-2 px-2"
             href="#"
             onClick={() => signOut()}
           >
@@ -58,9 +58,15 @@ export default function Nav(props: NavProps) {
 
         {props.displayName && (
           <Tooltip
-            className="bg-primary-100 text-gray-800"
+            className="bg-primary-100 text-gray-800 "
             theme={{
-              arrow: { style: { dark: 'bg-primary-100', light: 'bg-primary-100', auto: 'bg-primary-100' } },
+              arrow: {
+                style: {
+                  dark: 'bg-primary-100',
+                  light: 'bg-primary-100',
+                  auto: 'bg-primary-100',
+                },
+              },
             }}
             content={
               <UserTooltipContent
@@ -71,7 +77,7 @@ export default function Nav(props: NavProps) {
           >
             <div
               data-tooltip-target="user-tooltip"
-              className="hover:cursor-pointer text-white font-semibold ml-auto"
+              className="hover:cursor-pointer text-white font-semibold ml-auto py-2 px-2"
             >
               {props.displayName}
             </div>
