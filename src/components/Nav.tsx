@@ -21,11 +21,11 @@ export default function Nav(props: NavProps) {
   const pathname = usePathname()
 
   return (
-    <nav className="max-w-[85rem] w-full mx-auto px-4 sm:flex sm:items-center sm:justify-between">
+    <nav className="max-w-[85rem] w-full mx-auto px-4 sm:flex sm:items-center sm:justify-between py-1">
       <div>
         {props.siteName && (
           <Link
-            className="flex-none font-semibold text-xl text-white focus:outline-none focus:opacity-80"
+            className="flex-none font-semibold text-xl text-white focus:outline-none focus:opacity-80 py-2"
             href={menuHref.home}
             aria-label="Brand"
           >
@@ -38,7 +38,7 @@ export default function Nav(props: NavProps) {
         {menu.map((m, index) => (
           <a
             key={index}
-            className="font-medium text-white focus:outline-none"
+            className="font-medium text-white focus:outline-none py-2 "
             href={m.href}
             aria-current={pathname === m.href ? 'page' : false}
           >
@@ -48,7 +48,7 @@ export default function Nav(props: NavProps) {
 
         {isAuthenticated && (
           <a
-            className="font-medium text-white focus:outline-none"
+            className="font-medium text-white focus:outline-none py-2"
             href="#"
             onClick={() => signOut()}
           >
