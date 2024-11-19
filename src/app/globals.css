@@ -31,5 +31,5 @@ body {
 }
 
 * {
-  @apply focus:outline-none focus:ring;
+  @apply focus:outline-none transition-colors;
 }
