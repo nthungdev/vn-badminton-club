@@ -60,7 +60,7 @@ export default function EventForm(props: EventFormProps) {
               type="text"
               id="title"
               name="title"
-              className="bg-gray-100 border-none text-gray-900 placeholder-text-transparent text-sm rounded-lg  focus:ring-2 focus:ring-primary focus:border-primary disabled:opacity-50 disabled:pointer-events-none block w-full p-4"
+              className="bg-gray-100 border-none text-gray-900 placeholder-text-transparent text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-primary disabled:opacity-50 disabled:pointer-events-none block w-full p-4"
               placeholder="Badminton Event"
               defaultValue={props.event?.title}
             />
@@ -132,7 +132,7 @@ function SubmitButton(props: SubmitButtonProps) {
   return (
     <button
       type="submit"
-      className="mt-3 w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-primary text-white hover:bg-primary-700 focus:outline-none focus:bg-primary-700 disabled:opacity-50 disabled:pointer-events-none"
+      className="mt-3 w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-primary text-white hover:bg-primary-700 focus:outline-none focus:bg-primary-700 focus:ring-primary-400 disabled:opacity-50 disabled:pointer-events-none"
       disabled={pending}
     >
       {pending ? <LoadingSpinner sizeClasses="size-4" /> : props.label}
