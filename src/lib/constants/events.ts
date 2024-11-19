@@ -12,6 +12,7 @@ export const BUTTON_CANCEL_EVENT_CONFIRM =
 export const BUTTON_LEAVE_EVENT_CONFIRM =
   'Are you sure you want to leave this event?'
 
+export const CONFIRM_ONGOING_EVENT_CANCEL = `This event is ongoing. Are you sure you want to cancel it?`
 export const BUTTON_CONFIRM_CANCEL_EVENT_CONFIRM_HAS_PARTICIPANTS =
   'Are you sure you want to cancel this event? There are participants signed up for this event.'
 export const BUTTON_CONFIRM_JOIN_PASSED_EVENT_LEAVE_CUTOFF = `You cannot leave this event after joining it. Are you sure you want to join this event?`
@@ -23,6 +24,7 @@ export const BUTTON_LEAVE = 'Leave Event'
 export const BUTTON_EDIT = 'Edit Event'
 export const BUTTON_ADD_GUEST = 'Add Guest'
 export const BUTTON_CANCEL = 'Cancel Event'
+export const BUTTON_DELETE = 'Delete Event'
 export const BUTTON_KICK = 'Kick Participant'
 
 export const FORM_CREATE_EVENT_TITLE = 'Create Event'
