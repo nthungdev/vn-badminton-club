@@ -1,14 +1,14 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
 import localFont from 'next/font/local'
+import './globals.css'
 import Header from '@/components/Header'
 import { AuthProvider } from '@/components/providers/AuthProvider'
 import { getAuthUser } from '@/lib/authUtils'
 import ToastsOverlay from '@/components/ToastsOverlay'
-
-import './globals.css'
 import ToastsProvider from '@/components/providers/ToastsProvider'
-import Head from 'next/head'
+import AnalyticsTrigger from '@/components/AnalyticsTrigger'
+
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -24,6 +24,9 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: process.env.SITE_TITLE,
   description: process.env.SITE_DESCRIPTION,
+  icons: {
+    shortcut: '/favicon.ico',
+  }
 }
 
 export default async function RootLayout({
@@ -35,14 +38,12 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <Head>
-        <link rel="shortcut icon" href="/favicon.ico" />
-      </Head>
       <Script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></Script>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50`}
       >
         <div className="relative flex flex-col h-screen overflow-hidden">
+          <AnalyticsTrigger />
           <ToastsProvider>
             <ToastsOverlay />
             <AuthProvider user={authUser}>

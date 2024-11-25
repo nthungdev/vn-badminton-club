@@ -109,7 +109,6 @@ export default function EventList() {
           !loadedAll &&
           retry < GET_RETRY_LIMIT
         ) {
-          console.log('get more events')
           getMoreEvents()
         }
       },
