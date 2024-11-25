@@ -6,6 +6,7 @@ const firebaseConfig: Record<string, string> = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
   clientEmail: process.env.NEXT_PUBLIC_FIREBASE_CLIENT_EMAIL!,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID!,
 }
 
 // When deployed, there are quotes that need to be stripped
