@@ -186,7 +186,7 @@ export async function kickGuest(
         (p) => p.guestId === guestId
       ) as FirestoreEventParticipantGuest
       if (!guest) {
-        // Might happen when rare race condition: the guest was already kicked by someone else
+        // The guest was already kicked by someone else (rare race condition)
         return EVENT_GUEST_NOT_FOUND_ERROR
       }
 
@@ -255,7 +255,8 @@ export async function addGuest(
           return { errorMessage: EVENT_NOT_FOUND_ERROR }
         }
 
-        if (isEventFull(event)) {
+        // If not mod, cannot add guests over the slot limit
+        if (role !== Role.Mod && isEventFull(event)) {
           return { errorMessage: EVENT_FULL_ERROR }
         }
 
