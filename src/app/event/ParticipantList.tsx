@@ -17,14 +17,16 @@ export default function ParticipantList({
 
   const isEmpty = participants.length === 0
   const tooltipContent = groupGuests ? 'Grouped guests' : 'Ordered by join time'
-  const hasGuests = participants.some((p) => p.type === 'guest')
+  // const hasGuests = participants.some((p) => p.type === 'guest')
+  const showSortButton = participants.length > 1
 
   const IconComponent = groupGuests ? MdGroup : MdPerson
 
   return (
     <div
       className={classNames(
-        'relative py-2 bg-white border shadow-sm rounded-xl flex flex-col items-baseline overflow-hidden'
+        'relative py-2 bg-white border shadow-sm rounded-xl flex flex-col items-baseline overflow-hidden',
+        showSortButton && 'min-h-36'
       )}
     >
       {isEmpty ? (
@@ -33,7 +35,7 @@ export default function ParticipantList({
         </div>
       ) : (
         <>
-          {hasGuests && (
+          {showSortButton && (
             <div className="z-10 absolute top-2 right-2">
               <Tooltip
                 className="text-center bg-primary-900 text-white"

@@ -54,7 +54,7 @@ export default function AddGuestButton(props: AddGuestButtonProps) {
   )
   const showAddGuestButton = isMod || !isPastEvent
   const disableAddGuestButton =
-    pending || isEventFull || (!isMod && hasPassedJoinCutoff)
+    pending || (!isMod && (hasPassedJoinCutoff || isEventFull))
 
   const tooltipContent = (() => {
     if (isEventFull) {
