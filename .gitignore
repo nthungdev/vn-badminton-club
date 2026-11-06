@@ -43,4 +43,4 @@ firebase-service-account.json
 
 certificates
 
-src/tools
+src/tools!.env.example
