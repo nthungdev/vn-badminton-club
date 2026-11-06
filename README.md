@@ -16,7 +16,13 @@ Event sign-up app for a community badminton club. Organizers post sessions; memb
 
 ## Tech stack
 
-Next.js 14 (App Router, Server Actions, Route Handlers) · TypeScript · Firebase Auth and Firestore (`firebase-admin` on the server) · Tailwind CSS and Flowbite · Zod · Decap CMS
+- **Framework:** Next.js 14 (App Router, Server Actions, Route Handlers)
+- **Language:** TypeScript
+- **Auth and database:** Firebase Auth and Firestore (`firebase-admin` on the server)
+- **Styling:** Tailwind CSS and Flowbite React
+- **Validation:** Zod
+- **Content:** Decap CMS
+- **Analytics:** Firebase Analytics
 
 ## Getting started
 
