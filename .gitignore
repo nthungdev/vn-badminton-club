@@ -39,7 +39,9 @@ next-env.d.ts
 firebase-service-account.json
 
 # Env
+.env
 .env.*
+!.env.example
 
 certificates
 
