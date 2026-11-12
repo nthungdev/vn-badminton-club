@@ -1,5 +1,7 @@
 # Event Management System
 
+<!-- VN Badminton Club Event Management System -->
+
 This is a simple event management system that allows users to create, edit, and delete events. It also allows users to register for events and view the events they have registered for.
 
 This [Next.js](https://nextjs.org) project was bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
